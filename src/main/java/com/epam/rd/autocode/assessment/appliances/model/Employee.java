@@ -2,6 +2,7 @@ package com.epam.rd.autocode.assessment.appliances.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -14,6 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "employee")
+@PrimaryKeyJoinColumn(name = "user_id")
 public class Employee extends User {
 
     @NotBlank
