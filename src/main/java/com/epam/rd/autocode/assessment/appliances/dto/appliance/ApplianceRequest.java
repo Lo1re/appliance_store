@@ -52,4 +52,20 @@ public class ApplianceRequest {
     @Positive
     @Digits(integer = 12, fraction = 2)
     private BigDecimal price;
+
+    public void setName(String name) {
+        this.name = name == null ? null : name.strip();
+    }
+
+    public void setModel(String model) {
+        this.model = model == null ? null : model.strip();
+    }
+
+    public void setCharacteristic(String characteristic) {
+        this.characteristic = characteristic == null ? null : characteristic.strip();
+    }
+
+    public void setDescription(String description) {
+        this.description = description == null ? null : description.strip();
+    }
 }

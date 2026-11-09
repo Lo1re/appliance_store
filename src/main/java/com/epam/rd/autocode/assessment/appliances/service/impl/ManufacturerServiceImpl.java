@@ -45,14 +45,12 @@ public class ManufacturerServiceImpl implements ManufacturerService {
     @Override
     @Transactional
     public ManufacturerResponse create(ManufacturerRequest request) {
-        String name = request.getName().strip();
-
-        if (manufacturerRepository.existsByName(name)) {
+        if (manufacturerRepository.existsByName(request.getName())) {
             throw new ManufacturerException("manufacturer.name.duplicate");
         }
 
         Manufacturer manufacturer = new Manufacturer();
-        manufacturer.setName(name);
+        manufacturerMapper.applyRequest(request, manufacturer);
 
         Manufacturer saved = manufacturerRepository.save(manufacturer);
         return manufacturerMapper.toResponse(saved);
@@ -62,13 +60,12 @@ public class ManufacturerServiceImpl implements ManufacturerService {
     @Transactional
     public ManufacturerResponse update(Long id, ManufacturerRequest request) {
         Manufacturer manufacturer = requireManufacturer(id);
-        String name = request.getName().strip();
 
-        if (manufacturerRepository.existsByNameAndIdNot(name, id)) {
+        if (manufacturerRepository.existsByNameAndIdNot(request.getName(), id)) {
             throw new ManufacturerException("manufacturer.name.duplicate");
         }
 
-        manufacturer.setName(name);
+        manufacturerMapper.applyRequest(request, manufacturer);
         return manufacturerMapper.toResponse(manufacturer);
     }
 

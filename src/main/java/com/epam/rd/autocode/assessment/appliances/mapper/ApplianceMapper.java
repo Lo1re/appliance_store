@@ -14,6 +14,17 @@ public class ApplianceMapper {
 
     private final ModelMapper modelMapper;
 
+    public void applyRequest(ApplianceRequest request, Appliance appliance) {
+        appliance.setName(request.getName());
+        appliance.setCategory(request.getCategory());
+        appliance.setModel(request.getModel());
+        appliance.setPowerType(request.getPowerType());
+        appliance.setCharacteristic(request.getCharacteristic());
+        appliance.setDescription(request.getDescription());
+        appliance.setPower(request.getPower());
+        appliance.setPrice(request.getPrice());
+    }
+
     public ApplianceResponse toResponse(Appliance appliance) {
         ApplianceResponse response = modelMapper.map(appliance, ApplianceResponse.class);
 
@@ -22,16 +33,5 @@ public class ApplianceMapper {
         response.setManufacturerName(manufacturer.getName());
 
         return response;
-    }
-
-    public void applyRequest(ApplianceRequest request, Appliance appliance) {
-        appliance.setName(request.getName().strip());
-        appliance.setCategory(request.getCategory());
-        appliance.setModel(request.getModel().strip());
-        appliance.setPowerType(request.getPowerType());
-        appliance.setCharacteristic(request.getCharacteristic().strip());
-        appliance.setDescription(request.getDescription().strip());
-        appliance.setPower(request.getPower());
-        appliance.setPrice(request.getPrice());
     }
 }
