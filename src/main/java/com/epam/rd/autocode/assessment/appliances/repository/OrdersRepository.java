@@ -5,7 +5,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface OrdersRepository extends JpaRepository<Orders, Long> {
@@ -38,4 +41,14 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
     boolean existsByClient_Id(Long clientId);
 
     boolean existsByEmployee_Id(Long employeeId);
+    @EntityGraph(attributePaths = {"client", "employee"})
+    Page<Orders> findByClient_IdAndApproved(
+            Long clientId,
+            Boolean approved,
+            Pageable pageable
+    );
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select o from Orders o where o.id = :id")
+    Optional<Orders> findForUpdate(@Param("id") Long id);
 }
