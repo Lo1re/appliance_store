@@ -34,4 +34,17 @@ public class ApplianceMapper {
 
         return response;
     }
+    public ApplianceRequest toRequest(ApplianceResponse response) {
+        ApplianceRequest request = new ApplianceRequest();
+        request.setName(response.getName());
+        request.setModel(response.getModel());
+        request.setManufacturerId(response.getManufacturerId());
+        request.setCategory(response.getCategory());
+        request.setPowerType(response.getPowerType());
+        request.setCharacteristic(response.getCharacteristic());
+        request.setDescription(response.getDescription());
+        request.setPower(response.getPower());
+        request.setPrice(response.getPrice());
+        return request;
+    }
 }

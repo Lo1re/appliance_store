@@ -2,7 +2,8 @@ package com.epam.rd.autocode.assessment.appliances.service.impl;
 
 import com.epam.rd.autocode.assessment.appliances.dto.manufacturer.ManufacturerRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.manufacturer.ManufacturerResponse;
-import com.epam.rd.autocode.assessment.appliances.exception.ManufacturerException;
+import com.epam.rd.autocode.assessment.appliances.exception.CatalogError;
+import com.epam.rd.autocode.assessment.appliances.exception.CatalogException;
 import com.epam.rd.autocode.assessment.appliances.mapper.ManufacturerMapper;
 import com.epam.rd.autocode.assessment.appliances.model.Manufacturer;
 import com.epam.rd.autocode.assessment.appliances.repository.ApplianceRepository;
@@ -46,7 +47,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
     @Transactional
     public ManufacturerResponse create(ManufacturerRequest request) {
         if (manufacturerRepository.existsByName(request.getName())) {
-            throw new ManufacturerException("manufacturer.name.duplicate");
+            throw new CatalogException(CatalogError.MANUFACTURER_DUPLICATE_NAME);
         }
 
         Manufacturer manufacturer = new Manufacturer();
@@ -62,7 +63,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
         Manufacturer manufacturer = requireManufacturer(id);
 
         if (manufacturerRepository.existsByNameAndIdNot(request.getName(), id)) {
-            throw new ManufacturerException("manufacturer.name.duplicate");
+            throw new CatalogException(CatalogError.MANUFACTURER_DUPLICATE_NAME);
         }
 
         manufacturerMapper.applyRequest(request, manufacturer);
@@ -75,7 +76,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
         Manufacturer manufacturer = requireManufacturer(id);
 
         if (applianceRepository.existsByManufacturer_Id(id)) {
-            throw new ManufacturerException("manufacturer.in-use");
+            throw new CatalogException(CatalogError.MANUFACTURER_IN_USE);
         }
 
         manufacturerRepository.delete(manufacturer);
@@ -83,6 +84,6 @@ public class ManufacturerServiceImpl implements ManufacturerService {
 
     private Manufacturer requireManufacturer(Long id) {
         return manufacturerRepository.findById(id)
-                .orElseThrow(() -> new ManufacturerException("manufacturer.not-found"));
+                .orElseThrow(() -> new CatalogException(CatalogError.MANUFACTURER_NOT_FOUND));
     }
 }

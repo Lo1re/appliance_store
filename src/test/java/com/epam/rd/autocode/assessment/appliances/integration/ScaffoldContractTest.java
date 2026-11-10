@@ -1,11 +1,9 @@
 package com.epam.rd.autocode.assessment.appliances.integration;
 
 import com.epam.rd.autocode.assessment.appliances.aspect.LoggingServices;
-import com.epam.rd.autocode.assessment.appliances.controller.ApplianceController;
 import com.epam.rd.autocode.assessment.appliances.controller.ClientController;
 import com.epam.rd.autocode.assessment.appliances.controller.EmployeeController;
 import com.epam.rd.autocode.assessment.appliances.controller.IndexController;
-import com.epam.rd.autocode.assessment.appliances.controller.ManufacturerController;
 import com.epam.rd.autocode.assessment.appliances.controller.OrdersController;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -19,10 +17,11 @@ class ScaffoldContractTest {
 
     @Test
     void unfinishedScaffoldClassesDoNotRegisterAsSpringComponents() {
-
         var placeholders = List.of(
-                new ApplianceController(), new ClientController(), new EmployeeController(),
-                new IndexController(), new ManufacturerController(), new OrdersController(),
+                new ClientController(),
+                new EmployeeController(),
+                new IndexController(),
+                new OrdersController(),
                 new LoggingServices()
         );
 

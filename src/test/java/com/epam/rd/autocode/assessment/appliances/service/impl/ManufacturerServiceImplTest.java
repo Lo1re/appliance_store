@@ -1,9 +1,9 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
-import com.epam.rd.autocode.assessment.appliances.exception.ManufacturerException;
+import com.epam.rd.autocode.assessment.appliances.exception.CatalogException;
 import com.epam.rd.autocode.assessment.appliances.model.Manufacturer;
-import com.epam.rd.autocode.assessment.appliances.repository.ManufacturerRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.ApplianceRepository;
+import com.epam.rd.autocode.assessment.appliances.repository.ManufacturerRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,20 +19,28 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ManufacturerServiceImplTest {
-    @Mock private ManufacturerRepository repository;
-    @Mock private ApplianceRepository dependencies;
-    @InjectMocks private ManufacturerServiceImpl service;
+
+    @Mock
+    private ManufacturerRepository repository;
+
+    @Mock
+    private ApplianceRepository applianceRepository;
+
+    @InjectMocks
+    private ManufacturerServiceImpl service;
 
     @Test
     void refusesDeletionWhileReferencedAndDoesNotCallDelete() {
-        var entity = new Manufacturer();
-        entity.setId(42L);
-        when(repository.findById(42L)).thenReturn(Optional.of(entity));
-        when(dependencies.existsByManufacturer_Id(42L)).thenReturn(true);
+        var manufacturer = new Manufacturer();
+        manufacturer.setId(42L);
+
+        when(repository.findById(42L)).thenReturn(Optional.of(manufacturer));
+        when(applianceRepository.existsByManufacturer_Id(42L)).thenReturn(true);
 
         assertThatThrownBy(() -> service.delete(42L))
-                .isInstanceOf(ManufacturerException.class)
+                .isInstanceOf(CatalogException.class)
                 .hasMessage("manufacturer.in-use");
-        verify(repository, never()).delete(entity);
+
+        verify(repository, never()).delete(manufacturer);
     }
 }

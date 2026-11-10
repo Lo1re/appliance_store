@@ -2,7 +2,8 @@ package com.epam.rd.autocode.assessment.appliances.service.impl;
 
 import com.epam.rd.autocode.assessment.appliances.dto.appliance.ApplianceRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.appliance.ApplianceResponse;
-import com.epam.rd.autocode.assessment.appliances.exception.ApplianceException;
+import com.epam.rd.autocode.assessment.appliances.exception.CatalogError;
+import com.epam.rd.autocode.assessment.appliances.exception.CatalogException;
 import com.epam.rd.autocode.assessment.appliances.mapper.ApplianceMapper;
 import com.epam.rd.autocode.assessment.appliances.model.Appliance;
 import com.epam.rd.autocode.assessment.appliances.model.Manufacturer;
@@ -62,7 +63,6 @@ public class ApplianceServiceImpl implements ApplianceService {
 
         applianceMapper.applyRequest(request, appliance);
         appliance.setManufacturer(manufacturer);
-
         return applianceMapper.toResponse(appliance);
     }
 
@@ -72,7 +72,7 @@ public class ApplianceServiceImpl implements ApplianceService {
         Appliance appliance = requireAppliance(id);
 
         if (applianceInOrderRepository.existsByAppliance_Id(id)) {
-            throw new ApplianceException("appliance.in-use");
+            throw new CatalogException(CatalogError.APPLIANCE_IN_USE);
         }
 
         applianceRepository.delete(appliance);
@@ -80,11 +80,13 @@ public class ApplianceServiceImpl implements ApplianceService {
 
     private Appliance requireAppliance(Long id) {
         return applianceRepository.findById(id)
-                .orElseThrow(() -> new ApplianceException("appliance.not-found"));
+                .orElseThrow(() -> new CatalogException(CatalogError.APPLIANCE_NOT_FOUND));
     }
 
     private Manufacturer requireManufacturer(Long id) {
         return manufacturerRepository.findById(id)
-                .orElseThrow(() -> new ApplianceException("appliance.manufacturer.not-found"));
+                .orElseThrow(() -> new CatalogException(
+                        CatalogError.APPLIANCE_MANUFACTURER_NOT_FOUND
+                ));
     }
 }

@@ -20,4 +20,9 @@ public class ManufacturerMapper {
     public ManufacturerResponse toResponse(Manufacturer manufacturer) {
         return modelMapper.map(manufacturer, ManufacturerResponse.class);
     }
+    public ManufacturerRequest toRequest(ManufacturerResponse response) {
+        ManufacturerRequest request = new ManufacturerRequest();
+        request.setName(response.getName());
+        return request;
+    }
 }
