@@ -27,6 +27,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(requests -> requests
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers("/", "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/login").permitAll()
                         .requestMatchers("/employees/**", "/clients/**").hasRole("EMPLOYEE")
                         .requestMatchers(HttpMethod.GET, "/appliances", "/manufacturers")
                         .hasAnyRole("CLIENT", "EMPLOYEE")
