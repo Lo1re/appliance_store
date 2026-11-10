@@ -5,6 +5,7 @@
     <title th:text="#{order.header.list}">Orders</title>
 </head>
 <body>
+<header th:insert="~{menunavy :: navy}"></header>
 <main>
     <nav>
         <a th:href="@{/}" th:text="#{nav.home}">Home</a>
@@ -20,6 +21,8 @@
 
     <h1 th:text="#{order.header.list}">Orders</h1>
     <p th:if="${errorKey != null}" role="alert" th:text="#{${errorKey}}"></p>
+
+    <p><a th:href="@{/orders/add}" th:text="#{order.btn.new}">New order</a></p>
 
     <form th:action="@{/orders}" method="get">
         <label for="status" th:text="#{order.field.status}">Status</label>

@@ -5,6 +5,7 @@
     <title th:text="${#messages.msg(section + '.header.list')}">Accounts</title>
 </head>
 <body>
+<header th:insert="~{menunavy :: navy}"></header>
 <main>
     <nav>
         <a th:href="@{/static}" th:text="#{nav.home}">Home</a>

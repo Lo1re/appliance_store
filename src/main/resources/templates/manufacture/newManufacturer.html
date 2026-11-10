@@ -7,6 +7,7 @@
     </title>
 </head>
 <body>
+<header th:insert="~{menunavy :: navy}"></header>
 <main>
     <h1 th:text="${editing} ? #{manufacturer.btn.edit} : #{manufacturer.btn.new}">
         Manufacturer

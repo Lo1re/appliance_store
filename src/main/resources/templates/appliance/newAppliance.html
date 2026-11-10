@@ -5,6 +5,7 @@
     <title th:text="${editing} ? #{appliance.btn.edit} : #{appliance.btn.new}">Product</title>
 </head>
 <body>
+<header th:insert="~{menunavy :: navy}"></header>
 <main>
     <h1 th:text="${editing} ? #{appliance.btn.edit} : #{appliance.btn.new}">Product</h1>
 

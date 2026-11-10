@@ -6,9 +6,9 @@
     <title th:text="#{order.header.details}">Order details</title>
 </head>
 <body>
+<header th:insert="~{menunavy :: navy}"></header>
 <main>
     <a th:href="@{/orders}" th:text="#{order.header.list}">Orders</a>
-
     <h1 th:text="|#{order.header.details} #${summary.id()}|">Order details</h1>
 
     <dl>
@@ -44,6 +44,21 @@
         </tr>
         </tfoot>
     </table>
+
+    <p th:if="${summary.approved()}" th:text="#{order.edit.resets-approval}">
+        Editing this order will require approval again.
+    </p>
+
+    <a th:href="@{/orders/{id}/edit(id=${summary.id()})}" th:text="#{form.edit}">Edit</a>
+
+    <form th:if="${canApprove and !summary.approved()}"
+          th:action="@{/orders/{id}/approve(id=${summary.id()})}" method="post">
+        <button type="submit" th:text="#{order.btn.approve}">Approve</button>
+    </form>
+
+    <form th:action="@{/orders/{id}/delete(id=${summary.id()})}" method="post">
+        <button type="submit" th:text="#{form.delete}">Delete</button>
+    </form>
 </main>
 </body>
 </html>

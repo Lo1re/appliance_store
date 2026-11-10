@@ -5,6 +5,7 @@
     <title th:text="#{manufacturer.header.list}">Manufacturers</title>
 </head>
 <body>
+<header th:insert="~{menunavy :: navy}"></header>
 <main>
     <nav>
         <a th:href="@{/}">← <span th:text="#{nav.home}">Home</span></a>

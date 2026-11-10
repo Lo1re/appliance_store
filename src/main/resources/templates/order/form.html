@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${editing} ? #{order.btn.edit} : #{order.btn.new}">Order</title>
+    <script th:src="@{/js/order-form.js}" defer></script>
+</head>
+<body>
+<header th:insert="~{menunavy :: navy}"></header>
+<main>
+    <h1 th:text="${editing} ? #{order.btn.edit} : #{order.btn.new}">Order</h1>
+
+    <form th:action="@{${formAction}}" th:object="${orderForm}" method="post">
+        <ul th:if="${#fields.hasGlobalErrors()}" role="alert">
+            <li th:each="error : ${#fields.globalErrors()}" th:text="${error}"></li>
+        </ul>
+
+        <div th:if="${selectClient}">
+            <label for="clientId" th:text="#{order.field.client}">Client</label>
+            <select id="clientId" name="clientId" required>
+                <option value="" th:text="#{form.choose}">Choose an option</option>
+                <option th:each="client : ${clients}"
+                        th:value="${client.id}"
+                        th:selected="${client.id == selectedClientId}"
+                        th:text="|${client.name} — ${client.email}|"></option>
+            </select>
+        </div>
+
+        <p th:errors="*{items}" role="alert"></p>
+
+        <div id="order-items">
+            <fieldset th:each="item, row : *{items}" data-order-row>
+                <legend th:text="#{order.field.item}">Item</legend>
+                <label>
+                    <span th:text="#{appliance.field.name}">Product</span>
+                    <select th:field="*{items[__${row.index}__].applianceId}"
+                            data-field="applianceId" required>
+                        <option value="" th:text="#{form.choose}">Choose an option</option>
+                        <option th:each="product : ${products}" th:value="${product.id}"
+                                th:text="|${product.name} (${product.model})|"></option>
+                    </select>
+                </label>
+                <p th:errors="*{items[__${row.index}__].applianceId}" role="alert"></p>
+
+                <label>
+                    <span th:text="#{order.field.quantity}">Quantity</span>
+                    <input type="number" th:field="*{items[__${row.index}__].quantity}"
+                           data-field="quantity" min="1" max="10000" required>
+                </label>
+                <p th:errors="*{items[__${row.index}__].quantity}" role="alert"></p>
+
+                <button type="button" data-remove-row
+                        th:text="#{order.btn.remove-item}">Remove item</button>
+            </fieldset>
+        </div>
+
+        <button id="add-order-item" type="button"
+                th:text="#{order.btn.add-item}">Add item</button>
+        <button type="submit" th:text="#{form.save}">Save</button>
+        <a th:href="@{${cancelPath}}" th:text="#{form.cancel}">Cancel</a>
+    </form>
+
+    <template id="order-item-template">
+        <fieldset data-order-row>
+            <legend th:text="#{order.field.item}">Item</legend>
+            <label>
+                <span th:text="#{appliance.field.name}">Product</span>
+                <select data-field="applianceId" required>
+                    <option value="" th:text="#{form.choose}">Choose an option</option>
+                    <option th:each="product : ${products}" th:value="${product.id}"
+                            th:text="|${product.name} (${product.model})|"></option>
+                </select>
+            </label>
+            <label>
+                <span th:text="#{order.field.quantity}">Quantity</span>
+                <input type="number" data-field="quantity" min="1" max="10000" required>
+            </label>
+            <button type="button" data-remove-row
+                    th:text="#{order.btn.remove-item}">Remove item</button>
+        </fieldset>
+    </template>
+</main>
+</body>
+</html>
