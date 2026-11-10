@@ -3,6 +3,7 @@ package com.epam.rd.autocode.assessment.appliances.service.impl;
 import com.epam.rd.autocode.assessment.appliances.dto.client.ClientRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.client.ClientResponse;
 import com.epam.rd.autocode.assessment.appliances.dto.user.PasswordRequest;
+import com.epam.rd.autocode.assessment.appliances.exception.AccountError;
 import com.epam.rd.autocode.assessment.appliances.exception.AccountException;
 import com.epam.rd.autocode.assessment.appliances.mapper.ClientMapper;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
@@ -30,8 +31,7 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public Page<ClientResponse> findAll(String search, Pageable pageable) {
         if (search == null || search.isBlank()) {
-            return clientRepository.findAll(pageable)
-                    .map(clientMapper::toResponse);
+            return clientRepository.findAll(pageable).map(clientMapper::toResponse);
         }
 
         String query = search.strip();
@@ -50,7 +50,7 @@ public class ClientServiceImpl implements ClientService {
     public ClientResponse create(ClientRequest request, PasswordRequest password) {
         accountSupport.requireAvailableEmail(request.getEmail(), null);
 
-        Client client = new Client();
+        var client = new Client();
         clientMapper.applyRequest(request, client);
         accountSupport.setPassword(client, password.getPassword());
 
@@ -74,7 +74,7 @@ public class ClientServiceImpl implements ClientService {
         Client client = requireClient(id);
 
         if (ordersRepository.existsByClient_Id(id)) {
-            throw new AccountException("client.in-use");
+            throw new AccountException(AccountError.CLIENT_IN_USE);
         }
 
         clientRepository.delete(client);
@@ -82,6 +82,6 @@ public class ClientServiceImpl implements ClientService {
 
     private Client requireClient(Long id) {
         return clientRepository.findById(id)
-                .orElseThrow(() -> new AccountException("client.not-found"));
+                .orElseThrow(() -> new AccountException(AccountError.CLIENT_NOT_FOUND));
     }
 }

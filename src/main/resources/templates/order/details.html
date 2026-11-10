@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}"
+      th:with="summary=${order.summary()}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{order.header.details}">Order details</title>
+</head>
+<body>
+<main>
+    <a th:href="@{/orders}" th:text="#{order.header.list}">Orders</a>
+
+    <h1 th:text="|#{order.header.details} #${summary.id()}|">Order details</h1>
+
+    <dl>
+        <dt th:text="#{order.field.client}">Client</dt>
+        <dd th:text="${summary.clientName()}"></dd>
+        <dt th:text="#{order.field.employee}">Employee</dt>
+        <dd th:text="${summary.employeeName() != null ? summary.employeeName() : '—'}"></dd>
+        <dt th:text="#{order.field.status}">Status</dt>
+        <dd th:text="${summary.approved()} ? #{order.status.approved} : #{order.status.pending}">
+            Pending
+        </dd>
+    </dl>
+
+    <table>
+        <thead>
+        <tr>
+            <th scope="col" th:text="#{appliance.field.name}">Product</th>
+            <th scope="col" th:text="#{order.field.quantity}">Quantity</th>
+            <th scope="col" th:text="#{order.field.amount}">Amount</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${order.items()}">
+            <td th:text="${item.applianceName()}"></td>
+            <td th:text="${item.quantity()}"></td>
+            <td th:text="${#numbers.formatDecimal(item.amount(), 1, 2)}"></td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr>
+            <th scope="row" colspan="2" th:text="#{order.field.total}">Total</th>
+            <td th:text="${#numbers.formatDecimal(order.total(), 1, 2)}"></td>
+        </tr>
+        </tfoot>
+    </table>
+</main>
+</body>
+</html>

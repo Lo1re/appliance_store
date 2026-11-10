@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${#messages.msg(section + '.header.list')}">Accounts</title>
+</head>
+<body>
+<main>
+    <nav>
+        <a th:href="@{/static}" th:text="#{nav.home}">Home</a>
+        <a th:href="@{/clients}" th:text="#{client.header.list}">Clients</a>
+        <a th:href="@{/employees}" th:text="#{employee.header.list}">Employees</a>
+        <a lang="uk"
+           th:href="@{${basePath}(lang='uk',search=${search},sort=${sort},page=${accounts.number})}">
+            Українська
+        </a>
+        <a lang="en"
+           th:href="@{${basePath}(lang='en',search=${search},sort=${sort},page=${accounts.number})}">
+            English
+        </a>
+    </nav>
+
+    <h1 th:text="${#messages.msg(section + '.header.list')}">Accounts</h1>
+    <p th:if="${errorKey != null}" role="alert" th:text="#{${errorKey}}"></p>
+
+    <form th:action="@{${basePath}}" method="get">
+        <label for="search" th:text="#{list.search}">Search</label>
+        <input id="search" name="search" type="search" th:value="${search}">
+
+        <label for="sort" th:text="#{list.sort}">Sort by</label>
+        <select id="sort" name="sort">
+            <option value="name" th:selected="${sort == 'name'}"
+                    th:text="#{account.field.name}">Name</option>
+            <option value="email" th:selected="${sort == 'email'}"
+                    th:text="#{account.field.email}">Email</option>
+            <option value="id" th:selected="${sort == 'id'}">ID</option>
+        </select>
+        <button type="submit" th:text="#{list.search}">Search</button>
+    </form>
+
+    <p>
+        <a th:href="@{${basePath + '/add'}}"
+           th:text="${#messages.msg(section + '.btn.new')}">Create</a>
+    </p>
+
+    <table>
+        <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col" th:text="#{account.field.name}">Name</th>
+            <th scope="col" th:text="#{account.field.email}">Email</th>
+            <th scope="col" th:if="${section == 'employee'}"
+                th:text="#{employee.field.department}">Department</th>
+            <th scope="col" th:text="#{list.actions}">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="entry : ${accounts.content}">
+            <td th:text="${entry.id}"></td>
+            <td th:text="${entry.name}"></td>
+            <td th:text="${entry.email}"></td>
+            <td th:if="${section == 'employee'}" th:text="${entry.department}"></td>
+            <td>
+                <a th:href="@{${basePath + '/' + entry.id + '/edit'}}"
+                   th:text="#{form.edit}">Edit</a>
+                <form th:action="@{${basePath + '/' + entry.id + '/delete'}}" method="post">
+                    <button type="submit" th:text="#{form.delete}">Delete</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p th:if="${accounts.empty}" th:text="${#messages.msg(section + '.empty')}">
+        No accounts found.
+    </p>
+
+    <nav th:if="${accounts.totalPages > 1}">
+        <a th:if="${accounts.hasPrevious()}"
+           th:href="@{${basePath}(search=${search},sort=${sort},page=${accounts.number - 1})}"
+           th:text="#{list.previous}">Previous</a>
+        <span th:text="|${accounts.number + 1} / ${accounts.totalPages}|"></span>
+        <a th:if="${accounts.hasNext()}"
+           th:href="@{${basePath}(search=${search},sort=${sort},page=${accounts.number + 1})}"
+           th:text="#{list.next}">Next</a>
+    </nav>
+</main>
+</body>
+</html>

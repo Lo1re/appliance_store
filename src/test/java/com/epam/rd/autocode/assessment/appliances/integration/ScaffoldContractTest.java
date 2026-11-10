@@ -18,10 +18,8 @@ class ScaffoldContractTest {
     @Test
     void unfinishedScaffoldClassesDoNotRegisterAsSpringComponents() {
         var placeholders = List.of(
-                new ClientController(),
-                new EmployeeController(),
                 new IndexController(),
-                new OrdersController(),
+
                 new LoggingServices()
         );
 

@@ -3,6 +3,7 @@ package com.epam.rd.autocode.assessment.appliances.service.impl;
 import com.epam.rd.autocode.assessment.appliances.dto.employee.EmployeeRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.employee.EmployeeResponse;
 import com.epam.rd.autocode.assessment.appliances.dto.user.PasswordRequest;
+import com.epam.rd.autocode.assessment.appliances.exception.AccountError;
 import com.epam.rd.autocode.assessment.appliances.exception.AccountException;
 import com.epam.rd.autocode.assessment.appliances.mapper.EmployeeMapper;
 import com.epam.rd.autocode.assessment.appliances.model.Employee;
@@ -30,8 +31,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Page<EmployeeResponse> findAll(String search, Pageable pageable) {
         if (search == null || search.isBlank()) {
-            return employeeRepository.findAll(pageable)
-                    .map(employeeMapper::toResponse);
+            return employeeRepository.findAll(pageable).map(employeeMapper::toResponse);
         }
 
         String query = search.strip();
@@ -50,7 +50,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeResponse create(EmployeeRequest request, PasswordRequest password) {
         accountSupport.requireAvailableEmail(request.getEmail(), null);
 
-        Employee employee = new Employee();
+        var employee = new Employee();
         employeeMapper.applyRequest(request, employee);
         accountSupport.setPassword(employee, password.getPassword());
 
@@ -74,7 +74,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = requireEmployee(id);
 
         if (ordersRepository.existsByEmployee_Id(id)) {
-            throw new AccountException("employee.in-use");
+            throw new AccountException(AccountError.EMPLOYEE_IN_USE);
         }
 
         employeeRepository.delete(employee);
@@ -82,6 +82,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private Employee requireEmployee(Long id) {
         return employeeRepository.findById(id)
-                .orElseThrow(() -> new AccountException("employee.not-found"));
+                .orElseThrow(() -> new AccountException(AccountError.EMPLOYEE_NOT_FOUND));
     }
 }

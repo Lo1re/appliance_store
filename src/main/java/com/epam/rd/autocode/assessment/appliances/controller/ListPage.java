@@ -10,7 +10,16 @@ record ListPage(String sort, PageRequest pageable) {
     private static final int PAGE_SIZE = 10;
 
     static ListPage of(int page, String requestedSort, Set<String> allowedSorts) {
-        String sort = allowedSorts.contains(requestedSort) ? requestedSort : "name";
+        return of(page, requestedSort, allowedSorts, "name");
+    }
+
+    static ListPage of(
+            int page,
+            String requestedSort,
+            Set<String> allowedSorts,
+            String defaultSort
+    ) {
+        String sort = allowedSorts.contains(requestedSort) ? requestedSort : defaultSort;
         Sort ordering = Sort.by(sort);
 
         if (!"id".equals(sort)) {

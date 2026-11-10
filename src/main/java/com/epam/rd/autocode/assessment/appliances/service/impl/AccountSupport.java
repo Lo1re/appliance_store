@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
+import com.epam.rd.autocode.assessment.appliances.exception.AccountError;
 import com.epam.rd.autocode.assessment.appliances.exception.AccountException;
 import com.epam.rd.autocode.assessment.appliances.model.User;
 import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
@@ -20,7 +21,7 @@ public class AccountSupport {
                 : userRepository.existsByEmailIgnoreCase(email);
 
         if (emailTaken) {
-            throw new AccountException("user.email.duplicate");
+            throw new AccountException(AccountError.EMAIL_DUPLICATE);
         }
     }
 

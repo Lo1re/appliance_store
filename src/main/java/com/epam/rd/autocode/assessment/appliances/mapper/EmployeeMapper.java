@@ -22,4 +22,12 @@ public class EmployeeMapper {
     public EmployeeResponse toResponse(Employee employee) {
         return modelMapper.map(employee, EmployeeResponse.class);
     }
+
+    public EmployeeRequest toRequest(EmployeeResponse response) {
+        var request = new EmployeeRequest();
+        request.setName(response.getName());
+        request.setEmail(response.getEmail());
+        request.setDepartment(response.getDepartment());
+        return request;
+    }
 }

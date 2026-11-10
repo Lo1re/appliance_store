@@ -1,5 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.mapper;
 
+import com.epam.rd.autocode.assessment.appliances.dto.order.OrderItemRequest;
+import com.epam.rd.autocode.assessment.appliances.dto.order.OrderRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderResponse;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderSummary;
 import com.epam.rd.autocode.assessment.appliances.model.Employee;
@@ -8,6 +10,7 @@ import com.epam.rd.autocode.assessment.appliances.model.Orders;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -34,6 +37,21 @@ public class OrderMapper {
                 .toList();
 
         return new OrderResponse(toSummary(order), items, total);
+    }
+
+    public OrderRequest toRequest(OrderResponse response) {
+        List<OrderItemRequest> items = new ArrayList<>();
+
+        for (OrderResponse.Item item : response.items()) {
+            var requestItem = new OrderItemRequest();
+            requestItem.setApplianceId(item.applianceId());
+            requestItem.setQuantity(item.quantity());
+            items.add(requestItem);
+        }
+
+        var request = new OrderRequest();
+        request.setItems(items);
+        return request;
     }
 
     private OrderResponse.Item toItem(OrderRow row) {

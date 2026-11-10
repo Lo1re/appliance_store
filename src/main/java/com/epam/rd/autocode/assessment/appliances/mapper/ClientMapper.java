@@ -22,4 +22,12 @@ public class ClientMapper {
     public ClientResponse toResponse(Client client) {
         return modelMapper.map(client, ClientResponse.class);
     }
+
+    public ClientRequest toRequest(ClientResponse response) {
+        var request = new ClientRequest();
+        request.setName(response.getName());
+        request.setEmail(response.getEmail());
+        request.setCard(response.getCard());
+        return request;
+    }
 }
