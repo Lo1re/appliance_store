@@ -1,8 +1,8 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
 import com.epam.rd.autocode.assessment.appliances.security.CurrentActor;
+import com.epam.rd.autocode.assessment.appliances.security.OrderAccessPolicy;
 import com.epam.rd.autocode.assessment.appliances.security.StorePrincipal;
-import com.epam.rd.autocode.assessment.appliances.exception.OrderException;
 import com.epam.rd.autocode.assessment.appliances.mapper.OrderMapper;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
 import com.epam.rd.autocode.assessment.appliances.model.User;
@@ -27,6 +27,7 @@ class OrderServiceImplTest {
     private final OrderServiceImpl service = new OrderServiceImpl(
             orders,
             new CurrentActor(users),
+            new OrderAccessPolicy(),
             mock(ClientRepository.class),
             mock(ApplianceRepository.class),
             new OrderMapper()
@@ -68,8 +69,9 @@ class OrderServiceImplTest {
         signIn("CLIENT");
         when(users.findById(3L)).thenReturn(Optional.of(new Client()));
 
-        assertThatThrownBy(() -> service.approve(1L)).isInstanceOf(OrderException.class)
-                .hasMessage("order.access-denied");
+        assertThatThrownBy(() -> service.approve(1L))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessage("Access denied");
         verifyNoInteractions(orders);
     }
     @Test

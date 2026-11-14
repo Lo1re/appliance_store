@@ -1,6 +1,5 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
-import com.epam.rd.autocode.assessment.appliances.security.StorePrincipal;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderItemRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderResponse;
@@ -16,18 +15,16 @@ import com.epam.rd.autocode.assessment.appliances.model.User;
 import com.epam.rd.autocode.assessment.appliances.repository.ApplianceRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.ClientRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.OrdersRepository;
-import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
+import com.epam.rd.autocode.assessment.appliances.security.CurrentActor;
+import com.epam.rd.autocode.assessment.appliances.security.OrderAccessPolicy;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
-import com.epam.rd.autocode.assessment.appliances.security.CurrentActor;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -44,6 +41,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrdersRepository ordersRepository;
     private final CurrentActor currentActor;
+    private final OrderAccessPolicy orderAccessPolicy;
     private final ClientRepository clientRepository;
     private final ApplianceRepository applianceRepository;
     private final OrderMapper orderMapper;
@@ -74,7 +72,7 @@ public class OrderServiceImpl implements OrderService {
         Orders order = ordersRepository.findDetailedById(orderId)
                 .orElseThrow(() -> new OrderException("order.not-found"));
 
-        requireOrderAccess(currentUser, order);
+        orderAccessPolicy.requireAccess(currentUser, order);
         return orderMapper.toResponse(order, calculateTotal(order));
     }
 
@@ -98,7 +96,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse update(Long orderId, OrderRequest request) {
         User currentUser = currentActor.requireUser();
         Orders order = requireOrderForUpdate(orderId);
-        requireOrderAccess(currentUser, order);
+        orderAccessPolicy.requireAccess(currentUser, order);
 
         List<OrderRow> replacementRows = buildRows(request);
         order.getOrderRowSet().clear();
@@ -115,7 +113,7 @@ public class OrderServiceImpl implements OrderService {
     public void delete(Long orderId) {
         User currentUser = currentActor.requireUser();
         Orders order = requireOrderForUpdate(orderId);
-        requireOrderAccess(currentUser, order);
+        orderAccessPolicy.requireAccess(currentUser, order);
 
         ordersRepository.delete(order);
     }
@@ -126,9 +124,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse approve(Long orderId) {
         User currentUser = currentActor.requireUser();
 
-        if (!(currentUser instanceof Employee employee)) {
-            throw new OrderException("order.access-denied");
-        }
+        Employee employee = orderAccessPolicy.requireEmployee(currentUser);
 
         Orders order = requireOrderForUpdate(orderId);
 
@@ -145,12 +141,12 @@ public class OrderServiceImpl implements OrderService {
 
     private Client resolveClient(User currentUser, Long clientId) {
         if (currentUser instanceof Client client) {
-            if (clientId != null && !client.getId().equals(clientId)) {
-                throw new OrderException("order.access-denied");
-            }
+            orderAccessPolicy.requireClientSelection(client, clientId);
 
             return client;
         }
+
+        orderAccessPolicy.requireEmployee(currentUser);
 
         if (clientId == null) {
             throw new OrderException("order.client.required");
@@ -163,13 +159,6 @@ public class OrderServiceImpl implements OrderService {
     private Orders requireOrderForUpdate(Long orderId) {
         return ordersRepository.findForUpdate(orderId)
                 .orElseThrow(() -> new OrderException("order.not-found"));
-    }
-
-    private void requireOrderAccess(User currentUser, Orders order) {
-        if (currentUser instanceof Client client
-                && !client.getId().equals(order.getClient().getId())) {
-            throw new OrderException("order.not-found");
-        }
     }
 
     private List<OrderRow> buildRows(OrderRequest request) {

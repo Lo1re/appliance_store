@@ -257,7 +257,8 @@ class OrderSecurityIntegrationTest {
         var own = service.create(principal(client).getAccountId(), valid);
 
         assertThatThrownBy(() -> service.create(MISSING, valid))
-                .hasMessage("order.access-denied");
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessage("Access denied");
 
         assertThatThrownBy(() ->
                 service.create(null, request(item(MISSING, 1L)))
