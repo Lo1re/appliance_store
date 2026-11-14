@@ -1,7 +1,17 @@
-INSERT INTO manufacturer (name) VALUES ('Samsung');
-INSERT INTO manufacturer (name) VALUES ('Dell');
-INSERT INTO manufacturer (name) VALUES ('HP');
-INSERT INTO manufacturer (name) VALUES ('Apple');
-INSERT INTO manufacturer (name) VALUES ('Lenovo');
-INSERT INTO manufacturer (name) VALUES ('Acer');
-INSERT INTO manufacturer (name) VALUES ('AMD');
+INSERT INTO manufacturer (name)
+SELECT seed.name
+FROM (
+         VALUES
+             ('Samsung'),
+             ('Dell'),
+             ('HP'),
+             ('Apple'),
+             ('Lenovo'),
+             ('Acer'),
+             ('AMD')
+     ) AS seed(name)
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM manufacturer existing
+    WHERE existing.name = seed.name
+);
