@@ -16,8 +16,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:catalog-accounts-it",
-        "store.demo.client-password=ClientTest2026!",
-        "store.demo.employee-password=EmployeeTest2026!"
 })
 class OrderReferencesIntegrationTest {
 

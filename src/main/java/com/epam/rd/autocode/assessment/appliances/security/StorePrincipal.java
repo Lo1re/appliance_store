@@ -1,4 +1,4 @@
-package com.epam.rd.autocode.assessment.appliances.config;
+package com.epam.rd.autocode.assessment.appliances.security;
 
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;

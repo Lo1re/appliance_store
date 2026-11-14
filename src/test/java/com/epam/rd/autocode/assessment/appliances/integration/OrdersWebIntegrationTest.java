@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,119 +22,303 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@ActiveProfiles("test")
 @SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:orders-web-final",
-        "store.demo.client-password=ClientTest2026!",
-        "store.demo.employee-password=EmployeeTest2026!"
+        "spring.datasource.url=jdbc:h2:mem:orders-web-final"
 })
 @AutoConfigureMockMvc
 class OrdersWebIntegrationTest {
 
-    @Autowired private MockMvc mvc;
-    @Autowired private ApplianceRepository products;
-    @Autowired private UserRepository users;
-    @Autowired private OrdersRepository orders;
+    @Autowired
+    private MockMvc mvc;
+
+    @Autowired
+    private ApplianceRepository products;
+
+    @Autowired
+    private UserRepository users;
+
+    @Autowired
+    private OrdersRepository orders;
 
     @Test
-    void fullOrderLifecycleThroughHttpRespectsRolesOwnershipAndCsrf() throws Exception {
-        var client = login("client", "ClientTest2026!", "CLIENT");
-        var employee = login("employee", "EmployeeTest2026!", "EMPLOYEE");
-        var claw = products.search("Claw", PageRequest.of(0, 1)).getContent().get(0);
-        var bane = products.search("Bane", PageRequest.of(0, 1)).getContent().get(0);
-        long venusId = users.findByEmailIgnoreCase("venus@gmail.com").orElseThrow().getId();
+    void fullOrderLifecycleThroughHttpRespectsRolesOwnershipAndCsrf()
+            throws Exception {
+        var client = login(
+                "mercury@gmail.com",
+                "ClientDemo2026!",
+                "CLIENT"
+        );
+        var employee = login(
+                "phobos@gmail.com",
+                "EmployeeDemo2026!",
+                "EMPLOYEE"
+        );
+
+        var claw = products.search("Claw", PageRequest.of(0, 1))
+                .getContent()
+                .get(0);
+
+        var bane = products.search("Bane", PageRequest.of(0, 1))
+                .getContent()
+                .get(0);
+
+        long venusId = users.findByEmailIgnoreCase("venus@gmail.com")
+                .orElseThrow()
+                .getId();
 
         mvc.perform(get("/orders/add").session(client))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("items[0].applianceId")))
-                .andExpect(content().string(not(containsString("name=\"clientId\""))));
+                .andExpect(content().string(
+                        containsString("items[0].applianceId")
+                ))
+                .andExpect(content().string(
+                        not(containsString("name=\"clientId\""))
+                ));
+
         mvc.perform(get("/orders/add").session(employee))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("name=\"clientId\"")));
+                .andExpect(content().string(
+                        containsString("name=\"clientId\"")
+                ));
 
-        String ownPath = mvc.perform(post("/orders/add").session(client).with(csrf())
-                        .param("items[0].applianceId", claw.getId().toString())
-                        .param("items[0].quantity", "2")
-                        .param("items[1].applianceId", bane.getId().toString())
-                        .param("items[1].quantity", "1"))
+        String ownPath = mvc.perform(
+                        post("/orders/add")
+                                .session(client)
+                                .with(csrf())
+                                .param(
+                                        "items[0].applianceId",
+                                        claw.getId().toString()
+                                )
+                                .param("items[0].quantity", "2")
+                                .param(
+                                        "items[1].applianceId",
+                                        bane.getId().toString()
+                                )
+                                .param("items[1].quantity", "1")
+                )
                 .andExpect(status().is3xxRedirection())
-                .andReturn().getResponse().getRedirectedUrl();
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+
         assertThat(ownPath).matches("/orders/\\d+");
-        long ownId = Long.parseLong(ownPath.substring("/orders/".length()));
+
+        long ownId = Long.parseLong(
+                ownPath.substring("/orders/".length())
+        );
 
         mvc.perform(get(ownPath).session(client))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("4.03")))
-                .andExpect(content().string(not(containsString(ownPath + "/approve"))));
+                .andExpect(content().string(
+                        not(containsString(ownPath + "/approve"))
+                ));
+
         mvc.perform(get(ownPath + "/edit").session(client))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("items[1].quantity")));
+                .andExpect(content().string(
+                        containsString("items[1].quantity")
+                ));
 
-        mvc.perform(post(ownPath + "/approve").session(client).with(csrf()))
+        mvc.perform(
+                        post(ownPath + "/approve")
+                                .session(client)
+                                .with(csrf())
+                )
                 .andExpect(status().isForbidden());
-        mvc.perform(post(ownPath + "/approve").session(employee))
+
+        mvc.perform(
+                        post(ownPath + "/approve")
+                                .session(employee)
+                )
                 .andExpect(status().isForbidden());
-        mvc.perform(post(ownPath + "/approve").session(employee).with(csrf()))
+
+        mvc.perform(
+                        post(ownPath + "/approve")
+                                .session(employee)
+                                .with(csrf())
+                )
                 .andExpect(redirectedUrl(ownPath));
-        assertThat(orders.findById(ownId).orElseThrow().getApproved()).isTrue();
-        mvc.perform(get("/orders").session(employee).param("status", "approved").param("sort", "approved"))
+
+        assertThat(orders.findById(ownId).orElseThrow().getApproved())
+                .isTrue();
+
+        mvc.perform(
+                        get("/orders")
+                                .session(employee)
+                                .param("status", "approved")
+                                .param("sort", "approved")
+                )
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString(ownPath)));
-        mvc.perform(get("/orders").session(client).param("status", "pending"))
+
+        mvc.perform(
+                        get("/orders")
+                                .session(client)
+                                .param("status", "pending")
+                )
                 .andExpect(status().isOk())
-                .andExpect(content().string(not(containsString(ownPath))));
+                .andExpect(content().string(
+                        not(containsString(ownPath))
+                ));
 
-        mvc.perform(post(ownPath + "/edit").session(client).with(csrf())
-                        .param("items[0].applianceId", claw.getId().toString())
-                        .param("items[0].quantity", "3"))
+        mvc.perform(
+                        post(ownPath + "/edit")
+                                .session(client)
+                                .with(csrf())
+                                .param(
+                                        "items[0].applianceId",
+                                        claw.getId().toString()
+                                )
+                                .param("items[0].quantity", "3")
+                )
                 .andExpect(redirectedUrl(ownPath));
-        assertThat(orders.findById(ownId).orElseThrow().getApproved()).isFalse();
 
-        String otherPath = mvc.perform(post("/orders/add").session(employee).with(csrf())
-                        .param("clientId", Long.toString(venusId))
-                        .param("items[0].applianceId", claw.getId().toString())
-                        .param("items[0].quantity", "1"))
-                .andExpect(status().is3xxRedirection()).andReturn().getResponse().getRedirectedUrl();
+        assertThat(orders.findById(ownId).orElseThrow().getApproved())
+                .isFalse();
+
+        String otherPath = mvc.perform(
+                        post("/orders/add")
+                                .session(employee)
+                                .with(csrf())
+                                .param("clientId", Long.toString(venusId))
+                                .param(
+                                        "items[0].applianceId",
+                                        claw.getId().toString()
+                                )
+                                .param("items[0].quantity", "1")
+                )
+                .andExpect(status().is3xxRedirection())
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+
         assertThat(otherPath).matches("/orders/\\d+");
 
         mvc.perform(get(otherPath).session(client))
                 .andExpect(redirectedUrl("/orders"))
-                .andExpect(flash().attribute("errorKey", "order.not-found"));
-        mvc.perform(post(otherPath + "/delete").session(client).with(csrf()))
-                .andExpect(redirectedUrl("/orders"))
-                .andExpect(flash().attribute("errorKey", "order.not-found"));
-        mvc.perform(post(otherPath + "/edit").session(client).with(csrf())
-                        .param("items[0].applianceId", claw.getId().toString())
-                        .param("items[0].quantity", "99"))
-                .andExpect(redirectedUrl("/orders"))
-                .andExpect(flash().attribute("errorKey", "order.not-found"));
-        long otherId = Long.parseLong(otherPath.substring("/orders/".length()));
-        assertThat(orders.findDetailedById(otherId).orElseThrow().getOrderRowSet())
-                .singleElement().satisfies(row -> assertThat(row.getNumber()).isEqualTo(1L));
+                .andExpect(flash().attribute(
+                        "errorKey",
+                        "order.not-found"
+                ));
 
-        mvc.perform(post(ownPath + "/delete").session(client).with(csrf()))
+        mvc.perform(
+                        post(otherPath + "/delete")
+                                .session(client)
+                                .with(csrf())
+                )
+                .andExpect(redirectedUrl("/orders"))
+                .andExpect(flash().attribute(
+                        "errorKey",
+                        "order.not-found"
+                ));
+
+        mvc.perform(
+                        post(otherPath + "/edit")
+                                .session(client)
+                                .with(csrf())
+                                .param(
+                                        "items[0].applianceId",
+                                        claw.getId().toString()
+                                )
+                                .param("items[0].quantity", "99")
+                )
+                .andExpect(redirectedUrl("/orders"))
+                .andExpect(flash().attribute(
+                        "errorKey",
+                        "order.not-found"
+                ));
+
+        long otherId = Long.parseLong(
+                otherPath.substring("/orders/".length())
+        );
+
+        assertThat(
+                orders.findDetailedById(otherId)
+                        .orElseThrow()
+                        .getOrderRowSet()
+        )
+                .singleElement()
+                .satisfies(row ->
+                        assertThat(row.getNumber()).isEqualTo(1L)
+                );
+
+        mvc.perform(
+                        post(ownPath + "/delete")
+                                .session(client)
+                                .with(csrf())
+                )
                 .andExpect(redirectedUrl("/orders"));
+
         assertThat(orders.existsById(ownId)).isFalse();
-        mvc.perform(post(otherPath + "/delete").session(employee).with(csrf()))
+
+        mvc.perform(
+                        post(otherPath + "/delete")
+                                .session(employee)
+                                .with(csrf())
+                )
                 .andExpect(redirectedUrl("/orders"));
     }
 
     @Test
-    void rejectsEmptyAndDuplicateItemsWithoutLosingForm() throws Exception {
-        var client = login("client", "ClientTest2026!", "CLIENT");
-        String id = products.search("Claw", PageRequest.of(0, 1)).getContent().get(0).getId().toString();
-        mvc.perform(post("/orders/add").session(client).with(csrf()))
+    void rejectsEmptyAndDuplicateItemsWithoutLosingForm()
+            throws Exception {
+        var client = login(
+                "mercury@gmail.com",
+                "ClientDemo2026!",
+                "CLIENT"
+        );
+
+        String applianceId = products.search(
+                        "Claw",
+                        PageRequest.of(0, 1)
+                )
+                .getContent()
+                .get(0)
+                .getId()
+                .toString();
+
+        mvc.perform(
+                        post("/orders/add")
+                                .session(client)
+                                .with(csrf())
+                )
                 .andExpect(status().isOk())
-                .andExpect(model().attributeHasFieldErrors("orderForm", "items"));
-        mvc.perform(post("/orders/add").session(client).with(csrf())
-                        .param("items[0].applianceId", id).param("items[0].quantity", "1")
-                        .param("items[1].applianceId", id).param("items[1].quantity", "2"))
+                .andExpect(model().attributeHasFieldErrors(
+                        "orderForm",
+                        "items"
+                ));
+
+        mvc.perform(
+                        post("/orders/add")
+                                .session(client)
+                                .with(csrf())
+                                .param("items[0].applianceId", applianceId)
+                                .param("items[0].quantity", "1")
+                                .param("items[1].applianceId", applianceId)
+                                .param("items[1].quantity", "2")
+                )
                 .andExpect(status().isOk())
                 .andExpect(model().attributeHasErrors("orderForm"))
-                .andExpect(content().string(containsString("items[1].quantity")));
+                .andExpect(content().string(
+                        containsString("items[1].quantity")
+                ));
     }
 
-    private MockHttpSession login(String username, String password, String role) throws Exception {
-        return (MockHttpSession) mvc.perform(formLogin().user(username).password(password))
-                .andExpect(authenticated().withRoles(role)).andReturn().getRequest().getSession(false);
+    private MockHttpSession login(
+            String email,
+            String password,
+            String role
+    ) throws Exception {
+        return (MockHttpSession) mvc.perform(
+                        formLogin()
+                                .user(email)
+                                .password(password)
+                )
+                .andExpect(authenticated().withRoles(role))
+                .andReturn()
+                .getRequest()
+                .getSession(false);
     }
 }

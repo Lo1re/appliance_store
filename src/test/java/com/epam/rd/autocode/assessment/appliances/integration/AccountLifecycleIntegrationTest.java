@@ -17,8 +17,6 @@ import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest(properties = {
     "spring.datasource.url=jdbc:h2:mem:catalog-accounts-it",
-    "store.demo.client-password=ClientTest2026!",
-    "store.demo.employee-password=EmployeeTest2026!"
 })
 class AccountLifecycleIntegrationTest {
     private static final PageRequest PAGE = PageRequest.of(0, 30, Sort.by("name"));
