@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
+import com.epam.rd.autocode.assessment.appliances.security.CurrentActor;
 import com.epam.rd.autocode.assessment.appliances.security.StorePrincipal;
 import com.epam.rd.autocode.assessment.appliances.exception.OrderException;
 import com.epam.rd.autocode.assessment.appliances.mapper.OrderMapper;
@@ -11,6 +12,7 @@ import com.epam.rd.autocode.assessment.appliances.repository.OrdersRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -23,7 +25,10 @@ class OrderServiceImplTest {
     private final UserRepository users = mock(UserRepository.class);
     private final OrdersRepository orders = mock(OrdersRepository.class);
     private final OrderServiceImpl service = new OrderServiceImpl(
-            orders, users, mock(ClientRepository.class), mock(ApplianceRepository.class),
+            orders,
+            new CurrentActor(users),
+            mock(ClientRepository.class),
+            mock(ApplianceRepository.class),
             new OrderMapper()
     );
 
@@ -67,7 +72,27 @@ class OrderServiceImplTest {
                 .hasMessage("order.access-denied");
         verifyNoInteractions(orders);
     }
+    @Test
+    void rejectsPrincipalWithoutAccountId() {
+        var principal = new StorePrincipal(
+                null,
+                "test@example.com",
+                "unused",
+                "CLIENT"
+        );
 
+        SecurityContextHolder.getContext().setAuthentication(
+                UsernamePasswordAuthenticationToken.authenticated(
+                        principal,
+                        null,
+                        principal.getAuthorities()
+                )
+        );
+
+        denied();
+
+        verifyNoInteractions(users, orders);
+    }
     private void signIn(String role) {
         var principal = new StorePrincipal(3L, "test", "unused", role);
         SecurityContextHolder.getContext().setAuthentication(
@@ -78,7 +103,8 @@ class OrderServiceImplTest {
     }
 
     private void denied() {
-        assertThatThrownBy(() -> service.findById(1L)).isInstanceOf(OrderException.class)
-                .hasMessage("order.access-denied");
+        assertThatThrownBy(() -> service.findById(1L))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessage("Access denied");
     }
 }

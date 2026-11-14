@@ -27,6 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
+import com.epam.rd.autocode.assessment.appliances.security.CurrentActor;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -42,14 +43,14 @@ import java.util.Map;
 public class OrderServiceImpl implements OrderService {
 
     private final OrdersRepository ordersRepository;
-    private final UserRepository userRepository;
+    private final CurrentActor currentActor;
     private final ClientRepository clientRepository;
     private final ApplianceRepository applianceRepository;
     private final OrderMapper orderMapper;
 
     @Override
     public Page<OrderSummary> findAll(Boolean approved, Pageable pageable) {
-        User currentUser = requireCurrentUser();
+        User currentUser = currentActor.requireUser();
         Page<Orders> orders;
 
         if (currentUser instanceof Client client) {
@@ -69,7 +70,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse findById(Long orderId) {
-        User currentUser = requireCurrentUser();
+        User currentUser = currentActor.requireUser();
         Orders order = ordersRepository.findDetailedById(orderId)
                 .orElseThrow(() -> new OrderException("order.not-found"));
 
@@ -80,7 +81,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse create(Long clientId, OrderRequest request) {
-        User currentUser = requireCurrentUser();
+        User currentUser = currentActor.requireUser();
         Client client = resolveClient(currentUser, clientId);
         List<OrderRow> rows = buildRows(request);
 
@@ -95,7 +96,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse update(Long orderId, OrderRequest request) {
-        User currentUser = requireCurrentUser();
+        User currentUser = currentActor.requireUser();
         Orders order = requireOrderForUpdate(orderId);
         requireOrderAccess(currentUser, order);
 
@@ -112,7 +113,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public void delete(Long orderId) {
-        User currentUser = requireCurrentUser();
+        User currentUser = currentActor.requireUser();
         Orders order = requireOrderForUpdate(orderId);
         requireOrderAccess(currentUser, order);
 
@@ -123,7 +124,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     @PreAuthorize("hasRole('EMPLOYEE')")
     public OrderResponse approve(Long orderId) {
-        User currentUser = requireCurrentUser();
+        User currentUser = currentActor.requireUser();
 
         if (!(currentUser instanceof Employee employee)) {
             throw new OrderException("order.access-denied");
@@ -141,38 +142,6 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toResponse(order, calculateTotal(order));
     }
 
-    private User requireCurrentUser() {
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null
-                || !authentication.isAuthenticated()
-                || !(authentication.getPrincipal() instanceof StorePrincipal principal)) {
-            throw new OrderException("order.access-denied");
-        }
-
-        User user = userRepository.findById(principal.getAccountId())
-                .orElseThrow(() -> new OrderException("order.access-denied"));
-
-        String expectedRole;
-
-        if (user instanceof Client) {
-            expectedRole = "ROLE_CLIENT";
-        } else if (user instanceof Employee) {
-            expectedRole = "ROLE_EMPLOYEE";
-        } else {
-            throw new OrderException("order.access-denied");
-        }
-
-        boolean roleMatches = authentication.getAuthorities().stream()
-                .anyMatch(authority -> expectedRole.equals(authority.getAuthority()));
-
-        if (!roleMatches) {
-            throw new OrderException("order.access-denied");
-        }
-
-        return user;
-    }
 
     private Client resolveClient(User currentUser, Long clientId) {
         if (currentUser instanceof Client client) {

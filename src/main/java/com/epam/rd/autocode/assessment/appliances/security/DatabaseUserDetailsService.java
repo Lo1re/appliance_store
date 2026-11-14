@@ -1,7 +1,5 @@
 package com.epam.rd.autocode.assessment.appliances.security;
 
-import com.epam.rd.autocode.assessment.appliances.model.Client;
-import com.epam.rd.autocode.assessment.appliances.model.Employee;
 import com.epam.rd.autocode.assessment.appliances.model.User;
 import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,23 +31,16 @@ public class DatabaseUserDetailsService implements UserDetailsService {
                         new UsernameNotFoundException("Account not found")
                 );
 
+        AccountRole role = AccountRole.from(user)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("Account not found")
+                );
+
         return new StorePrincipal(
                 user.getId(),
                 user.getEmail(),
                 user.getPassword(),
-                roleOf(user)
+                role.name()
         );
-    }
-
-    private String roleOf(User user) {
-        if (user instanceof Client) {
-            return "CLIENT";
-        }
-
-        if (user instanceof Employee) {
-            return "EMPLOYEE";
-        }
-
-        throw new UsernameNotFoundException("Account not found");
     }
 }
