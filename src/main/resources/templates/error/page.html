@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:fragment="page(titleKey, messageKey)"
+      th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="|HTTP ${status != null ? status : 500} — ${#messages.msg(titleKey)}|">Request failed</title>
+</head>
+<body>
+<main>
+    <h1 th:text="|HTTP ${status != null ? status : 500} — ${#messages.msg(titleKey)}|">Request failed</h1>
+    <p th:text="${#messages.msg(messageKey)}">The request could not be completed.</p>
+    <a th:if="${returnPath != null}" th:href="${returnPath}" th:text="#{error.back}">Back to list</a>
+    <a th:if="${status == 401}" th:href="@{/login}" th:text="#{nav.login}">Sign in</a>
+    <a th:href="@{/}" th:text="#{nav.home}">Home</a>
+</main>
+</body>
+</html>
