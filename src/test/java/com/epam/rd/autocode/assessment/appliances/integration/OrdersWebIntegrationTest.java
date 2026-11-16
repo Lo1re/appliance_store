@@ -12,6 +12,8 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
@@ -122,6 +124,21 @@ class OrdersWebIntegrationTest {
                 ));
 
         mvc.perform(
+                        post(ownPath + "/edit")
+                                .session(client)
+                                .with(csrf())
+                                .param(
+                                        "items[0].applianceId",
+                                        claw.getId().toString()
+                                )
+                                .param("items[0].quantity", "3")
+                )
+                .andExpect(redirectedUrl(ownPath));
+
+        assertThat(orders.findById(ownId).orElseThrow().getApproved())
+                .isFalse();
+
+        mvc.perform(
                         post(ownPath + "/approve")
                                 .session(client)
                                 .with(csrf())
@@ -163,20 +180,53 @@ class OrdersWebIntegrationTest {
                         not(containsString(ownPath))
                 ));
 
-        mvc.perform(
-                        post(ownPath + "/edit")
-                                .session(client)
-                                .with(csrf())
-                                .param(
-                                        "items[0].applianceId",
-                                        claw.getId().toString()
-                                )
-                                .param("items[0].quantity", "3")
-                )
-                .andExpect(redirectedUrl(ownPath));
+        for (MockHttpSession session : List.of(client, employee)) {
+            mvc.perform(get(ownPath).session(session))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(not(containsString(
+                            "href=\"" + ownPath + "/edit\""
+                    ))))
+                    .andExpect(content().string(not(containsString(
+                            "action=\"" + ownPath + "/delete\""
+                    ))))
+                    .andExpect(content().string(not(containsString(
+                            "action=\"" + ownPath + "/approve\""
+                    ))));
 
-        assertThat(orders.findById(ownId).orElseThrow().getApproved())
-                .isFalse();
+            mvc.perform(get(ownPath + "/edit").session(session))
+                    .andExpect(redirectedUrl("/orders"))
+                    .andExpect(flash().attribute("errorKey", "order.not-editable"));
+
+            mvc.perform(post(ownPath + "/edit").session(session).with(csrf())
+                            .param("items[0].applianceId", claw.getId().toString())
+                            .param("items[0].quantity", "99"))
+                    .andExpect(redirectedUrl("/orders"))
+                    .andExpect(flash().attribute("errorKey", "order.not-editable"));
+
+            mvc.perform(post(ownPath + "/edit").session(session).with(csrf()))
+                    .andExpect(redirectedUrl("/orders"))
+                    .andExpect(flash().attribute("errorKey", "order.not-editable"));
+
+            mvc.perform(post(ownPath + "/delete").session(session).with(csrf()))
+                    .andExpect(redirectedUrl("/orders"))
+                    .andExpect(flash().attribute("errorKey", "order.not-editable"));
+        }
+
+        assertThat(orders.findById(ownId).orElseThrow().getApproved()).isTrue();
+        assertThat(orders.findDetailedById(ownId).orElseThrow().getOrderRowSet())
+                .singleElement().satisfies(row -> {
+                    assertThat(row.getNumber()).isEqualTo(3L);
+                    assertThat(row.getAmount()).isEqualByComparingTo("3.03");
+                });
+
+        mvc.perform(get(ownPath).session(client).param("lang", "uk"))
+                .andExpect(content().string(containsString(
+                        "Підтверджені замовлення не можна редагувати або видаляти."
+                )));
+        mvc.perform(get(ownPath).session(client).param("lang", "en"))
+                .andExpect(content().string(containsString(
+                        "Approved orders cannot be edited or deleted."
+                )));
 
         String otherPath = mvc.perform(
                         post("/orders/add")
@@ -244,14 +294,21 @@ class OrdersWebIntegrationTest {
                         assertThat(row.getNumber()).isEqualTo(1L)
                 );
 
-        mvc.perform(
-                        post(ownPath + "/delete")
-                                .session(client)
-                                .with(csrf())
+        String pendingPath = mvc.perform(
+                        post("/orders/add").session(client).with(csrf())
+                                .param("items[0].applianceId", claw.getId().toString())
+                                .param("items[0].quantity", "1")
                 )
-                .andExpect(redirectedUrl("/orders"));
+                .andExpect(status().is3xxRedirection())
+                .andReturn().getResponse().getRedirectedUrl();
+        assertThat(pendingPath).matches("/orders/\\d+");
+        long pendingId = Long.parseLong(pendingPath.substring("/orders/".length()));
 
-        assertThat(orders.existsById(ownId)).isFalse();
+        mvc.perform(post(pendingPath + "/delete").session(client).with(csrf()))
+                .andExpect(redirectedUrl("/orders"));
+        assertThat(orders.existsById(pendingId)).isFalse();
+
+        orders.deleteById(ownId);
 
         mvc.perform(
                         post(otherPath + "/delete")

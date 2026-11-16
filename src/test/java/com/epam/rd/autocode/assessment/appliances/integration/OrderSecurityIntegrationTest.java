@@ -178,6 +178,26 @@ class OrderSecurityIntegrationTest {
         assertThatThrownBy(() -> service.approve(ownId))
                 .isInstanceOf(AccessDeniedException.class);
 
+        Long oldRowId = own.items().get(0).id();
+        var updated = service.update(
+                ownId,
+                request(item(applianceId, 3L))
+        );
+        Long newRowId = updated.items().get(0).id();
+
+        assertThat(updated.summary().approved()).isFalse();
+        assertThat(updated.summary().employeeId()).isNull();
+        assertThat(newRowId).isNotNull().isNotEqualTo(oldRowId);
+        assertThat(rows.existsById(oldRowId)).isFalse();
+
+        assertThat(rows.findById(newRowId))
+                .get()
+                .extracting(OrderRow::getAmount)
+                .isEqualTo(new BigDecimal("3.03"));
+
+        assertThat(service.findById(ownId).total())
+                .isEqualByComparingTo("3.03");
+
         use(employee);
 
         assertThat(service.findAll(null, PAGE))
@@ -203,33 +223,33 @@ class OrderSecurityIntegrationTest {
 
         use(client);
 
-        Long oldRowId = own.items().get(0).id();
-        var updated = service.update(
-                ownId,
-                request(item(applianceId, 3L))
-        );
-        Long newRowId = updated.items().get(0).id();
-
-        assertThat(updated.summary().approved()).isFalse();
-        assertThat(updated.summary().employeeId()).isNull();
-        assertThat(newRowId).isNotNull().isNotEqualTo(oldRowId);
-        assertThat(rows.existsById(oldRowId)).isFalse();
-
-        assertThat(rows.findById(newRowId))
-                .get()
-                .extracting(OrderRow::getAmount)
-                .isEqualTo(new BigDecimal("3.03"));
-
-        assertThat(service.findById(ownId).total())
-                .isEqualByComparingTo("3.03");
-
-        service.delete(ownId);
-
-        assertThat(orders.existsById(ownId)).isFalse();
-        assertThat(rows.existsById(newRowId)).isFalse();
+        assertThatThrownBy(() -> service.update(
+                ownId, request(item(applianceId, 99L))
+        )).isInstanceOf(OrderException.class).hasMessage("order.not-editable");
+        assertThatThrownBy(() -> service.delete(ownId))
+                .isInstanceOf(OrderException.class).hasMessage("order.not-editable");
 
         use(employee);
+        assertThatThrownBy(() -> service.update(
+                ownId, request(item(applianceId, 99L))
+        )).isInstanceOf(OrderException.class).hasMessage("order.not-editable");
+        assertThatThrownBy(() -> service.delete(ownId))
+                .isInstanceOf(OrderException.class).hasMessage("order.not-editable");
+
+        var unchanged = service.findById(ownId);
+        assertThat(unchanged.summary().approved()).isTrue();
+        assertThat(unchanged.summary().employeeId())
+                .isEqualTo(principal(employee).getAccountId());
+        assertThat(unchanged.total()).isEqualByComparingTo("3.03");
+        assertThat(unchanged.items()).singleElement().satisfies(row -> {
+            assertThat(row.id()).isEqualTo(newRowId);
+            assertThat(row.quantity()).isEqualTo(3L);
+        });
+
         service.delete(otherId);
+        orders.deleteById(ownId);
+        assertThat(orders.existsById(ownId)).isFalse();
+        assertThat(rows.existsById(newRowId)).isFalse();
     }
 
     @Test

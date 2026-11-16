@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.model;
 
+import com.epam.rd.autocode.assessment.appliances.exception.OrderException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,7 +19,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Getter
@@ -46,7 +49,7 @@ public class Orders {
     @NotNull
     @OneToMany(
             cascade = CascadeType.ALL,
-            orphanRemoval = true //deleting from collections deltees from BD
+            orphanRemoval = true
     )
     @JoinColumn(name = "orders_id")
     private Set<OrderRow> orderRowSet = new HashSet<>();
@@ -54,4 +57,26 @@ public class Orders {
     @NotNull
     @Column(nullable = false)
     private Boolean approved = false;
+
+    public void assertEditable() {
+        if (Boolean.TRUE.equals(approved)) {
+            throw new OrderException("order.not-editable");
+        }
+    }
+
+    public void replaceRows(Collection<OrderRow> rows) {
+        assertEditable();
+        Set<OrderRow> replacement = new HashSet<>(rows);
+        orderRowSet.clear();
+        orderRowSet.addAll(replacement);
+    }
+
+    public void approve(Employee employee) {
+        if (Boolean.TRUE.equals(approved)) {
+            throw new OrderException("order.already-approved");
+        }
+
+        this.employee = Objects.requireNonNull(employee, "Employee is required");
+        approved = true;
+    }
 }

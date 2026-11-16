@@ -85,7 +85,7 @@ public class OrderServiceImpl implements OrderService {
 
         Orders order = new Orders();
         order.setClient(client);
-        order.getOrderRowSet().addAll(rows);
+        order.replaceRows(rows);
 
         Orders saved = ordersRepository.saveAndFlush(order);
         return orderMapper.toResponse(saved, calculateTotal(saved));
@@ -98,11 +98,8 @@ public class OrderServiceImpl implements OrderService {
         Orders order = requireOrderForUpdate(orderId);
         orderAccessPolicy.requireAccess(currentUser, order);
 
-        List<OrderRow> replacementRows = buildRows(request);
-        order.getOrderRowSet().clear();
-        order.getOrderRowSet().addAll(replacementRows);
-        order.setApproved(false);
-        order.setEmployee(null);
+        order.assertEditable();
+        order.replaceRows(buildRows(request));
 
         ordersRepository.flush();
         return orderMapper.toResponse(order, calculateTotal(order));
@@ -114,6 +111,7 @@ public class OrderServiceImpl implements OrderService {
         User currentUser = currentActor.requireUser();
         Orders order = requireOrderForUpdate(orderId);
         orderAccessPolicy.requireAccess(currentUser, order);
+        order.assertEditable();
 
         ordersRepository.delete(order);
     }
@@ -128,12 +126,7 @@ public class OrderServiceImpl implements OrderService {
 
         Orders order = requireOrderForUpdate(orderId);
 
-        if (Boolean.TRUE.equals(order.getApproved())) {
-            throw new OrderException("order.already-approved");
-        }
-
-        order.setEmployee(employee);
-        order.setApproved(true);
+        order.approve(employee);
 
         return orderMapper.toResponse(order, calculateTotal(order));
     }

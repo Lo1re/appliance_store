@@ -45,18 +45,20 @@
         </tfoot>
     </table>
 
-    <p th:if="${summary.approved()}" th:text="#{order.edit.resets-approval}">
-        Editing this order will require approval again.
+    <p th:if="${summary.approved()}" th:text="#{order.not-editable}">
+        Approved orders cannot be edited or deleted.
     </p>
 
-    <a th:href="@{/orders/{id}/edit(id=${summary.id()})}" th:text="#{form.edit}">Edit</a>
+    <a th:if="${canEdit}" th:href="@{/orders/{id}/edit(id=${summary.id()})}"
+       th:text="#{form.edit}">Edit</a>
 
-    <form th:if="${canApprove and !summary.approved()}"
+    <form th:if="${canApprove}"
           th:action="@{/orders/{id}/approve(id=${summary.id()})}" method="post">
         <button type="submit" th:text="#{order.btn.approve}">Approve</button>
     </form>
 
-    <form th:action="@{/orders/{id}/delete(id=${summary.id()})}" method="post">
+    <form th:if="${canDelete}"
+          th:action="@{/orders/{id}/delete(id=${summary.id()})}" method="post">
         <button type="submit" th:text="#{form.delete}">Delete</button>
     </form>
 </main>

@@ -2,6 +2,7 @@ package com.epam.rd.autocode.assessment.appliances.controller;
 
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderItemRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderRequest;
+import com.epam.rd.autocode.assessment.appliances.dto.order.OrderResponse;
 import com.epam.rd.autocode.assessment.appliances.exception.OrderException;
 import com.epam.rd.autocode.assessment.appliances.mapper.OrderMapper;
 import com.epam.rd.autocode.assessment.appliances.service.ApplianceService;
@@ -75,8 +76,13 @@ public class OrdersController {
 
     @GetMapping("/{id}")
     public String details(@PathVariable Long id, HttpServletRequest http, Model model) {
-        model.addAttribute("order", orderService.findById(id));
-        model.addAttribute("canApprove", http.isUserInRole("EMPLOYEE"));
+        OrderResponse order = orderService.findById(id);
+        boolean editable = !order.summary().approved();
+
+        model.addAttribute("order", order);
+        model.addAttribute("canEdit", editable);
+        model.addAttribute("canDelete", editable);
+        model.addAttribute("canApprove", http.isUserInRole("EMPLOYEE") && editable);
         return DETAILS;
     }
 
@@ -89,7 +95,7 @@ public class OrdersController {
 
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, HttpServletRequest http, Model model) {
-        OrderRequest request = orderMapper.toRequest(orderService.findById(id));
+        OrderRequest request = orderMapper.toRequest(requireEditableOrder(id));
         model.addAttribute("orderForm", request);
         return renderForm(request, id, null, http, model);
     }
@@ -104,6 +110,10 @@ public class OrdersController {
             Model model,
             RedirectAttributes redirect
     ) {
+        if (id != null) {
+            requireEditableOrder(id);
+        }
+
         if (errors.hasErrors()) {
             return renderForm(request, id, clientId, http, model);
         }
@@ -135,6 +145,16 @@ public class OrdersController {
         orderService.approve(id);
         redirect.addAttribute("orderId", id);
         return REDIRECT + "/{orderId}";
+    }
+
+    private OrderResponse requireEditableOrder(Long id) {
+        OrderResponse order = orderService.findById(id);
+
+        if (order.summary().approved()) {
+            throw new OrderException("order.not-editable");
+        }
+
+        return order;
     }
 
     private String renderForm(
