@@ -1,6 +1,8 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
 import com.epam.rd.autocode.assessment.appliances.aspect.Loggable;
+import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceBoundary;
+import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceOperation;
 import com.epam.rd.autocode.assessment.appliances.logging.BusinessAction;
 import com.epam.rd.autocode.assessment.appliances.logging.BusinessAudit;
 import com.epam.rd.autocode.assessment.appliances.dto.employee.EmployeeRequest;
@@ -59,6 +61,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional
     @Loggable
+    @PersistenceBoundary(PersistenceOperation.ACCOUNT_WRITE)
     public EmployeeResponse create(EmployeeRequest request, PasswordRequest password) {
         var employee = new Employee();
         employeeMapper.applyRequest(request, employee);
@@ -73,6 +76,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional
     @Loggable
+    @PersistenceBoundary(PersistenceOperation.ACCOUNT_WRITE)
     public EmployeeResponse update(Long id, EmployeeRequest request) {
         Employee employee = requireEmployee(id);
         employeeMapper.applyRequest(request, employee);
@@ -84,6 +88,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional
     @Loggable
+    @PersistenceBoundary(PersistenceOperation.EMPLOYEE_DELETE)
     public void delete(Long id) {
         employeeRepository.findAllForDeletionLock();
         var actor = currentActor.requireUser();

@@ -1,6 +1,8 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
 import com.epam.rd.autocode.assessment.appliances.aspect.Loggable;
+import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceBoundary;
+import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceOperation;
 import com.epam.rd.autocode.assessment.appliances.logging.BusinessAction;
 import com.epam.rd.autocode.assessment.appliances.logging.BusinessAudit;
 import com.epam.rd.autocode.assessment.appliances.dto.client.ClientRequest;
@@ -55,6 +57,7 @@ public class ClientServiceImpl implements ClientService {
     @Override
     @Transactional
     @Loggable
+    @PersistenceBoundary(PersistenceOperation.ACCOUNT_WRITE)
     public ClientResponse create(ClientRequest request, PasswordRequest password) {
         var client = new Client();
         clientMapper.applyRequest(request, client);
@@ -69,6 +72,7 @@ public class ClientServiceImpl implements ClientService {
     @Override
     @Transactional
     @Loggable
+    @PersistenceBoundary(PersistenceOperation.ACCOUNT_WRITE)
     public ClientResponse update(Long id, ClientRequest request) {
         Client client = requireClient(id);
         clientMapper.applyRequest(request, client);
@@ -80,6 +84,7 @@ public class ClientServiceImpl implements ClientService {
     @Override
     @Transactional
     @Loggable
+    @PersistenceBoundary(PersistenceOperation.CLIENT_DELETE)
     public void delete(Long id) {
         Client client = requireClient(id);
 

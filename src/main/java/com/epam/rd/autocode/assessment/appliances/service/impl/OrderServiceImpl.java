@@ -1,6 +1,8 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
 import com.epam.rd.autocode.assessment.appliances.aspect.Loggable;
+import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceBoundary;
+import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceOperation;
 import com.epam.rd.autocode.assessment.appliances.logging.BusinessAction;
 import com.epam.rd.autocode.assessment.appliances.logging.BusinessAudit;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderRequest;
@@ -94,6 +96,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     @Loggable
+    @PersistenceBoundary(PersistenceOperation.ORDER_WRITE)
     public OrderResponse create(Long clientId, OrderRequest request) {
         User currentUser = currentActor.requireUser();
         Client client = resolveClient(currentUser, clientId);
@@ -111,6 +114,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     @Loggable
+    @PersistenceBoundary(PersistenceOperation.ORDER_WRITE)
     public OrderResponse update(Long orderId, OrderRequest request) {
         User currentUser = currentActor.requireUser();
         Orders order = requireOrderForUpdate(orderId);
@@ -127,6 +131,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     @Loggable
+    @PersistenceBoundary(PersistenceOperation.ORDER_DELETE)
     public void delete(Long orderId) {
         User currentUser = currentActor.requireUser();
         Orders order = requireOrderForUpdate(orderId);
@@ -141,6 +146,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     @Loggable
     @PreAuthorize("hasRole('EMPLOYEE')")
+    @PersistenceBoundary(PersistenceOperation.ORDER_WRITE)
     public OrderResponse approve(Long orderId) {
         User currentUser = currentActor.requireUser();
 

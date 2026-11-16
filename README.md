@@ -129,3 +129,19 @@ Unexpected failures retain exception/cause types and stack frames, but arbitrary
 
 
 HTTP completion severity is INFO for success/redirect, WARN for 4xx and ERROR for 5xx. DEBUG records request start and safe sizes. TRACE adds only boolean header-presence/async diagnostics; it is disabled by default. To temporarily enable it, set `logging.level.com.epam.rd.autocode.assessment.appliances.logging=TRACE` in local properties. TRACE does not enable credential/body logging.
+
+
+### Database constraint conflicts
+
+Write methods declare `@PersistenceBoundary` with an explicit operation. Its aspect wraps
+the transaction advisor and translates only known unique/FK constraints after rollback.
+Existing field errors are reused for duplicate emails/names and references removed during
+a write; referenced deletions produce the existing conflict response. Unknown constraints,
+CHECK/NOT NULL failures and missing metadata remain server errors. The original exception
+is retained as the cause, without exposing its database message to the user.
+
+If a method joins an outer transaction, translation is deferred to that transaction's
+boundary: the inner aspect preserves the original failure. Future orchestration methods
+must explicitly declare their own boundary. No independent transaction is started to hide
+a failed transaction. H2 tests cover rollback, commit callbacks, FK rejection and joined
+transactions; PostgreSQL concurrency still requires verification against PostgreSQL.

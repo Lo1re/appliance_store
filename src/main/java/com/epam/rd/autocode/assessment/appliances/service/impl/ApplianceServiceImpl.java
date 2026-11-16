@@ -1,6 +1,8 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
 import com.epam.rd.autocode.assessment.appliances.aspect.Loggable;
+import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceBoundary;
+import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceOperation;
 import com.epam.rd.autocode.assessment.appliances.logging.BusinessAction;
 import com.epam.rd.autocode.assessment.appliances.logging.BusinessAudit;
 import com.epam.rd.autocode.assessment.appliances.dto.appliance.ApplianceRequest;
@@ -53,6 +55,7 @@ public class ApplianceServiceImpl implements ApplianceService {
     @Override
     @Transactional
     @Loggable
+    @PersistenceBoundary(PersistenceOperation.APPLIANCE_WRITE)
     public ApplianceResponse create(ApplianceRequest request) {
         Manufacturer manufacturer = requireManufacturer(request.getManufacturerId());
 
@@ -68,6 +71,7 @@ public class ApplianceServiceImpl implements ApplianceService {
     @Override
     @Transactional
     @Loggable
+    @PersistenceBoundary(PersistenceOperation.APPLIANCE_WRITE)
     public ApplianceResponse update(Long id, ApplianceRequest request) {
         Appliance appliance = requireAppliance(id);
         Manufacturer manufacturer = requireManufacturer(request.getManufacturerId());
@@ -81,6 +85,7 @@ public class ApplianceServiceImpl implements ApplianceService {
     @Override
     @Transactional
     @Loggable
+    @PersistenceBoundary(PersistenceOperation.APPLIANCE_DELETE)
     public void delete(Long id) {
         Appliance appliance = requireAppliance(id);
 

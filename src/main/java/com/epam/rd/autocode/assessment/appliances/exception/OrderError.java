@@ -1,6 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.exception;
 
 public enum OrderError implements ErrorCode {
+    EMPLOYEE_UNAVAILABLE("order.employee.unavailable", ErrorKind.CONFLICT),
     NOT_FOUND("order.not-found", ErrorKind.NOT_FOUND),
     NOT_EDITABLE("order.not-editable", ErrorKind.BUSINESS_RULE),
     ALREADY_APPROVED("order.already-approved", ErrorKind.BUSINESS_RULE),

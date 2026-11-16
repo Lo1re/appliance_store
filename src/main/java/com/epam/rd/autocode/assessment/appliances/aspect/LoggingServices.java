@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 @RequiredArgsConstructor
-@Order(Ordered.LOWEST_PRECEDENCE - 10)
+@Order(Ordered.LOWEST_PRECEDENCE - 30)
 public class LoggingServices {
     private final OperationCompletionLogger completionLogger;
 

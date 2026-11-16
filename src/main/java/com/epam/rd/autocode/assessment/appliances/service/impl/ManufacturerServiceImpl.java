@@ -1,6 +1,8 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
 import com.epam.rd.autocode.assessment.appliances.aspect.Loggable;
+import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceBoundary;
+import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceOperation;
 import com.epam.rd.autocode.assessment.appliances.logging.BusinessAction;
 import com.epam.rd.autocode.assessment.appliances.logging.BusinessAudit;
 import com.epam.rd.autocode.assessment.appliances.dto.manufacturer.ManufacturerRequest;
@@ -54,6 +56,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
     @Override
     @Transactional
     @Loggable
+    @PersistenceBoundary(PersistenceOperation.MANUFACTURER_WRITE)
     public ManufacturerResponse create(ManufacturerRequest request) {
         if (manufacturerRepository.existsByName(request.getName())) {
             throw new CatalogException(CatalogError.MANUFACTURER_DUPLICATE_NAME);
@@ -70,6 +73,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
     @Override
     @Transactional
     @Loggable
+    @PersistenceBoundary(PersistenceOperation.MANUFACTURER_WRITE)
     public ManufacturerResponse update(Long id, ManufacturerRequest request) {
         Manufacturer manufacturer = requireManufacturer(id);
 
@@ -85,6 +89,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
     @Override
     @Transactional
     @Loggable
+    @PersistenceBoundary(PersistenceOperation.MANUFACTURER_DELETE)
     public void delete(Long id) {
         Manufacturer manufacturer = requireManufacturer(id);
 
