@@ -1,6 +1,8 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
 import com.epam.rd.autocode.assessment.appliances.aspect.Loggable;
+import com.epam.rd.autocode.assessment.appliances.logging.BusinessAction;
+import com.epam.rd.autocode.assessment.appliances.logging.BusinessAudit;
 import com.epam.rd.autocode.assessment.appliances.dto.employee.EmployeeRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.employee.EmployeeResponse;
 import com.epam.rd.autocode.assessment.appliances.dto.user.PasswordRequest;
@@ -35,6 +37,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final CurrentActor currentActor;
     private final EmployeeDeletionPolicy deletionPolicy;
 
+    private final BusinessAudit audit;
+
     @Override
     public Page<EmployeeResponse> findAll(String search, Pageable pageable) {
         if (search == null || search.isBlank()) {
@@ -62,6 +66,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         credentials.setPassword(employee, password.getPassword());
 
         Employee saved = employeeRepository.save(employee);
+        audit.record(BusinessAction.EMPLOYEE_CREATED, saved.getId());
         return employeeMapper.toResponse(saved);
     }
 
@@ -72,6 +77,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = requireEmployee(id);
         employeeMapper.applyRequest(request, employee);
         credentials.assignEmail(employee, request.getEmail());
+        audit.record(BusinessAction.EMPLOYEE_UPDATED, employee.getId());
         return employeeMapper.toResponse(employee);
     }
 
@@ -87,6 +93,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         deletionPolicy.requireAllowed(actor, employee, employeeCount, hasOrders);
         employeeRepository.delete(employee);
+        audit.record(BusinessAction.EMPLOYEE_DELETED, employee.getId());
     }
 
     private Employee requireEmployee(Long id) {

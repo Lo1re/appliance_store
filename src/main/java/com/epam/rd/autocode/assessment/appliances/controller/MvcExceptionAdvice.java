@@ -1,6 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
 
 import com.epam.rd.autocode.assessment.appliances.web.error.MvcErrorViews;
+import com.epam.rd.autocode.assessment.appliances.logging.SafeFailure;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +39,7 @@ public class MvcExceptionAdvice {
         }
 
         if (status.is5xxServerError()) {
-            log.error("Unexpected MVC failure (type={})", exception.getClass().getSimpleName(), exception);
+            log.error("Unexpected MVC failure (type={})", exception.getClass().getSimpleName(), SafeFailure.snapshot(exception));
         } else {
             log.debug("MVC request rejected (status={}, type={})", status.value(),
                     exception.getClass().getSimpleName());

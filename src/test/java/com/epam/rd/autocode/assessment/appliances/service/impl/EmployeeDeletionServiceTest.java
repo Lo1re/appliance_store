@@ -1,6 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
 import com.epam.rd.autocode.assessment.appliances.mapper.EmployeeMapper;
+import com.epam.rd.autocode.assessment.appliances.logging.BusinessAudit;
 import com.epam.rd.autocode.assessment.appliances.model.Employee;
 import com.epam.rd.autocode.assessment.appliances.repository.EmployeeRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.OrdersRepository;
@@ -22,7 +23,7 @@ class EmployeeDeletionServiceTest {
         when(repository.findById(2L)).thenReturn(Optional.of(target));
         when(repository.count()).thenReturn(2L);
         var service = new EmployeeServiceImpl(repository, orders, mock(EmployeeMapper.class),
-                mock(AccountCredentialsService.class), currentActor, new EmployeeDeletionPolicy());
+                mock(AccountCredentialsService.class), currentActor, new EmployeeDeletionPolicy(), mock(BusinessAudit.class));
         service.delete(2L);
         var sequence = inOrder(repository, currentActor, orders);
         sequence.verify(repository).findAllForDeletionLock();

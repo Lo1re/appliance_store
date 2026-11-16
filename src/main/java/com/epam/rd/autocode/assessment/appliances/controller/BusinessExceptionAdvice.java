@@ -2,6 +2,7 @@ package com.epam.rd.autocode.assessment.appliances.controller;
 
 import com.epam.rd.autocode.assessment.appliances.exception.BusinessException;
 import com.epam.rd.autocode.assessment.appliances.web.error.MvcErrorViews;
+import com.epam.rd.autocode.assessment.appliances.logging.SafeFailure;
 import org.springframework.core.annotation.Order;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -32,7 +33,7 @@ public class BusinessExceptionAdvice {
     public ModelAndView handleDatabaseError(DataIntegrityViolationException exception,
                                             HandlerMethod handler) {
         log.error("Database integrity error in {}.{}", handler.getBeanType().getSimpleName(),
-                handler.getMethod().getName(), exception);
+                handler.getMethod().getName(), SafeFailure.snapshot(exception));
         var view = new ModelAndView(section(handler).errorView());
         view.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
         view.addObject("status", HttpStatus.INTERNAL_SERVER_ERROR.value());

@@ -1,6 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
 import com.epam.rd.autocode.assessment.appliances.mapper.OrderMapper;
+import com.epam.rd.autocode.assessment.appliances.logging.BusinessAudit;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
 import com.epam.rd.autocode.assessment.appliances.model.User;
 import com.epam.rd.autocode.assessment.appliances.repository.ApplianceRepository;
@@ -30,7 +31,8 @@ class OrderServiceImplTest {
             new OrderAccessPolicy(),
             mock(ClientRepository.class),
             new OrderRowsFactory(mock(ApplianceRepository.class)),
-            Mappers.getMapper(OrderMapper.class)
+            Mappers.getMapper(OrderMapper.class),
+            mock(BusinessAudit.class)
     );
 
     @AfterEach

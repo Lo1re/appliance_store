@@ -1,6 +1,8 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
 import com.epam.rd.autocode.assessment.appliances.aspect.Loggable;
+import com.epam.rd.autocode.assessment.appliances.logging.BusinessAction;
+import com.epam.rd.autocode.assessment.appliances.logging.BusinessAudit;
 import com.epam.rd.autocode.assessment.appliances.dto.appliance.ApplianceRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.appliance.ApplianceResponse;
 import com.epam.rd.autocode.assessment.appliances.exception.CatalogError;
@@ -32,6 +34,8 @@ public class ApplianceServiceImpl implements ApplianceService {
     private final OrderRowRepository applianceInOrderRepository;
     private final ApplianceMapper applianceMapper;
 
+    private final BusinessAudit audit;
+
     @Override
     @PreAuthorize("hasAnyRole('CLIENT', 'EMPLOYEE')")
     public Page<ApplianceResponse> findAll(String search, Pageable pageable) {
@@ -57,6 +61,7 @@ public class ApplianceServiceImpl implements ApplianceService {
         appliance.setManufacturer(manufacturer);
 
         Appliance saved = applianceRepository.save(appliance);
+        audit.record(BusinessAction.APPLIANCE_CREATED, saved.getId());
         return applianceMapper.toResponse(saved);
     }
 
@@ -69,6 +74,7 @@ public class ApplianceServiceImpl implements ApplianceService {
 
         applianceMapper.applyRequest(request, appliance);
         appliance.setManufacturer(manufacturer);
+        audit.record(BusinessAction.APPLIANCE_UPDATED, appliance.getId());
         return applianceMapper.toResponse(appliance);
     }
 
@@ -83,6 +89,7 @@ public class ApplianceServiceImpl implements ApplianceService {
         }
 
         applianceRepository.delete(appliance);
+        audit.record(BusinessAction.APPLIANCE_DELETED, appliance.getId());
     }
 
     private Appliance requireAppliance(Long id) {

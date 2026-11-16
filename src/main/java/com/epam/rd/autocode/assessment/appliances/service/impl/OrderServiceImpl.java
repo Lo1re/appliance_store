@@ -1,6 +1,8 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
 import com.epam.rd.autocode.assessment.appliances.aspect.Loggable;
+import com.epam.rd.autocode.assessment.appliances.logging.BusinessAction;
+import com.epam.rd.autocode.assessment.appliances.logging.BusinessAudit;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderResponse;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderSummary;
@@ -40,6 +42,8 @@ public class OrderServiceImpl implements OrderService {
     private final ClientRepository clientRepository;
     private final OrderRowsFactory orderRowsFactory;
     private final OrderMapper orderMapper;
+
+    private final BusinessAudit audit;
 
     @Override
     public Page<OrderSummary> findAll(Boolean approved, Pageable pageable) {
@@ -100,6 +104,7 @@ public class OrderServiceImpl implements OrderService {
         order.replaceRows(rows);
 
         Orders saved = ordersRepository.saveAndFlush(order);
+        audit.record(BusinessAction.ORDER_CREATED, saved.getId());
         return orderMapper.toResponse(saved, calculateTotal(saved));
     }
 
@@ -115,6 +120,7 @@ public class OrderServiceImpl implements OrderService {
         order.replaceRows(orderRowsFactory.create(request));
 
         ordersRepository.flush();
+        audit.record(BusinessAction.ORDER_UPDATED, order.getId());
         return orderMapper.toResponse(order, calculateTotal(order));
     }
 
@@ -128,6 +134,7 @@ public class OrderServiceImpl implements OrderService {
         order.assertEditable();
 
         ordersRepository.delete(order);
+        audit.record(BusinessAction.ORDER_DELETED, order.getId());
     }
 
     @Override
@@ -142,6 +149,7 @@ public class OrderServiceImpl implements OrderService {
         Orders order = requireOrderForUpdate(orderId);
 
         order.approve(employee);
+        audit.record(BusinessAction.ORDER_APPROVED, order.getId());
 
         return orderMapper.toResponse(order, calculateTotal(order));
     }

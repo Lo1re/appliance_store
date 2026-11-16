@@ -115,3 +115,17 @@ These are public disposable demo credentials, not production secrets. Each accou
 MapStruct 1.6.3 generates Spring mapper implementations during Maven compilation. Lombok and its MapStruct binding are configured in the compiler annotation processor path. Reload Maven in IDEA and enable annotation processing. Do not edit or commit `target/generated-sources`. Runtime ModelMapper is no longer used. Request mappings preserve IDs, credential fields and relationships managed by services.
 
 No build/test result is implied by this change. Run Maven `test` in IDEA after reloading dependencies, then the normal `verify` coverage check when ready.
+
+
+### Logging
+
+The `local` profile writes application DEBUG logs to the IDEA console and `logs/store.log`, relative to the run configuration's working directory. The file is created automatically. Archives go to `logs/archive`, rotate daily or after 10 MB, keep 14 days, and have a 200 MB archive cap. The active file is additional to that archive cap. The `test` profile uses console logging only. No extra profile or database is needed.
+
+Each request gets a server-generated UUID returned in `X-Request-ID` and included in log lines as `requestId`. HTTP logs contain method, safe path, route pattern, controller method when available, status/outcome, duration, client IP and request byte count (-1 when unknown). Known routes use their template instead of actual path parameters. Unknown/wildcard routes show a sanitized path, with sensitive, encoded or long segments hidden. Query parameters, request/response bodies, cookie values and authorization values are never recorded. An unknown route can have `route=-` while `path=/appliances1` identifies the typo.
+
+`@Loggable` records technical service execution. Separate business events record action, actor ID, entity ID and the captured request ID only after the actual enclosing transaction commits; rollback produces no business-success record. Security logs record successful/failed authentication, logout and authorization rejection without printing principals or credentials. Forwarded IP headers are not trusted for logging.
+
+Unexpected failures retain exception/cause types and stack frames, but arbitrary exception messages are stripped from logged stack traces because SQL and other failures can embed credentials or submitted values. User-facing pages remain localized and do not display those details. Treat log files as operational data; they are excluded from Git.
+
+
+HTTP completion severity is INFO for success/redirect, WARN for 4xx and ERROR for 5xx. DEBUG records request start and safe sizes. TRACE adds only boolean header-presence/async diagnostics; it is disabled by default. To temporarily enable it, set `logging.level.com.epam.rd.autocode.assessment.appliances.logging=TRACE` in local properties. TRACE does not enable credential/body logging.

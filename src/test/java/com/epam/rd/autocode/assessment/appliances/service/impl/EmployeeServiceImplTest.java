@@ -10,6 +10,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import com.epam.rd.autocode.assessment.appliances.logging.BusinessAudit;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EmployeeServiceImplTest {
+    @Mock private BusinessAudit audit;
     @Mock private EmployeeRepository repository;
     @Mock private OrdersRepository dependencies;
     @Mock private CurrentActor currentActor;

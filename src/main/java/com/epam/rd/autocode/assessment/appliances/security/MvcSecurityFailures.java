@@ -38,8 +38,12 @@ public class MvcSecurityFailures implements AuthenticationEntryPoint, AccessDeni
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response,
                        AccessDeniedException exception) throws IOException {
-        response.sendError(isUnmappedRead(request)
-                ? HttpServletResponse.SC_NOT_FOUND : HttpServletResponse.SC_FORBIDDEN);
+        int status = isUnmappedRead(request)
+                ? HttpServletResponse.SC_NOT_FOUND : HttpServletResponse.SC_FORBIDDEN;
+        if (status == HttpServletResponse.SC_FORBIDDEN) {
+            log.warn("Authorization rejected (status={}, accountId={})", status, SecurityLogContext.currentAccountId());
+        }
+        response.sendError(status);
     }
 
     private boolean isUnmappedRead(HttpServletRequest request) {

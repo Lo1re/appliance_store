@@ -1,6 +1,8 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
 import com.epam.rd.autocode.assessment.appliances.aspect.Loggable;
+import com.epam.rd.autocode.assessment.appliances.logging.BusinessAction;
+import com.epam.rd.autocode.assessment.appliances.logging.BusinessAudit;
 import com.epam.rd.autocode.assessment.appliances.dto.client.ClientRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.client.ClientResponse;
 import com.epam.rd.autocode.assessment.appliances.dto.user.PasswordRequest;
@@ -31,6 +33,8 @@ public class ClientServiceImpl implements ClientService {
     private final ClientMapper clientMapper;
     private final AccountCredentialsService credentials;
 
+    private final BusinessAudit audit;
+
     @Override
     public Page<ClientResponse> findAll(String search, Pageable pageable) {
         if (search == null || search.isBlank()) {
@@ -58,6 +62,7 @@ public class ClientServiceImpl implements ClientService {
         credentials.setPassword(client, password.getPassword());
 
         Client saved = clientRepository.save(client);
+        audit.record(BusinessAction.CLIENT_CREATED, saved.getId());
         return clientMapper.toResponse(saved);
     }
 
@@ -68,6 +73,7 @@ public class ClientServiceImpl implements ClientService {
         Client client = requireClient(id);
         clientMapper.applyRequest(request, client);
         credentials.assignEmail(client, request.getEmail());
+        audit.record(BusinessAction.CLIENT_UPDATED, client.getId());
         return clientMapper.toResponse(client);
     }
 
@@ -82,6 +88,7 @@ public class ClientServiceImpl implements ClientService {
         }
 
         clientRepository.delete(client);
+        audit.record(BusinessAction.CLIENT_DELETED, client.getId());
     }
 
     private Client requireClient(Long id) {

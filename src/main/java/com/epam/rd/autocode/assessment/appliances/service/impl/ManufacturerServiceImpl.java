@@ -1,6 +1,8 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
 import com.epam.rd.autocode.assessment.appliances.aspect.Loggable;
+import com.epam.rd.autocode.assessment.appliances.logging.BusinessAction;
+import com.epam.rd.autocode.assessment.appliances.logging.BusinessAudit;
 import com.epam.rd.autocode.assessment.appliances.dto.manufacturer.ManufacturerRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.manufacturer.ManufacturerResponse;
 import com.epam.rd.autocode.assessment.appliances.exception.CatalogError;
@@ -28,6 +30,8 @@ public class ManufacturerServiceImpl implements ManufacturerService {
     private final ManufacturerRepository manufacturerRepository;
     private final ApplianceRepository applianceRepository;
     private final ManufacturerMapper manufacturerMapper;
+
+    private final BusinessAudit audit;
 
     @Override
     @PreAuthorize("hasAnyRole('CLIENT', 'EMPLOYEE')")
@@ -59,6 +63,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
         manufacturerMapper.applyRequest(request, manufacturer);
 
         Manufacturer saved = manufacturerRepository.save(manufacturer);
+        audit.record(BusinessAction.MANUFACTURER_CREATED, saved.getId());
         return manufacturerMapper.toResponse(saved);
     }
 
@@ -73,6 +78,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
         }
 
         manufacturerMapper.applyRequest(request, manufacturer);
+        audit.record(BusinessAction.MANUFACTURER_UPDATED, manufacturer.getId());
         return manufacturerMapper.toResponse(manufacturer);
     }
 
@@ -87,6 +93,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
         }
 
         manufacturerRepository.delete(manufacturer);
+        audit.record(BusinessAction.MANUFACTURER_DELETED, manufacturer.getId());
     }
 
     private Manufacturer requireManufacturer(Long id) {
