@@ -13,14 +13,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest(properties = {
     "spring.datasource.url=jdbc:h2:mem:catalog-accounts-it",
 })
-@WithMockUser(roles = "EMPLOYEE")
+@WithUserDetails("phobos@gmail.com")
 class AccountLifecycleIntegrationTest {
     private static final PageRequest PAGE = PageRequest.of(0, 30, Sort.by("name"));
     @Autowired ClientService clients;

@@ -11,6 +11,8 @@ import com.epam.rd.autocode.assessment.appliances.model.Employee;
 import com.epam.rd.autocode.assessment.appliances.repository.EmployeeRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.OrdersRepository;
 import com.epam.rd.autocode.assessment.appliances.service.EmployeeService;
+import com.epam.rd.autocode.assessment.appliances.service.policy.EmployeeDeletionPolicy;
+import com.epam.rd.autocode.assessment.appliances.security.CurrentActor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +32,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final OrdersRepository ordersRepository;
     private final EmployeeMapper employeeMapper;
     private final AccountCredentialsService credentials;
+    private final CurrentActor currentActor;
+    private final EmployeeDeletionPolicy deletionPolicy;
 
     @Override
     public Page<EmployeeResponse> findAll(String search, Pageable pageable) {
@@ -75,12 +79,13 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     @Loggable
     public void delete(Long id) {
+        employeeRepository.findAllForDeletionLock();
+        var actor = currentActor.requireUser();
         Employee employee = requireEmployee(id);
+        long employeeCount = employeeRepository.count();
+        boolean hasOrders = ordersRepository.existsByEmployee_Id(id);
 
-        if (ordersRepository.existsByEmployee_Id(id)) {
-            throw new AccountException(AccountError.EMPLOYEE_IN_USE);
-        }
-
+        deletionPolicy.requireAllowed(actor, employee, employeeCount, hasOrders);
         employeeRepository.delete(employee);
     }
 
