@@ -9,9 +9,9 @@ import com.epam.rd.autocode.assessment.appliances.service.ManufacturerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,9 +40,9 @@ class ManufacturerControllerTest {
 
     @BeforeEach
     void setUp() {
-        var mapper = new ManufacturerMapper(new ModelMapper());
+        var mapper = Mappers.getMapper(ManufacturerMapper.class);
         mvc = MockMvcBuilders.standaloneSetup(new ManufacturerController(service, mapper))
-                .setControllerAdvice(new CatalogExceptionAdvice())
+                .setControllerAdvice(new BusinessExceptionAdvice())
                 .build();
     }
 

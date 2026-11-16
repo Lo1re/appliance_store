@@ -3,26 +3,16 @@ package com.epam.rd.autocode.assessment.appliances.mapper;
 import com.epam.rd.autocode.assessment.appliances.dto.manufacturer.ManufacturerRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.manufacturer.ManufacturerResponse;
 import com.epam.rd.autocode.assessment.appliances.model.Manufacturer;
-import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
-@Component
-@RequiredArgsConstructor
-public class ManufacturerMapper {
+@Mapper(config = MappingConfig.class)
+public interface ManufacturerMapper {
+    @Mapping(target = "id", ignore = true)
+    void applyRequest(ManufacturerRequest request, @MappingTarget Manufacturer entity);
 
-    private final ModelMapper modelMapper;
+    ManufacturerResponse toResponse(Manufacturer entity);
 
-    public void applyRequest(ManufacturerRequest request, Manufacturer manufacturer) {
-        manufacturer.setName(request.getName());
-    }
-
-    public ManufacturerResponse toResponse(Manufacturer manufacturer) {
-        return modelMapper.map(manufacturer, ManufacturerResponse.class);
-    }
-    public ManufacturerRequest toRequest(ManufacturerResponse response) {
-        ManufacturerRequest request = new ManufacturerRequest();
-        request.setName(response.getName());
-        return request;
-    }
+    ManufacturerRequest toRequest(ManufacturerResponse response);
 }

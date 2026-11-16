@@ -49,12 +49,12 @@ class IndexControllerTest {
     void menuShowsAccountManagementOnlyForEmployees() throws Exception {
         var client = login(
                 "mercury@gmail.com",
-                "ClientDemo2026!",
+                "MercuryLocal2026!",
                 "CLIENT"
         );
         var employee = login(
                 "phobos@gmail.com",
-                "EmployeeDemo2026!",
+                "PhobosLocal2026!",
                 "EMPLOYEE"
         );
 

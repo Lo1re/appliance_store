@@ -60,12 +60,12 @@ class LoginControllerTest {
 
         mvc.perform(formLogin()
                         .user("mercury@gmail.com")
-                        .password("ClientDemo2026!"))
+                        .password("MercuryLocal2026!"))
                 .andExpect(authenticated().withRoles("CLIENT"));
 
         var session = (MockHttpSession) mvc.perform(formLogin()
                         .user("phobos@gmail.com")
-                        .password("EmployeeDemo2026!"))
+                        .password("PhobosLocal2026!"))
                 .andExpect(authenticated().withRoles("EMPLOYEE"))
                 .andReturn()
                 .getRequest()

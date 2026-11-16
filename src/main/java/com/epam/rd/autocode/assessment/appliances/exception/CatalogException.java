@@ -1,15 +1,12 @@
 package com.epam.rd.autocode.assessment.appliances.exception;
 
-public class CatalogException extends RuntimeException {
-
-    private final CatalogError error;
-
+public class CatalogException extends BusinessException {
     public CatalogException(CatalogError error) {
-        super(error.messageKey());
-        this.error = error;
+        super(error);
     }
 
+    @Override
     public CatalogError error() {
-        return error;
+        return (CatalogError) super.error();
     }
 }

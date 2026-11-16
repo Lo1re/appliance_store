@@ -11,8 +11,8 @@ import org.springframework.data.domain.PageRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-class ApplianceInOrderRepositoryTest {
-    @Autowired private ApplianceInOrderRepository rows;
+class OrderRowRepositoryTest {
+    @Autowired private OrderRowRepository rows;
     @Autowired private ApplianceRepository appliances;
     @Autowired private OrdersRepository orders;
     @Autowired private UserRepository users;

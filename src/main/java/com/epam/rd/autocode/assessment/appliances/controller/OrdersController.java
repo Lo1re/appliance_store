@@ -1,18 +1,16 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
 
-import com.epam.rd.autocode.assessment.appliances.dto.order.OrderItemRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderResponse;
 import com.epam.rd.autocode.assessment.appliances.exception.OrderException;
-import com.epam.rd.autocode.assessment.appliances.mapper.OrderMapper;
-import com.epam.rd.autocode.assessment.appliances.service.ApplianceService;
-import com.epam.rd.autocode.assessment.appliances.service.ClientService;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
+import com.epam.rd.autocode.assessment.appliances.web.OrderCapabilities;
+import com.epam.rd.autocode.assessment.appliances.web.form.OrderFormAssembler;
+import com.epam.rd.autocode.assessment.appliances.web.form.OrderFormData;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -24,11 +22,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 @Controller
+@ControllerSection(path = "/orders", errorView = "error/general")
 @RequiredArgsConstructor
 @RequestMapping("/orders")
 public class OrdersController {
@@ -38,19 +33,9 @@ public class OrdersController {
     private static final String FORM = "order/form";
     private static final String REDIRECT = "redirect:/orders";
     private static final Set<String> SORT_FIELDS = Set.of("id", "approved");
-    private static final Set<String> STATUSES = Set.of("all", "pending", "approved");
-
-    private static final Set<String> FORM_ERROR_KEYS = Set.of(
-            "order.client.required",
-            "order.client.not-found",
-            "order.appliance.duplicate",
-            "order.appliance.not-found"
-    );
 
     private final OrderService orderService;
-    private final OrderMapper orderMapper;
-    private final ApplianceService applianceService;
-    private final ClientService clientService;
+    private final OrderFormAssembler orderFormAssembler;
 
     @GetMapping
     public String list(
@@ -60,44 +45,33 @@ public class OrdersController {
             Model model
     ) {
         ListPage listPage = ListPage.of(page, sort, SORT_FIELDS, "id");
-        String selectedStatus = STATUSES.contains(status) ? status : "all";
-
-        Boolean approved = switch (selectedStatus) {
-            case "approved" -> Boolean.TRUE;
-            case "pending" -> Boolean.FALSE;
-            default -> null;
-        };
-
-        model.addAttribute("orders", orderService.findAll(approved, listPage.pageable()));
+        OrderFilter filter = OrderFilter.fromParameter(status);
+        model.addAttribute("orders", orderService.findAll(filter.approved(), listPage.pageable()));
         model.addAttribute("sort", listPage.sort());
-        model.addAttribute("status", selectedStatus);
+        model.addAttribute("status", filter.parameter());
         return LIST;
     }
 
     @GetMapping("/{id}")
     public String details(@PathVariable Long id, HttpServletRequest http, Model model) {
         OrderResponse order = orderService.findById(id);
-        boolean editable = !order.summary().approved();
+        var capabilities = OrderCapabilities.forOrder(order, http.isUserInRole("EMPLOYEE"));
 
         model.addAttribute("order", order);
-        model.addAttribute("canEdit", editable);
-        model.addAttribute("canDelete", editable);
-        model.addAttribute("canApprove", http.isUserInRole("EMPLOYEE") && editable);
+        model.addAttribute("canEdit", capabilities.canEdit());
+        model.addAttribute("canDelete", capabilities.canDelete());
+        model.addAttribute("canApprove", capabilities.canApprove());
         return DETAILS;
     }
 
     @GetMapping("/add")
-    public String createForm(HttpServletRequest http, Model model) {
-        var request = new OrderRequest();
-        model.addAttribute("orderForm", request);
-        return renderForm(request, null, null, http, model);
+    public String createForm(Model model) {
+        return renderForm(orderFormAssembler.create(), model);
     }
 
     @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable Long id, HttpServletRequest http, Model model) {
-        OrderRequest request = orderMapper.toRequest(requireEditableOrder(id));
-        model.addAttribute("orderForm", request);
-        return renderForm(request, id, null, http, model);
+    public String editForm(@PathVariable Long id, Model model) {
+        return renderForm(orderFormAssembler.edit(id), model);
     }
 
     @PostMapping({"/add", "/{id}/edit"})
@@ -106,16 +80,12 @@ public class OrdersController {
             @RequestParam(name = "clientId", required = false) Long clientId,
             @Valid @ModelAttribute("orderForm") OrderRequest request,
             BindingResult errors,
-            HttpServletRequest http,
             Model model,
             RedirectAttributes redirect
     ) {
-        if (id != null) {
-            requireEditableOrder(id);
-        }
-
         if (errors.hasErrors()) {
-            return renderForm(request, id, clientId, http, model);
+            return renderForm(orderFormAssembler.redisplay(
+                    id, clientId, request), model);
         }
 
         try {
@@ -125,12 +95,13 @@ public class OrdersController {
             redirect.addAttribute("orderId", saved.summary().id());
             return REDIRECT + "/{orderId}";
         } catch (OrderException exception) {
-            if (!FORM_ERROR_KEYS.contains(exception.getMessage())) {
-                throw exception;
+            switch (exception.error()) {
+                case CLIENT_REQUIRED, CLIENT_NOT_FOUND, DUPLICATE_APPLIANCE, APPLIANCE_NOT_FOUND ->
+                        errors.reject(exception.error().messageKey());
+                default -> throw exception;
             }
-
-            errors.reject(exception.getMessage());
-            return renderForm(request, id, clientId, http, model);
+            return renderForm(orderFormAssembler.redisplay(
+                    id, clientId, request), model);
         }
     }
 
@@ -147,42 +118,16 @@ public class OrdersController {
         return REDIRECT + "/{orderId}";
     }
 
-    private OrderResponse requireEditableOrder(Long id) {
-        OrderResponse order = orderService.findById(id);
-
-        if (order.summary().approved()) {
-            throw new OrderException("order.not-editable");
-        }
-
-        return order;
-    }
-
-    private String renderForm(
-            OrderRequest request,
-            Long id,
-            Long clientId,
-            HttpServletRequest http,
-            Model model
-    ) {
-        if (request.getItems() == null || request.getItems().isEmpty()) {
-            request.setItems(new ArrayList<>(List.of(new OrderItemRequest())));
-        }
-
-        boolean editing = id != null;
-        boolean selectClient = !editing && http.isUserInRole("EMPLOYEE");
-        Pageable options = Pageable.unpaged(Sort.by("name", "id"));
-
-        model.addAttribute("editing", editing);
-        model.addAttribute("formAction", editing ? "/orders/" + id + "/edit" : "/orders/add");
-        model.addAttribute("cancelPath", editing ? "/orders/" + id : "/orders");
-        model.addAttribute("selectClient", selectClient);
-        model.addAttribute("selectedClientId", clientId);
-        model.addAttribute("products", applianceService.findAll("", options).getContent());
-
-        if (selectClient) {
-            model.addAttribute("clients", clientService.findAll("", options).getContent());
-        }
-
+    private String renderForm(OrderFormData form, Model model) {
+        model.addAttribute("orderForm", form.request());
+        model.addAttribute("editing", form.editing());
+        model.addAttribute("formAction", form.editing()
+                ? "/orders/" + form.orderId() + "/edit" : "/orders/add");
+        model.addAttribute("cancelPath", form.editing() ? "/orders/" + form.orderId() : "/orders");
+        model.addAttribute("selectClient", form.selectClient());
+        model.addAttribute("selectedClientId", form.selectedClientId());
+        model.addAttribute("products", form.products());
+        model.addAttribute("clients", form.clients());
         return FORM;
     }
 }

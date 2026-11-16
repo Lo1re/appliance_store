@@ -1,9 +1,8 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
 
+import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-
-import java.util.Set;
 
 record ListPage(String sort, PageRequest pageable) {
 

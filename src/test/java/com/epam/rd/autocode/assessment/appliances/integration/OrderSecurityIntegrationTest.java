@@ -4,12 +4,14 @@ import com.epam.rd.autocode.assessment.appliances.dto.order.OrderItemRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderRequest;
 import com.epam.rd.autocode.assessment.appliances.exception.OrderException;
 import com.epam.rd.autocode.assessment.appliances.model.OrderRow;
-import com.epam.rd.autocode.assessment.appliances.repository.ApplianceInOrderRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.ApplianceRepository;
+import com.epam.rd.autocode.assessment.appliances.repository.OrderRowRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.OrdersRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
 import com.epam.rd.autocode.assessment.appliances.security.StorePrincipal;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
+import java.math.BigDecimal;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +24,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -64,7 +63,7 @@ class OrderSecurityIntegrationTest {
     private ApplianceRepository appliances;
 
     @Autowired
-    private ApplianceInOrderRepository rows;
+    private OrderRowRepository rows;
 
     @Autowired
     private OrdersRepository orders;
@@ -92,12 +91,12 @@ class OrderSecurityIntegrationTest {
 
         MockHttpSession client = login(
                 "mercury@gmail.com",
-                "ClientDemo2026!",
+                "MercuryLocal2026!",
                 "CLIENT"
         );
         MockHttpSession employee = login(
                 "phobos@gmail.com",
-                "EmployeeDemo2026!",
+                "PhobosLocal2026!",
                 "EMPLOYEE"
         );
 
@@ -120,12 +119,12 @@ class OrderSecurityIntegrationTest {
             throws Exception {
         MockHttpSession client = login(
                 "mercury@gmail.com",
-                "ClientDemo2026!",
+                "MercuryLocal2026!",
                 "CLIENT"
         );
         MockHttpSession employee = login(
                 "phobos@gmail.com",
-                "EmployeeDemo2026!",
+                "PhobosLocal2026!",
                 "EMPLOYEE"
         );
 
@@ -257,12 +256,12 @@ class OrderSecurityIntegrationTest {
             throws Exception {
         MockHttpSession client = login(
                 "mercury@gmail.com",
-                "ClientDemo2026!",
+                "MercuryLocal2026!",
                 "CLIENT"
         );
         MockHttpSession employee = login(
                 "phobos@gmail.com",
-                "EmployeeDemo2026!",
+                "PhobosLocal2026!",
                 "EMPLOYEE"
         );
 

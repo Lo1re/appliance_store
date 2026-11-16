@@ -53,7 +53,7 @@ class AccountWebIntegrationTest {
     ) throws Exception {
         var employee = login(
                 "phobos@gmail.com",
-                "EmployeeDemo2026!",
+                "PhobosLocal2026!",
                 "EMPLOYEE"
         );
 
@@ -118,7 +118,7 @@ class AccountWebIntegrationTest {
             throws Exception {
         var employee = login(
                 "phobos@gmail.com",
-                "EmployeeDemo2026!",
+                "PhobosLocal2026!",
                 "EMPLOYEE"
         );
 
@@ -175,12 +175,12 @@ class AccountWebIntegrationTest {
     void enforcesEmployeeRoleAndCsrfIndependently() throws Exception {
         var client = login(
                 "mercury@gmail.com",
-                "ClientDemo2026!",
+                "MercuryLocal2026!",
                 "CLIENT"
         );
         var employee = login(
                 "phobos@gmail.com",
-                "EmployeeDemo2026!",
+                "PhobosLocal2026!",
                 "EMPLOYEE"
         );
 

@@ -1,9 +1,8 @@
 package com.epam.rd.autocode.assessment.appliances.repository;
 
 import com.epam.rd.autocode.assessment.appliances.model.User;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 

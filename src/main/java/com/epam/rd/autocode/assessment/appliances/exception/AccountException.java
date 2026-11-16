@@ -1,15 +1,12 @@
 package com.epam.rd.autocode.assessment.appliances.exception;
 
-public class AccountException extends RuntimeException {
-
-    private final AccountError error;
-
+public class AccountException extends BusinessException {
     public AccountException(AccountError error) {
-        super(error.messageKey());
-        this.error = error;
+        super(error);
     }
 
+    @Override
     public AccountError error() {
-        return error;
+        return (AccountError) super.error();
     }
 }

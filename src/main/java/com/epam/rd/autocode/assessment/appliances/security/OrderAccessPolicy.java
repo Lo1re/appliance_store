@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.security;
 
+import com.epam.rd.autocode.assessment.appliances.exception.OrderError;
 import com.epam.rd.autocode.assessment.appliances.exception.OrderException;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
 import com.epam.rd.autocode.assessment.appliances.model.Employee;
@@ -21,7 +22,7 @@ public class OrderAccessPolicy {
         }
 
         if (!client.getId().equals(order.getClient().getId())) {
-            throw new OrderException("order.not-found");
+            throw new OrderException(OrderError.NOT_FOUND);
         }
     }
 

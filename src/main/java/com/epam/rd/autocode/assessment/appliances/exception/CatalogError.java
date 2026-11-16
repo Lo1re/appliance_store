@@ -1,6 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.exception;
 
-public enum CatalogError {
+public enum CatalogError implements ErrorCode {
     MANUFACTURER_NOT_FOUND("manufacturer.not-found"),
     MANUFACTURER_DUPLICATE_NAME("manufacturer.name.duplicate"),
     MANUFACTURER_IN_USE("manufacturer.in-use"),

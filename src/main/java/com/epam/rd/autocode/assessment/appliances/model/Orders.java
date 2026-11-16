@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.model;
 
+import com.epam.rd.autocode.assessment.appliances.exception.OrderError;
 import com.epam.rd.autocode.assessment.appliances.exception.OrderException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -14,15 +15,14 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -60,7 +60,7 @@ public class Orders {
 
     public void assertEditable() {
         if (Boolean.TRUE.equals(approved)) {
-            throw new OrderException("order.not-editable");
+            throw new OrderException(OrderError.NOT_EDITABLE);
         }
     }
 
@@ -73,7 +73,7 @@ public class Orders {
 
     public void approve(Employee employee) {
         if (Boolean.TRUE.equals(approved)) {
-            throw new OrderException("order.already-approved");
+            throw new OrderException(OrderError.ALREADY_APPROVED);
         }
 
         this.employee = Objects.requireNonNull(employee, "Employee is required");

@@ -1,8 +1,12 @@
 package com.epam.rd.autocode.assessment.appliances.exception;
 
-public class OrderException extends RuntimeException {
+public class OrderException extends BusinessException {
+    public OrderException(OrderError error) {
+        super(error);
+    }
 
-    public OrderException(String messageKey) {
-        super(messageKey);
+    @Override
+    public OrderError error() {
+        return (OrderError) super.error();
     }
 }

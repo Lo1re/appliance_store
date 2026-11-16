@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -16,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:catalog-accounts-it",
 })
+@WithMockUser(roles = "EMPLOYEE")
 class ManufacturerServiceImplIntegrationTest {
 
     private static final PageRequest PAGE = PageRequest.of(0, 30, Sort.by("name"));

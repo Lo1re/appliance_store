@@ -1,15 +1,15 @@
 package com.epam.rd.autocode.assessment.appliances.mapper;
 
-import com.epam.rd.autocode.assessment.appliances.config.MainConfig;
 import com.epam.rd.autocode.assessment.appliances.dto.appliance.ApplianceRequest;
 import com.epam.rd.autocode.assessment.appliances.mapper.ApplianceMapper;
 import com.epam.rd.autocode.assessment.appliances.model.*;
-import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
+import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ApplianceMapperTest {
-    private final org.modelmapper.ModelMapper modelMapper = new MainConfig().modelMapper();
 
     @Test
     void keepsIdentityAndLeavesRelationshipForTheService() {
@@ -28,7 +28,7 @@ class ApplianceMapperTest {
         request.setPower(150);
         request.setPrice(new BigDecimal("12.30"));
 
-        var mapper = new ApplianceMapper(modelMapper);
+        var mapper = Mappers.getMapper(ApplianceMapper.class);
         mapper.applyRequest(request, appliance);
         var response = mapper.toResponse(appliance);
         assertThat(response.getId()).isEqualTo(11L);

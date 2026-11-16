@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{general.error.title}">Application error</title>
+</head>
+<body>
+<main>
+    <h1 th:text="#{general.error.title}">Application error</h1>
+    <p th:text="#{general.error.message}">The operation could not be completed.</p>
+    <a th:href="@{/}" th:text="#{nav.home}">Home</a>
+</main>
+</body>
+</html>

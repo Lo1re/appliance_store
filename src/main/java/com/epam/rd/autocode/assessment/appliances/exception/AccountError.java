@@ -1,6 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.exception;
 
-public enum AccountError {
+public enum AccountError implements ErrorCode {
 
     EMAIL_DUPLICATE("user.email.duplicate"),
     CLIENT_NOT_FOUND("client.not-found"),

@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
+import com.epam.rd.autocode.assessment.appliances.aspect.Loggable;
 import com.epam.rd.autocode.assessment.appliances.dto.appliance.ApplianceRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.appliance.ApplianceResponse;
 import com.epam.rd.autocode.assessment.appliances.exception.CatalogError;
@@ -7,18 +8,20 @@ import com.epam.rd.autocode.assessment.appliances.exception.CatalogException;
 import com.epam.rd.autocode.assessment.appliances.mapper.ApplianceMapper;
 import com.epam.rd.autocode.assessment.appliances.model.Appliance;
 import com.epam.rd.autocode.assessment.appliances.model.Manufacturer;
-import com.epam.rd.autocode.assessment.appliances.repository.ApplianceInOrderRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.ApplianceRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.ManufacturerRepository;
+import com.epam.rd.autocode.assessment.appliances.repository.OrderRowRepository;
 import com.epam.rd.autocode.assessment.appliances.service.ApplianceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 @Service
+@PreAuthorize("hasRole('EMPLOYEE')")
 @Validated
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -26,10 +29,11 @@ public class ApplianceServiceImpl implements ApplianceService {
 
     private final ApplianceRepository applianceRepository;
     private final ManufacturerRepository manufacturerRepository;
-    private final ApplianceInOrderRepository applianceInOrderRepository;
+    private final OrderRowRepository applianceInOrderRepository;
     private final ApplianceMapper applianceMapper;
 
     @Override
+    @PreAuthorize("hasAnyRole('CLIENT', 'EMPLOYEE')")
     public Page<ApplianceResponse> findAll(String search, Pageable pageable) {
         String query = search == null ? "" : search.strip();
 
@@ -44,6 +48,7 @@ public class ApplianceServiceImpl implements ApplianceService {
 
     @Override
     @Transactional
+    @Loggable
     public ApplianceResponse create(ApplianceRequest request) {
         Manufacturer manufacturer = requireManufacturer(request.getManufacturerId());
 
@@ -57,6 +62,7 @@ public class ApplianceServiceImpl implements ApplianceService {
 
     @Override
     @Transactional
+    @Loggable
     public ApplianceResponse update(Long id, ApplianceRequest request) {
         Appliance appliance = requireAppliance(id);
         Manufacturer manufacturer = requireManufacturer(request.getManufacturerId());
@@ -68,6 +74,7 @@ public class ApplianceServiceImpl implements ApplianceService {
 
     @Override
     @Transactional
+    @Loggable
     public void delete(Long id) {
         Appliance appliance = requireAppliance(id);
 

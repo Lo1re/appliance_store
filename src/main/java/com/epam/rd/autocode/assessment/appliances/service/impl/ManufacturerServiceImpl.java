@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
+import com.epam.rd.autocode.assessment.appliances.aspect.Loggable;
 import com.epam.rd.autocode.assessment.appliances.dto.manufacturer.ManufacturerRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.manufacturer.ManufacturerResponse;
 import com.epam.rd.autocode.assessment.appliances.exception.CatalogError;
@@ -12,11 +13,13 @@ import com.epam.rd.autocode.assessment.appliances.service.ManufacturerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 @Service
+@PreAuthorize("hasRole('EMPLOYEE')")
 @Validated
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -27,6 +30,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
     private final ManufacturerMapper manufacturerMapper;
 
     @Override
+    @PreAuthorize("hasAnyRole('CLIENT', 'EMPLOYEE')")
     public Page<ManufacturerResponse> findAll(String search, Pageable pageable) {
         if (search == null || search.isBlank()) {
             return manufacturerRepository.findAll(pageable)
@@ -45,6 +49,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
 
     @Override
     @Transactional
+    @Loggable
     public ManufacturerResponse create(ManufacturerRequest request) {
         if (manufacturerRepository.existsByName(request.getName())) {
             throw new CatalogException(CatalogError.MANUFACTURER_DUPLICATE_NAME);
@@ -59,6 +64,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
 
     @Override
     @Transactional
+    @Loggable
     public ManufacturerResponse update(Long id, ManufacturerRequest request) {
         Manufacturer manufacturer = requireManufacturer(id);
 
@@ -72,6 +78,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
 
     @Override
     @Transactional
+    @Loggable
     public void delete(Long id) {
         Manufacturer manufacturer = requireManufacturer(id);
 

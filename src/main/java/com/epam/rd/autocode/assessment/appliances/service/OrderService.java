@@ -15,6 +15,10 @@ public interface OrderService {
 
     OrderResponse findById(Long orderId);
 
+    OrderResponse findForEditing(Long orderId);
+
+    void requireEditable(Long orderId);
+
     OrderResponse create(
             @Positive Long clientId,
             @NotNull @Valid OrderRequest request

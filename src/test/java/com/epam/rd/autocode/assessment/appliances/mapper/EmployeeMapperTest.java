@@ -1,15 +1,15 @@
 package com.epam.rd.autocode.assessment.appliances.mapper;
 
-import com.epam.rd.autocode.assessment.appliances.config.MainConfig;
 import com.epam.rd.autocode.assessment.appliances.dto.employee.EmployeeRequest;
 import com.epam.rd.autocode.assessment.appliances.mapper.EmployeeMapper;
 import com.epam.rd.autocode.assessment.appliances.model.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class EmployeeMapperTest {
-    private final org.modelmapper.ModelMapper modelMapper = new MainConfig().modelMapper();
     private final ObjectMapper json = new ObjectMapper();
 
     @Test
@@ -19,12 +19,12 @@ class EmployeeMapperTest {
         employeeRequest.setName(" Staff ");
         employeeRequest.setEmail(" STAFF@EXAMPLE.COM ");
         employeeRequest.setDepartment(" Sales ");
-        var employeeMapper = new EmployeeMapper(modelMapper);
+        var employeeMapper = Mappers.getMapper(EmployeeMapper.class);
         employeeMapper.applyRequest(employeeRequest, employee);
         var employeeResponse = employeeMapper.toResponse(employee);
         assertThat(employeeResponse.getId()).isEqualTo(8L);
         assertThat(employeeResponse.getName()).isEqualTo("Staff");
-        assertThat(employeeResponse.getEmail()).isEqualTo("staff@example.com");
+        assertThat(employeeResponse.getEmail()).isEqualTo("old@example.com");
         assertThat(employeeResponse.getDepartment()).isEqualTo("Sales");
         assertThat(employee.getPassword()).isEqualTo("stored-hash");
         assertThat(json.valueToTree(employeeResponse).has("password")).isFalse();

@@ -4,63 +4,44 @@ import com.epam.rd.autocode.assessment.appliances.dto.order.OrderItemRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderResponse;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderSummary;
-import com.epam.rd.autocode.assessment.appliances.model.Employee;
 import com.epam.rd.autocode.assessment.appliances.model.OrderRow;
 import com.epam.rd.autocode.assessment.appliances.model.Orders;
-import org.springframework.stereotype.Component;
-
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 
-@Component
-public class OrderMapper {
+@Mapper(config = MappingConfig.class)
+public interface OrderMapper {
+    @Mapping(target = "clientId", source = "client.id")
+    @Mapping(target = "clientName", source = "client.name")
+    @Mapping(target = "employeeId", source = "employee.id")
+    @Mapping(target = "employeeName", source = "employee.name")
+    @Mapping(target = "approved", source = "approved", defaultValue = "false")
+    OrderSummary toSummary(Orders order);
 
-    public OrderSummary toSummary(Orders order) {
-        Employee employee = order.getEmployee();
+    @Mapping(target = "summary", source = "order")
+    @Mapping(target = "items", source = "order.orderRowSet", qualifiedByName = "sortedItems")
+    @Mapping(target = "total", source = "total")
+    OrderResponse toResponse(Orders order, BigDecimal total);
 
-        return new OrderSummary(
-                order.getId(),
-                order.getClient().getId(),
-                order.getClient().getName(),
-                employee == null ? null : employee.getId(),
-                employee == null ? null : employee.getName(),
-                Boolean.TRUE.equals(order.getApproved())
-        );
-    }
+    OrderRequest toRequest(OrderResponse response);
 
-    public OrderResponse toResponse(Orders order, BigDecimal total) {
-        List<OrderResponse.Item> items = order.getOrderRowSet().stream()
+    OrderItemRequest toRequestItem(OrderResponse.Item item);
+
+    @Mapping(target = "applianceId", source = "appliance.id")
+    @Mapping(target = "applianceName", source = "appliance.name")
+    @Mapping(target = "quantity", source = "number")
+    OrderResponse.Item toItem(OrderRow row);
+
+    @Named("sortedItems")
+    default List<OrderResponse.Item> sortedItems(Set<OrderRow> rows) {
+        return rows.stream()
                 .sorted(Comparator.comparing(row -> row.getAppliance().getId()))
                 .map(this::toItem)
                 .toList();
-
-        return new OrderResponse(toSummary(order), items, total);
-    }
-
-    public OrderRequest toRequest(OrderResponse response) {
-        List<OrderItemRequest> items = new ArrayList<>();
-
-        for (OrderResponse.Item item : response.items()) {
-            var requestItem = new OrderItemRequest();
-            requestItem.setApplianceId(item.applianceId());
-            requestItem.setQuantity(item.quantity());
-            items.add(requestItem);
-        }
-
-        var request = new OrderRequest();
-        request.setItems(items);
-        return request;
-    }
-
-    private OrderResponse.Item toItem(OrderRow row) {
-        return new OrderResponse.Item(
-                row.getId(),
-                row.getAppliance().getId(),
-                row.getAppliance().getName(),
-                row.getNumber(),
-                row.getAmount()
-        );
     }
 }

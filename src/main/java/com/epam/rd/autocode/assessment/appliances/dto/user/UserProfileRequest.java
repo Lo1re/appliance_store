@@ -1,11 +1,10 @@
 package com.epam.rd.autocode.assessment.appliances.dto.user;
 
+import com.epam.rd.autocode.assessment.appliances.validation.EmailAddress;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
-
-import java.util.Locale;
 
 @Getter
 public class UserProfileRequest {
@@ -24,6 +23,6 @@ public class UserProfileRequest {
     }
 
     public void setEmail(String email) {
-        this.email = email == null ? null : email.strip().toLowerCase(Locale.ROOT);
+        this.email = EmailAddress.normalize(email);
     }
 }

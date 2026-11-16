@@ -3,31 +3,18 @@ package com.epam.rd.autocode.assessment.appliances.mapper;
 import com.epam.rd.autocode.assessment.appliances.dto.client.ClientRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.client.ClientResponse;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
-import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
-@Component
-@RequiredArgsConstructor
-public class ClientMapper {
+@Mapper(config = MappingConfig.class)
+public interface ClientMapper {
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "password", ignore = true)
+    @Mapping(target = "email", ignore = true)
+    void applyRequest(ClientRequest request, @MappingTarget Client entity);
 
-    private final ModelMapper modelMapper;
+    ClientResponse toResponse(Client entity);
 
-    public void applyRequest(ClientRequest request, Client client) {
-        client.setName(request.getName());
-        client.setEmail(request.getEmail());
-        client.setCard(request.getCard());
-    }
-
-    public ClientResponse toResponse(Client client) {
-        return modelMapper.map(client, ClientResponse.class);
-    }
-
-    public ClientRequest toRequest(ClientResponse response) {
-        var request = new ClientRequest();
-        request.setName(response.getName());
-        request.setEmail(response.getEmail());
-        request.setCard(response.getCard());
-        return request;
-    }
+    ClientRequest toRequest(ClientResponse response);
 }

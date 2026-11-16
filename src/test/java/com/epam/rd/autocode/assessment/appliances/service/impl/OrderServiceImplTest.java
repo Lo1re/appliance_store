@@ -1,8 +1,5 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
-import com.epam.rd.autocode.assessment.appliances.security.CurrentActor;
-import com.epam.rd.autocode.assessment.appliances.security.OrderAccessPolicy;
-import com.epam.rd.autocode.assessment.appliances.security.StorePrincipal;
 import com.epam.rd.autocode.assessment.appliances.mapper.OrderMapper;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
 import com.epam.rd.autocode.assessment.appliances.model.User;
@@ -10,13 +7,16 @@ import com.epam.rd.autocode.assessment.appliances.repository.ApplianceRepository
 import com.epam.rd.autocode.assessment.appliances.repository.ClientRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.OrdersRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
+import com.epam.rd.autocode.assessment.appliances.security.CurrentActor;
+import com.epam.rd.autocode.assessment.appliances.security.OrderAccessPolicy;
+import com.epam.rd.autocode.assessment.appliances.security.StorePrincipal;
+import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
@@ -29,8 +29,8 @@ class OrderServiceImplTest {
             new CurrentActor(users),
             new OrderAccessPolicy(),
             mock(ClientRepository.class),
-            mock(ApplianceRepository.class),
-            new OrderMapper()
+            new OrderRowsFactory(mock(ApplianceRepository.class)),
+            Mappers.getMapper(OrderMapper.class)
     );
 
     @AfterEach

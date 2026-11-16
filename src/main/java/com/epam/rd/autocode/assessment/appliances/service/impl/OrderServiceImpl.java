@@ -1,23 +1,24 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
-import com.epam.rd.autocode.assessment.appliances.dto.order.OrderItemRequest;
+import com.epam.rd.autocode.assessment.appliances.aspect.Loggable;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderResponse;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderSummary;
+import com.epam.rd.autocode.assessment.appliances.exception.OrderError;
 import com.epam.rd.autocode.assessment.appliances.exception.OrderException;
 import com.epam.rd.autocode.assessment.appliances.mapper.OrderMapper;
-import com.epam.rd.autocode.assessment.appliances.model.Appliance;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
 import com.epam.rd.autocode.assessment.appliances.model.Employee;
 import com.epam.rd.autocode.assessment.appliances.model.OrderRow;
 import com.epam.rd.autocode.assessment.appliances.model.Orders;
 import com.epam.rd.autocode.assessment.appliances.model.User;
-import com.epam.rd.autocode.assessment.appliances.repository.ApplianceRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.ClientRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.OrdersRepository;
 import com.epam.rd.autocode.assessment.appliances.security.CurrentActor;
 import com.epam.rd.autocode.assessment.appliances.security.OrderAccessPolicy;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
+import java.math.BigDecimal;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,12 +26,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 @Service
 @Validated
@@ -43,7 +38,7 @@ public class OrderServiceImpl implements OrderService {
     private final CurrentActor currentActor;
     private final OrderAccessPolicy orderAccessPolicy;
     private final ClientRepository clientRepository;
-    private final ApplianceRepository applianceRepository;
+    private final OrderRowsFactory orderRowsFactory;
     private final OrderMapper orderMapper;
 
     @Override
@@ -68,20 +63,37 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse findById(Long orderId) {
-        User currentUser = currentActor.requireUser();
-        Orders order = ordersRepository.findDetailedById(orderId)
-                .orElseThrow(() -> new OrderException("order.not-found"));
-
-        orderAccessPolicy.requireAccess(currentUser, order);
+        Orders order = requireAccessibleOrder(orderId);
         return orderMapper.toResponse(order, calculateTotal(order));
     }
 
     @Override
+    public OrderResponse findForEditing(Long orderId) {
+        Orders order = requireAccessibleOrder(orderId);
+        order.assertEditable();
+        return orderMapper.toResponse(order, calculateTotal(order));
+    }
+
+    @Override
+    public void requireEditable(Long orderId) {
+        requireAccessibleOrder(orderId).assertEditable();
+    }
+
+    private Orders requireAccessibleOrder(Long orderId) {
+        User actor = currentActor.requireUser();
+        Orders order = ordersRepository.findDetailedById(orderId)
+                .orElseThrow(() -> new OrderException(OrderError.NOT_FOUND));
+        orderAccessPolicy.requireAccess(actor, order);
+        return order;
+    }
+
+    @Override
     @Transactional
+    @Loggable
     public OrderResponse create(Long clientId, OrderRequest request) {
         User currentUser = currentActor.requireUser();
         Client client = resolveClient(currentUser, clientId);
-        List<OrderRow> rows = buildRows(request);
+        List<OrderRow> rows = orderRowsFactory.create(request);
 
         Orders order = new Orders();
         order.setClient(client);
@@ -93,13 +105,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    @Loggable
     public OrderResponse update(Long orderId, OrderRequest request) {
         User currentUser = currentActor.requireUser();
         Orders order = requireOrderForUpdate(orderId);
         orderAccessPolicy.requireAccess(currentUser, order);
 
         order.assertEditable();
-        order.replaceRows(buildRows(request));
+        order.replaceRows(orderRowsFactory.create(request));
 
         ordersRepository.flush();
         return orderMapper.toResponse(order, calculateTotal(order));
@@ -107,6 +120,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    @Loggable
     public void delete(Long orderId) {
         User currentUser = currentActor.requireUser();
         Orders order = requireOrderForUpdate(orderId);
@@ -118,6 +132,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    @Loggable
     @PreAuthorize("hasRole('EMPLOYEE')")
     public OrderResponse approve(Long orderId) {
         User currentUser = currentActor.requireUser();
@@ -131,7 +146,6 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toResponse(order, calculateTotal(order));
     }
 
-
     private Client resolveClient(User currentUser, Long clientId) {
         if (currentUser instanceof Client client) {
             orderAccessPolicy.requireClientSelection(client, clientId);
@@ -142,47 +156,16 @@ public class OrderServiceImpl implements OrderService {
         orderAccessPolicy.requireEmployee(currentUser);
 
         if (clientId == null) {
-            throw new OrderException("order.client.required");
+            throw new OrderException(OrderError.CLIENT_REQUIRED);
         }
 
         return clientRepository.findById(clientId)
-                .orElseThrow(() -> new OrderException("order.client.not-found"));
+                .orElseThrow(() -> new OrderException(OrderError.CLIENT_NOT_FOUND));
     }
 
     private Orders requireOrderForUpdate(Long orderId) {
         return ordersRepository.findForUpdate(orderId)
-                .orElseThrow(() -> new OrderException("order.not-found"));
-    }
-
-    private List<OrderRow> buildRows(OrderRequest request) {
-        Map<Long, Long> quantities = new LinkedHashMap<>();
-
-        for (OrderItemRequest item : request.getItems()) {
-            Long previous = quantities.putIfAbsent(
-                    item.getApplianceId(), item.getQuantity()
-            );
-
-            if (previous != null) {
-                throw new OrderException("order.appliance.duplicate");
-            }
-        }
-
-        List<Appliance> appliances = applianceRepository.findAllById(quantities.keySet());
-
-        if (appliances.size() != quantities.size()) {
-            throw new OrderException("order.appliance.not-found");
-        }
-
-        List<OrderRow> rows = new ArrayList<>(appliances.size());
-
-        for (Appliance appliance : appliances) {
-            Long quantity = quantities.get(appliance.getId());
-            BigDecimal amount = appliance.getPrice().multiply(BigDecimal.valueOf(quantity));
-
-            rows.add(new OrderRow(null, appliance, quantity, amount));
-        }
-
-        return rows;
+                .orElseThrow(() -> new OrderException(OrderError.NOT_FOUND));
     }
 
     private BigDecimal calculateTotal(Orders order) {

@@ -6,12 +6,13 @@ import com.epam.rd.autocode.assessment.appliances.exception.AccountError;
 import com.epam.rd.autocode.assessment.appliances.exception.AccountException;
 import com.epam.rd.autocode.assessment.appliances.mapper.EmployeeMapper;
 import com.epam.rd.autocode.assessment.appliances.service.EmployeeService;
+import com.epam.rd.autocode.assessment.appliances.web.form.AccountFormView;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -32,8 +33,8 @@ class EmployeeControllerTest {
     @BeforeEach
     void setUp() {
         mvc = MockMvcBuilders.standaloneSetup(
-                        new EmployeeController(service, new EmployeeMapper(new ModelMapper())))
-                .setControllerAdvice(new AccountExceptionAdvice())
+                        new EmployeeController(service, Mappers.getMapper(EmployeeMapper.class), new AccountFormView()))
+                .setControllerAdvice(new BusinessExceptionAdvice())
                 .build();
     }
 

@@ -2,11 +2,12 @@ package com.epam.rd.autocode.assessment.appliances.controller;
 
 import com.epam.rd.autocode.assessment.appliances.dto.employee.EmployeeRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.user.PasswordRequest;
-import com.epam.rd.autocode.assessment.appliances.exception.AccountError;
 import com.epam.rd.autocode.assessment.appliances.exception.AccountException;
 import com.epam.rd.autocode.assessment.appliances.mapper.EmployeeMapper;
 import com.epam.rd.autocode.assessment.appliances.service.EmployeeService;
+import com.epam.rd.autocode.assessment.appliances.web.form.AccountFormView;
 import jakarta.validation.Valid;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,9 +19,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.Set;
-
 @Controller
+@ControllerSection(path = "/employees", errorView = "error/account")
 @RequiredArgsConstructor
 @RequestMapping("/employees")
 public class EmployeeController {
@@ -31,6 +31,7 @@ public class EmployeeController {
 
     private final EmployeeService employeeService;
     private final EmployeeMapper employeeMapper;
+    private final AccountFormView accountFormView;
 
     @ModelAttribute
     public void addSectionAttributes(Model model) {
@@ -75,7 +76,8 @@ public class EmployeeController {
             employeeService.create(request, credentials);
             return REDIRECT;
         } catch (AccountException exception) {
-            return rejectEmailOrRethrow(exception, accountErrors, null, model);
+            accountFormView.rejectDuplicateEmail(exception, accountErrors);
+            return renderForm(null, model);
         }
     }
 
@@ -100,7 +102,8 @@ public class EmployeeController {
             employeeService.update(id, request);
             return REDIRECT;
         } catch (AccountException exception) {
-            return rejectEmailOrRethrow(exception, errors, id, model);
+            accountFormView.rejectDuplicateEmail(exception, errors);
+            return renderForm(id, model);
         }
     }
 
@@ -110,22 +113,7 @@ public class EmployeeController {
         return REDIRECT;
     }
 
-    private String rejectEmailOrRethrow(
-            AccountException exception, BindingResult errors, Long id, Model model
-    ) {
-        if (exception.error() != AccountError.EMAIL_DUPLICATE) {
-            throw exception;
-        }
-
-        errors.rejectValue("email", exception.error().messageKey());
-        return renderForm(id, model);
-    }
-
     private String renderForm(Long id, Model model) {
-        model.addAttribute("editing", id != null);
-        model.addAttribute("formAction", id == null
-                ? BASE_PATH + "/add"
-                : BASE_PATH + "/" + id + "/edit");
-        return "/account/form";
+        return accountFormView.render(BASE_PATH, id, model);
     }
 }

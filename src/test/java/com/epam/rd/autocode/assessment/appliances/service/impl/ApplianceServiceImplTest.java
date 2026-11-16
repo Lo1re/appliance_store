@@ -2,15 +2,14 @@ package com.epam.rd.autocode.assessment.appliances.service.impl;
 
 import com.epam.rd.autocode.assessment.appliances.exception.CatalogException;
 import com.epam.rd.autocode.assessment.appliances.model.Appliance;
-import com.epam.rd.autocode.assessment.appliances.repository.ApplianceInOrderRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.ApplianceRepository;
+import com.epam.rd.autocode.assessment.appliances.repository.OrderRowRepository;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.never;
@@ -21,7 +20,7 @@ import static org.mockito.Mockito.when;
 class ApplianceServiceImplTest {
 
     @Mock private ApplianceRepository repository;
-    @Mock private ApplianceInOrderRepository dependencies;
+    @Mock private OrderRowRepository dependencies;
     @InjectMocks private ApplianceServiceImpl service;
 
     @Test

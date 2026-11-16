@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
+import com.epam.rd.autocode.assessment.appliances.aspect.Loggable;
 import com.epam.rd.autocode.assessment.appliances.dto.employee.EmployeeRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.employee.EmployeeResponse;
 import com.epam.rd.autocode.assessment.appliances.dto.user.PasswordRequest;
@@ -13,11 +14,13 @@ import com.epam.rd.autocode.assessment.appliances.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 @Service
+@PreAuthorize("hasRole('EMPLOYEE')")
 @Validated
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -26,7 +29,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final OrdersRepository ordersRepository;
     private final EmployeeMapper employeeMapper;
-    private final AccountSupport accountSupport;
+    private final AccountCredentialsService credentials;
 
     @Override
     public Page<EmployeeResponse> findAll(String search, Pageable pageable) {
@@ -47,12 +50,12 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional
+    @Loggable
     public EmployeeResponse create(EmployeeRequest request, PasswordRequest password) {
-        accountSupport.requireAvailableEmail(request.getEmail(), null);
-
         var employee = new Employee();
         employeeMapper.applyRequest(request, employee);
-        accountSupport.setPassword(employee, password.getPassword());
+        credentials.assignEmail(employee, request.getEmail());
+        credentials.setPassword(employee, password.getPassword());
 
         Employee saved = employeeRepository.save(employee);
         return employeeMapper.toResponse(saved);
@@ -60,16 +63,17 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional
+    @Loggable
     public EmployeeResponse update(Long id, EmployeeRequest request) {
         Employee employee = requireEmployee(id);
-        accountSupport.requireAvailableEmail(request.getEmail(), id);
-
         employeeMapper.applyRequest(request, employee);
+        credentials.assignEmail(employee, request.getEmail());
         return employeeMapper.toResponse(employee);
     }
 
     @Override
     @Transactional
+    @Loggable
     public void delete(Long id) {
         Employee employee = requireEmployee(id);
 
