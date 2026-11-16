@@ -34,7 +34,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, MvcSecurityFailures failures)
             throws Exception {
         return http
                 .authorizeHttpRequests(requests -> requests
@@ -60,6 +60,10 @@ public class SecurityConfig {
                         .requestMatchers("/orders/**")
                         .hasAnyRole("CLIENT", "EMPLOYEE")
                         .anyRequest().denyAll()
+                )
+                .exceptionHandling(errors -> errors
+                        .authenticationEntryPoint(failures)
+                        .accessDeniedHandler(failures)
                 )
                 .formLogin(form -> form
                         .loginPage("/login")

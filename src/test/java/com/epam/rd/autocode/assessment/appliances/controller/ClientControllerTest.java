@@ -63,14 +63,15 @@ class ClientControllerTest {
     }
 
     @Test
-    void redirectsBusinessFailureAndRendersSafeDatabaseError() throws Exception {
+    void rendersNotFoundAndSafeDatabaseErrors() throws Exception {
         when(service.update(eq(7L), any(ClientRequest.class)))
                 .thenThrow(new AccountException(AccountError.CLIENT_NOT_FOUND));
         doThrow(new DataIntegrityViolationException("private value")).when(service).delete(8L);
 
         mvc.perform(profile("/clients/7/edit", "New Name"))
-                .andExpect(redirectedUrl("/clients"))
-                .andExpect(flash().attribute("errorKey", "client.not-found"));
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("error/404"))
+                .andExpect(model().attribute("errorMessageKey", "client.not-found"));
         mvc.perform(post("/clients/8/delete"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(view().name("error/account"));

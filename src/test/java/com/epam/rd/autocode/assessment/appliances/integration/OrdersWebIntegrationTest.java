@@ -193,22 +193,26 @@ class OrdersWebIntegrationTest {
                     ))));
 
             mvc.perform(get(ownPath + "/edit").session(session))
-                    .andExpect(redirectedUrl("/orders"))
-                    .andExpect(flash().attribute("errorKey", "order.not-editable"));
+                    .andExpect(status().isConflict())
+                    .andExpect(view().name("error/409"))
+                    .andExpect(model().attribute("errorMessageKey", "order.not-editable"));
 
             mvc.perform(post(ownPath + "/edit").session(session).with(csrf())
                             .param("items[0].applianceId", claw.getId().toString())
                             .param("items[0].quantity", "99"))
-                    .andExpect(redirectedUrl("/orders"))
-                    .andExpect(flash().attribute("errorKey", "order.not-editable"));
+                    .andExpect(status().isConflict())
+                    .andExpect(view().name("error/409"))
+                    .andExpect(model().attribute("errorMessageKey", "order.not-editable"));
 
             mvc.perform(post(ownPath + "/edit").session(session).with(csrf()))
-                    .andExpect(redirectedUrl("/orders"))
-                    .andExpect(flash().attribute("errorKey", "order.not-editable"));
+                    .andExpect(status().isConflict())
+                    .andExpect(view().name("error/409"))
+                    .andExpect(model().attribute("errorMessageKey", "order.not-editable"));
 
             mvc.perform(post(ownPath + "/delete").session(session).with(csrf()))
-                    .andExpect(redirectedUrl("/orders"))
-                    .andExpect(flash().attribute("errorKey", "order.not-editable"));
+                    .andExpect(status().isConflict())
+                    .andExpect(view().name("error/409"))
+                    .andExpect(model().attribute("errorMessageKey", "order.not-editable"));
         }
 
         assertThat(orders.findById(ownId).orElseThrow().getApproved()).isTrue();
@@ -246,22 +250,18 @@ class OrdersWebIntegrationTest {
         assertThat(otherPath).matches("/orders/\\d+");
 
         mvc.perform(get(otherPath).session(client))
-                .andExpect(redirectedUrl("/orders"))
-                .andExpect(flash().attribute(
-                        "errorKey",
-                        "order.not-found"
-                ));
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("error/404"))
+                .andExpect(model().attribute("errorMessageKey", "order.not-found"));
 
         mvc.perform(
                         post(otherPath + "/delete")
                                 .session(client)
                                 .with(csrf())
                 )
-                .andExpect(redirectedUrl("/orders"))
-                .andExpect(flash().attribute(
-                        "errorKey",
-                        "order.not-found"
-                ));
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("error/404"))
+                .andExpect(model().attribute("errorMessageKey", "order.not-found"));
 
         mvc.perform(
                         post(otherPath + "/edit")
@@ -273,11 +273,9 @@ class OrdersWebIntegrationTest {
                                 )
                                 .param("items[0].quantity", "99")
                 )
-                .andExpect(redirectedUrl("/orders"))
-                .andExpect(flash().attribute(
-                        "errorKey",
-                        "order.not-found"
-                ));
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("error/404"))
+                .andExpect(model().attribute("errorMessageKey", "order.not-found"));
 
         long otherId = Long.parseLong(
                 otherPath.substring("/orders/".length())

@@ -1,14 +1,4 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
-<head>
-    <meta charset="UTF-8">
-    <title th:text="#{catalog.error.title}">Catalog error</title>
-</head>
-<body>
-<main>
-    <h1 th:text="#{catalog.error.title}">Catalog error</h1>
-    <p th:text="#{catalog.error.message}">The operation could not be completed.</p>
-    <a th:href="@{/}" th:text="#{nav.home}">Home</a>
-</main>
-</body>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{error/page :: page('catalog.error.title', 'catalog.error.message')}">
 </html>

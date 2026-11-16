@@ -2,19 +2,25 @@ package com.epam.rd.autocode.assessment.appliances.exception;
 
 public enum AccountError implements ErrorCode {
 
-    EMAIL_DUPLICATE("user.email.duplicate"),
-    CLIENT_NOT_FOUND("client.not-found"),
-    CLIENT_IN_USE("client.in-use"),
-    EMPLOYEE_NOT_FOUND("employee.not-found"),
-    EMPLOYEE_IN_USE("employee.in-use");
+    EMAIL_DUPLICATE("user.email.duplicate", ErrorKind.CONFLICT),
+    CLIENT_NOT_FOUND("client.not-found", ErrorKind.NOT_FOUND),
+    CLIENT_IN_USE("client.in-use", ErrorKind.CONFLICT),
+    EMPLOYEE_NOT_FOUND("employee.not-found", ErrorKind.NOT_FOUND),
+    EMPLOYEE_IN_USE("employee.in-use", ErrorKind.CONFLICT);
 
     private final String messageKey;
+    private final ErrorKind kind;
 
-    AccountError(String messageKey) {
+    AccountError(String messageKey, ErrorKind kind) {
         this.messageKey = messageKey;
+        this.kind = kind;
     }
 
     public String messageKey() {
         return messageKey;
+    }
+    @Override
+    public ErrorKind kind() {
+        return kind;
     }
 }

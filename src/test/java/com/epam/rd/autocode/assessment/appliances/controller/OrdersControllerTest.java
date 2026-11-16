@@ -68,8 +68,9 @@ class OrdersControllerTest {
     void approvedOrderCannotOpenAnEditForm() throws Exception {
         when(orders.findForEditing(7L)).thenThrow(new OrderException(OrderError.NOT_EDITABLE));
         mvc.perform(get("/orders/7/edit"))
-                .andExpect(redirectedUrl("/orders"))
-                .andExpect(flash().attribute("errorKey", "order.not-editable"));
+                .andExpect(status().isConflict())
+                    .andExpect(view().name("error/409"))
+                    .andExpect(model().attribute("errorMessageKey", "order.not-editable"));
         verifyNoInteractions(products, clients);
     }
 

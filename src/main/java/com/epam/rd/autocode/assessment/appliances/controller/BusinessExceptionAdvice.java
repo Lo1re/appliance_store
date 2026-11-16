@@ -1,6 +1,8 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
 
 import com.epam.rd.autocode.assessment.appliances.exception.BusinessException;
+import com.epam.rd.autocode.assessment.appliances.web.error.MvcErrorViews;
+import org.springframework.core.annotation.Order;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -9,16 +11,21 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Slf4j
+@Order(0)
 @ControllerAdvice(annotations = ControllerSection.class)
 public class BusinessExceptionAdvice {
     @ExceptionHandler(BusinessException.class)
-    public String handleBusinessError(BusinessException exception, HandlerMethod handler,
-                                      RedirectAttributes redirect) {
-        redirect.addFlashAttribute("errorKey", exception.error().messageKey());
-        return "redirect:" + section(handler).path();
+    public ModelAndView handleBusinessError(BusinessException exception, HandlerMethod handler) {
+        HttpStatus status = switch (exception.error().kind()) {
+            case NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case VALIDATION -> HttpStatus.BAD_REQUEST;
+            case CONFLICT, BUSINESS_RULE -> HttpStatus.CONFLICT;
+        };
+        return MvcErrorViews.render(status)
+                .addObject("errorMessageKey", exception.error().messageKey())
+                .addObject("returnPath", section(handler).path());
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
@@ -28,6 +35,8 @@ public class BusinessExceptionAdvice {
                 handler.getMethod().getName(), exception);
         var view = new ModelAndView(section(handler).errorView());
         view.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+        view.addObject("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        view.addObject("returnPath", section(handler).path());
         return view;
     }
 

@@ -1,15 +1,4 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
-<head>
-    <meta charset="UTF-8">
-    <title th:text="#{account.error.title}">Account error</title>
-</head>
-<body>
-<main>
-    <h1 th:text="#{account.error.title}">Account error</h1>
-    <p th:text="#{account.error.message}">The operation could not be completed.</p>
-    <a th:href="@{/clients}" th:text="#{client.header.list}">Clients</a>
-    <a th:href="@{/employees}" th:text="#{employee.header.list}">Employees</a>
-</main>
-</body>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{error/page :: page('account.error.title', 'account.error.message')}">
 </html>

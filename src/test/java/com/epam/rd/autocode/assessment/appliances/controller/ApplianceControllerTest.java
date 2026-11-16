@@ -104,14 +104,15 @@ class ApplianceControllerTest {
     }
 
     @Test
-    void redirectsKnownBusinessErrorAndRendersDatabaseError() throws Exception {
+    void rendersMissingResourceAndSafeDatabaseErrors() throws Exception {
         when(service.update(eq(99L), any(ApplianceRequest.class)))
                 .thenThrow(new CatalogException(CatalogError.APPLIANCE_NOT_FOUND));
         doThrow(new DataIntegrityViolationException("private value")).when(service).delete(8L);
 
         mvc.perform(product("/appliances/99/edit"))
-                .andExpect(redirectedUrl("/appliances"))
-                .andExpect(flash().attribute("errorKey", "appliance.not-found"));
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("error/404"))
+                .andExpect(model().attribute("errorMessageKey", "appliance.not-found"));
         mvc.perform(post("/appliances/8/delete"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(view().name("error/catalog"));

@@ -63,14 +63,15 @@ class EmployeeControllerTest {
     }
 
     @Test
-    void redirectsBusinessFailureAndRendersSafeDatabaseError() throws Exception {
+    void rendersNotFoundAndSafeDatabaseErrors() throws Exception {
         when(service.update(eq(7L), any(EmployeeRequest.class)))
                 .thenThrow(new AccountException(AccountError.EMPLOYEE_NOT_FOUND));
         doThrow(new DataIntegrityViolationException("private value")).when(service).delete(8L);
 
         mvc.perform(profile("/employees/7/edit", "New Name"))
-                .andExpect(redirectedUrl("/employees"))
-                .andExpect(flash().attribute("errorKey", "employee.not-found"));
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("error/404"))
+                .andExpect(model().attribute("errorMessageKey", "employee.not-found"));
         mvc.perform(post("/employees/8/delete"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(view().name("error/account"));

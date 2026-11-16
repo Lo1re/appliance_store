@@ -108,7 +108,7 @@ class ManufacturerControllerTest {
     }
 
     @Test
-    void showsDuplicateAsFieldErrorAndMissingRecordAsFlashMessage() throws Exception {
+    void showsDuplicateAsFieldErrorAndMissingRecordAsNotFound() throws Exception {
         when(service.create(any(ManufacturerRequest.class)))
                 .thenThrow(new CatalogException(CatalogError.MANUFACTURER_DUPLICATE_NAME));
         when(service.update(eq(99L), any(ManufacturerRequest.class)))
@@ -120,8 +120,9 @@ class ManufacturerControllerTest {
                         "manufacturer", "name", "manufacturer.name.duplicate"));
 
         mvc.perform(post("/manufacturers/99/edit").param("name", "Renamed"))
-                .andExpect(redirectedUrl("/manufacturers"))
-                .andExpect(flash().attribute("errorKey", "manufacturer.not-found"));
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("error/404"))
+                .andExpect(model().attribute("errorMessageKey", "manufacturer.not-found"));
     }
 
     @Test
