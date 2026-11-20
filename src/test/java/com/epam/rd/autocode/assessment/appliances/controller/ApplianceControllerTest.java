@@ -8,7 +8,8 @@ import com.epam.rd.autocode.assessment.appliances.mapper.ApplianceMapper;
 import com.epam.rd.autocode.assessment.appliances.model.Category;
 import com.epam.rd.autocode.assessment.appliances.model.PowerType;
 import com.epam.rd.autocode.assessment.appliances.service.ApplianceService;
-import com.epam.rd.autocode.assessment.appliances.service.ManufacturerService;
+import com.epam.rd.autocode.assessment.appliances.service.LookupService;
+import com.epam.rd.autocode.assessment.appliances.web.form.ApplianceFormAssembler;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,14 +36,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ApplianceControllerTest {
 
     @Mock private ApplianceService service;
-    @Mock private ManufacturerService manufacturers;
+    @Mock private LookupService lookups;
 
     private MockMvc mvc;
 
     @BeforeEach
     void setUp() {
         mvc = MockMvcBuilders.standaloneSetup(
-                        new ApplianceController(service, Mappers.getMapper(ApplianceMapper.class), manufacturers))
+                        new ApplianceController(service, new ApplianceFormAssembler(service, Mappers.getMapper(ApplianceMapper.class), lookups)))
                 .setControllerAdvice(new BusinessExceptionAdvice())
                 .build();
     }
@@ -61,7 +62,7 @@ class ApplianceControllerTest {
 
     @Test
     void opensCreateAndEditWithManufacturerOptions() throws Exception {
-        when(manufacturers.findAll(eq(""), any(Pageable.class))).thenReturn(Page.empty());
+        when(lookups.manufacturers(eq(""), any())).thenReturn(java.util.List.of());
         var product = new ApplianceResponse();
         product.setName("Claw");
         product.setManufacturerId(1L);
@@ -81,7 +82,7 @@ class ApplianceControllerTest {
 
     @Test
     void validatesAndKeepsFormWhenSelectedManufacturerDisappears() throws Exception {
-        when(manufacturers.findAll(eq(""), any(Pageable.class))).thenReturn(Page.empty());
+        when(lookups.manufacturers(eq(""), any())).thenReturn(java.util.List.of());
         when(service.create(any(ApplianceRequest.class)))
                 .thenThrow(new CatalogException(CatalogError.APPLIANCE_MANUFACTURER_NOT_FOUND));
 

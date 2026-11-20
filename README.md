@@ -145,3 +145,25 @@ boundary: the inner aspect preserves the original failure. Future orchestration 
 must explicitly declare their own boundary. No independent transaction is started to hide
 a failed transaction. H2 tests cover rollback, commit callbacks, FK rejection and joined
 transactions; PostgreSQL concurrency still requires verification against PostgreSQL.
+
+
+### Active accounts and form lookups
+
+All public application-service entry points now validate the persisted account through
+ActiveAccountGuard. ActiveAccountFilter clears stale session authentication before URL
+authorization. Client/employee deletion expires registered account sessions only after a
+successful commit; an outer rollback keeps them active. Session tracking currently has no
+concurrent-session limit. This is a single-instance registry, not distributed session storage.
+The checks reject subsequent access; they do not cancel a request already executing when
+another transaction deletes the account.
+
+Product forms use ApplianceFormAssembler; order forms use OrderFormAssembler. Both obtain
+lightweight SelectOption values from LookupService. The initial search returns at most 20
+matches, plus up to 50 distinct selected IDs to preserve editing/validation state. Browser
+search uses read-only /lookups/products, /lookups/manufacturers and /lookups/clients;
+client options require EMPLOYEE at both HTTP and service boundaries. Search queries are
+limited to 100 characters. A failed search preserves the current selection. These endpoints
+support MVC forms; they do not implement the planned stateless JWT API.
+
+DatabaseConstraintExtractor reads SQL metadata; PersistenceConflictTranslator maps only
+known constraints to domain errors. SQL migrations and database profiles are unchanged.

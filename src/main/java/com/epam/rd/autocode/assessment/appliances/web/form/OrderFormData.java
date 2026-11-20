@@ -1,7 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.web.form;
 
-import com.epam.rd.autocode.assessment.appliances.dto.appliance.ApplianceResponse;
-import com.epam.rd.autocode.assessment.appliances.dto.client.ClientResponse;
+import com.epam.rd.autocode.assessment.appliances.dto.lookup.SelectOption;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderRequest;
 import java.util.List;
 
@@ -10,8 +9,8 @@ public record OrderFormData(
         Long selectedClientId,
         OrderRequest request,
         boolean selectClient,
-        List<ApplianceResponse> products,
-        List<ClientResponse> clients
+        List<SelectOption> products,
+        List<SelectOption> clients
 ) {
     public OrderFormData {
         products = List.copyOf(products);

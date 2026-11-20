@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -20,7 +20,7 @@ class ServiceAuthorizationIntegrationTest {
     private static final PageRequest PAGE = PageRequest.of(0, 10);
 
     @Test
-    @WithMockUser(roles = "CLIENT")
+    @WithUserDetails("mercury@gmail.com")
     void clientCanReadCatalogButCannotManageCatalogOrAccounts() {
         assertThat(appliances.findAll("", PAGE)).isNotNull();
         assertThat(manufacturers.findAll("", PAGE)).isNotNull();
@@ -44,7 +44,7 @@ class ServiceAuthorizationIntegrationTest {
     }
 
     @Test
-    @WithMockUser(roles = "EMPLOYEE")
+    @WithUserDetails("phobos@gmail.com")
     void employeeCanReadAllManagementLists() {
         assertThat(clients.findAll("", PAGE)).isNotNull();
         assertThat(employees.findAll("", PAGE)).isNotNull();

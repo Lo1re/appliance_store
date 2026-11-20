@@ -6,8 +6,7 @@ import com.epam.rd.autocode.assessment.appliances.exception.OrderError;
 import com.epam.rd.autocode.assessment.appliances.exception.OrderException;
 import com.epam.rd.autocode.assessment.appliances.mapper.OrderMapper;
 import com.epam.rd.autocode.assessment.appliances.security.CurrentActor;
-import com.epam.rd.autocode.assessment.appliances.service.ApplianceService;
-import com.epam.rd.autocode.assessment.appliances.service.ClientService;
+import com.epam.rd.autocode.assessment.appliances.service.LookupService;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
 import com.epam.rd.autocode.assessment.appliances.web.form.OrderFormAssembler;
 import java.math.BigDecimal;
@@ -36,8 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class OrdersControllerTest {
 
     @Mock private OrderService orders;
-    @Mock private ApplianceService products;
-    @Mock private ClientService clients;
+    @Mock private LookupService lookups;
 
     private final CurrentActor actor = mock(CurrentActor.class);
 
@@ -46,7 +44,7 @@ class OrdersControllerTest {
     @BeforeEach
     void setUp() {
         mvc = MockMvcBuilders.standaloneSetup(
-                        new OrdersController(orders, new OrderFormAssembler(orders, Mappers.getMapper(OrderMapper.class), products, clients, actor)))
+                        new OrdersController(orders, new OrderFormAssembler(orders, Mappers.getMapper(OrderMapper.class), lookups, actor)))
                 .setControllerAdvice(new BusinessExceptionAdvice())
                 .build();
     }
@@ -71,20 +69,20 @@ class OrdersControllerTest {
                 .andExpect(status().isConflict())
                     .andExpect(view().name("error/409"))
                     .andExpect(model().attribute("errorMessageKey", "order.not-editable"));
-        verifyNoInteractions(products, clients);
+        verifyNoInteractions(lookups);
     }
 
     @Test
     void allowsAnExistingOrderWithoutRowsToBeRepaired() throws Exception {
         when(orders.findForEditing(7L)).thenReturn(new OrderResponse(
                 new OrderSummary(7L, 1L, "Buyer", null, null, false), List.of(), BigDecimal.ZERO));
-        when(products.findAll(eq(""), any(Pageable.class))).thenReturn(Page.empty());
+        when(lookups.products(eq(""), any())).thenReturn(java.util.List.of());
 
         mvc.perform(get("/orders/7/edit"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("order/form"))
                 .andExpect(model().attribute("orderForm", hasProperty("items", hasSize(1))))
                 .andExpect(model().attribute("selectClient", false));
-        verifyNoInteractions(clients);
+        verify(lookups, never()).clients(anyString(), any());
     }
 }

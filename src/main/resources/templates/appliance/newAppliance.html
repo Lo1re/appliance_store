@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
 <head>
     <meta charset="UTF-8">
+    <script th:src="@{/js/lookup-search.js}" defer></script>
     <title th:text="${editing} ? #{appliance.btn.edit} : #{appliance.btn.new}">Product</title>
 </head>
 <body>
@@ -24,10 +25,14 @@
 
         <div>
             <label for="manufacturerId" th:text="#{appliance.field.manufacturer}">Manufacturer</label>
-            <select th:field="*{manufacturerId}">
+            <label for="manufacturer-search" th:text="#{lookup.search}">Search</label>
+            <input id="manufacturer-search" type="search" maxlength="100" data-lookup="manufacturers"
+                   th:data-url="@{/lookups/manufacturers}" th:data-failed="#{lookup.failed}" th:data-hint="#{lookup.hint}">
+            <span data-lookup-status="manufacturers" role="status" aria-live="polite"></span>
+            <select data-options="manufacturers" th:field="*{manufacturerId}">
                 <option value="" th:text="#{form.choose}">Choose an option</option>
                 <option th:each="manufacturer : ${manufacturers}"
-                        th:value="${manufacturer.id}" th:text="${manufacturer.name}"></option>
+                        th:value="${manufacturer.id}" th:text="${manufacturer.label}"></option>
             </select>
             <p th:errors="*{manufacturerId}" role="alert"></p>
         </div>

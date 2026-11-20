@@ -7,53 +7,24 @@ import com.epam.rd.autocode.assessment.appliances.exception.CatalogError;
 import com.epam.rd.autocode.assessment.appliances.exception.CatalogException;
 import com.epam.rd.autocode.assessment.appliances.exception.OrderError;
 import com.epam.rd.autocode.assessment.appliances.exception.OrderException;
-import java.sql.SQLException;
-import java.util.ArrayDeque;
-import java.util.Collections;
-import java.util.IdentityHashMap;
 import java.util.Locale;
-import java.util.Set;
-import java.util.regex.Pattern;
-import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.stereotype.Component;
 
 /** Translates only named, expected database constraints for the current operation. */
 @Component
 public class PersistenceConflictTranslator {
-    private static final Pattern H2_CONSTRAINT = Pattern.compile(
-            "^(?:Unique index or primary key violation|Referential integrity constraint violation): \"(?:[A-Za-z0-9_]+\\.)?([A-Za-z0-9_]+)(?=[: ]|\")");
+    private final DatabaseConstraintExtractor extractor;
+
+    public PersistenceConflictTranslator(DatabaseConstraintExtractor extractor) {
+        this.extractor = extractor;
+    }
 
     public RuntimeException translate(PersistenceOperation operation, RuntimeException failure) {
-        Set<Throwable> seen = Collections.newSetFromMap(new IdentityHashMap<>());
-        var pending = new ArrayDeque<Throwable>();
-        pending.add(failure);
-        while (!pending.isEmpty() && seen.size() < 32) {
-            Throwable current = pending.removeFirst();
-            if (!seen.add(current)) {
-                continue;
-            }
-            BusinessException translated = null;
-            if (current instanceof ConstraintViolationException constraint) {
-                translated = classify(operation, constraint.getSQLState(), constraint.getConstraintName());
-            } else if (current instanceof SQLException sql) {
-                // PostgreSQL names arrive through Hibernate's structured constraint metadata.
-                // H2 reports index names only inside its stable exception header.
-                if (sql.getClass().getName().startsWith("org.h2.jdbc.") && sql.getMessage() != null) {
-                    var matcher = H2_CONSTRAINT.matcher(sql.getMessage());
-                    if (matcher.find()) {
-                        translated = classify(operation, sql.getSQLState(), matcher.group(1));
-                    }
-                }
-                if (sql.getNextException() != null) {
-                    pending.addLast(sql.getNextException());
-                }
-            }
+        for (ConstraintFailure constraint : extractor.extract(failure)) {
+            BusinessException translated = classify(operation, constraint.state(), constraint.name());
             if (translated != null) {
                 translated.initCause(failure);
                 return translated;
-            }
-            if (current.getCause() != null) {
-                pending.addLast(current.getCause());
             }
         }
         return failure;

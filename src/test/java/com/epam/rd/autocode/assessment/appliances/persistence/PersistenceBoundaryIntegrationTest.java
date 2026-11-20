@@ -117,7 +117,7 @@ class PersistenceBoundaryIntegrationTest {
             return new DataSourceTransactionManager(source);
         }
         @Bean Writes writes(JdbcTemplate jdbc) { return new Writes(jdbc); }
-        @Bean PersistenceConflictTranslator translator() { return new PersistenceConflictTranslator(); }
+        @Bean PersistenceConflictTranslator translator() { return new PersistenceConflictTranslator(new DatabaseConstraintExtractor()); }
         @Bean PersistenceConflictAspect aspect(PersistenceConflictTranslator translator) {
             return new PersistenceConflictAspect(translator);
         }

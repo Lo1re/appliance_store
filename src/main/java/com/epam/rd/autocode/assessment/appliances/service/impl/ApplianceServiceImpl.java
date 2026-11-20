@@ -33,7 +33,7 @@ public class ApplianceServiceImpl implements ApplianceService {
 
     private final ApplianceRepository applianceRepository;
     private final ManufacturerRepository manufacturerRepository;
-    private final OrderRowRepository applianceInOrderRepository;
+    private final OrderRowRepository orderRowRepository;
     private final ApplianceMapper applianceMapper;
 
     private final BusinessAudit audit;
@@ -89,7 +89,7 @@ public class ApplianceServiceImpl implements ApplianceService {
     public void delete(Long id) {
         Appliance appliance = requireAppliance(id);
 
-        if (applianceInOrderRepository.existsByAppliance_Id(id)) {
+        if (orderRowRepository.existsByAppliance_Id(id)) {
             throw new CatalogException(CatalogError.APPLIANCE_IN_USE);
         }
 

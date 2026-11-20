@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
 <head>
     <meta charset="UTF-8">
+    <script th:src="@{/js/lookup-search.js}" defer></script>
     <title th:text="${editing} ? #{order.btn.edit} : #{order.btn.new}">Order</title>
     <script th:src="@{/js/order-form.js}" defer></script>
 </head>
@@ -17,27 +18,35 @@
 
         <div th:if="${selectClient}">
             <label for="clientId" th:text="#{order.field.client}">Client</label>
-            <select id="clientId" name="clientId" required>
+            <label for="client-search" th:text="#{lookup.search}">Search</label>
+            <input id="client-search" type="search" maxlength="100" data-lookup="clients"
+                   th:data-url="@{/lookups/clients}" th:data-failed="#{lookup.failed}" th:data-hint="#{lookup.hint}">
+            <span data-lookup-status="clients" role="status" aria-live="polite"></span>
+            <select data-options="clients" id="clientId" name="clientId" required>
                 <option value="" th:text="#{form.choose}">Choose an option</option>
                 <option th:each="client : ${clients}"
                         th:value="${client.id}"
                         th:selected="${client.id == selectedClientId}"
-                        th:text="|${client.name} — ${client.email}|"></option>
+                        th:text="${client.label}"></option>
             </select>
         </div>
 
         <p th:errors="*{items}" role="alert"></p>
 
+        <label for="product-search" th:text="#{lookup.search-products}">Search products</label>
+        <input id="product-search" type="search" maxlength="100" data-lookup="products"
+               th:data-url="@{/lookups/products}" th:data-failed="#{lookup.failed}" th:data-hint="#{lookup.hint}">
+        <span data-lookup-status="products" role="status" aria-live="polite"></span>
         <div id="order-items">
             <fieldset th:each="item, row : *{items}" data-order-row>
                 <legend th:text="#{order.field.item}">Item</legend>
                 <label>
                     <span th:text="#{appliance.field.name}">Product</span>
                     <select th:field="*{items[__${row.index}__].applianceId}"
-                            data-field="applianceId" required>
+                            data-field="applianceId" data-options="products" required>
                         <option value="" th:text="#{form.choose}">Choose an option</option>
                         <option th:each="product : ${products}" th:value="${product.id}"
-                                th:text="|${product.name} (${product.model})|"></option>
+                                th:text="${product.label}"></option>
                     </select>
                 </label>
                 <p th:errors="*{items[__${row.index}__].applianceId}" role="alert"></p>
@@ -65,10 +74,10 @@
             <legend th:text="#{order.field.item}">Item</legend>
             <label>
                 <span th:text="#{appliance.field.name}">Product</span>
-                <select data-field="applianceId" required>
+                <select data-field="applianceId" data-options="products" required>
                     <option value="" th:text="#{form.choose}">Choose an option</option>
                     <option th:each="product : ${products}" th:value="${product.id}"
-                            th:text="|${product.name} (${product.model})|"></option>
+                            th:text="${product.label}"></option>
                 </select>
             </label>
             <label>

@@ -3,17 +3,12 @@ package com.epam.rd.autocode.assessment.appliances.controller;
 import com.epam.rd.autocode.assessment.appliances.dto.appliance.ApplianceRequest;
 import com.epam.rd.autocode.assessment.appliances.exception.CatalogError;
 import com.epam.rd.autocode.assessment.appliances.exception.CatalogException;
-import com.epam.rd.autocode.assessment.appliances.mapper.ApplianceMapper;
-import com.epam.rd.autocode.assessment.appliances.model.Category;
-import com.epam.rd.autocode.assessment.appliances.model.PowerType;
 import com.epam.rd.autocode.assessment.appliances.service.ApplianceService;
-import com.epam.rd.autocode.assessment.appliances.service.ManufacturerService;
+import com.epam.rd.autocode.assessment.appliances.web.form.ApplianceFormAssembler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -31,13 +26,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class ApplianceController {
 
     private static final String LIST = "appliance/appliances";
-    private static final String FORM = "appliance/newAppliance";
     private static final String REDIRECT = "redirect:/appliances";
     private static final Set<String> SORT_FIELDS = Set.of("name", "id", "price");
 
     private final ApplianceService applianceService;
-    private final ApplianceMapper applianceMapper;
-    private final ManufacturerService manufacturerService;
+    private final ApplianceFormAssembler forms;
 
     @GetMapping
     public String list(
@@ -61,12 +54,9 @@ public class ApplianceController {
             @PathVariable(name = "id", required = false) Long id,
             Model model
     ) {
-        ApplianceRequest request = id == null
-                ? new ApplianceRequest()
-                : applianceMapper.toRequest(applianceService.findById(id));
-
+        ApplianceRequest request = forms.request(id);
         model.addAttribute("appliance", request);
-        return renderForm(id, model);
+        return forms.render(id, request, model);
     }
 
     @PostMapping({"/add", "/{id}/edit"})
@@ -77,7 +67,7 @@ public class ApplianceController {
             Model model
     ) {
         if (errors.hasErrors()) {
-            return renderForm(id, model);
+            return forms.render(id, request, model);
         }
 
         try {
@@ -94,7 +84,7 @@ public class ApplianceController {
             }
 
             errors.rejectValue("manufacturerId", exception.error().messageKey());
-            return renderForm(id, model);
+            return forms.render(id, request, model);
         }
     }
 
@@ -104,16 +94,4 @@ public class ApplianceController {
         return REDIRECT;
     }
 
-    private String renderForm(Long id, Model model) {
-        model.addAttribute("editing", id != null);
-        model.addAttribute("formAction", id == null
-                ? "/appliances/add"
-                : "/appliances/" + id + "/edit");
-        model.addAttribute("categories", Category.values());
-        model.addAttribute("powerTypes", PowerType.values());
-        model.addAttribute("manufacturers", manufacturerService
-                .findAll("", Pageable.unpaged(Sort.by("name")))
-                .getContent());
-        return FORM;
-    }
 }

@@ -1,6 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
 import com.epam.rd.autocode.assessment.appliances.aspect.Loggable;
+import com.epam.rd.autocode.assessment.appliances.security.RevokesAccountSessions;
 import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceBoundary;
 import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceOperation;
 import com.epam.rd.autocode.assessment.appliances.logging.BusinessAction;
@@ -89,6 +90,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     @Loggable
     @PersistenceBoundary(PersistenceOperation.EMPLOYEE_DELETE)
+    @RevokesAccountSessions
     public void delete(Long id) {
         employeeRepository.findAllForDeletionLock();
         var actor = currentActor.requireUser();

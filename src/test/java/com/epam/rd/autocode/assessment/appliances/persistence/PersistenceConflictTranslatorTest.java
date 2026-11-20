@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PersistenceConflictTranslatorTest {
-    private final PersistenceConflictTranslator translator = new PersistenceConflictTranslator();
+    private final PersistenceConflictTranslator translator = new PersistenceConflictTranslator(new DatabaseConstraintExtractor());
 
     @Test
     void translatesOnlyTheNamedConstraintInTheCorrectOperation() {

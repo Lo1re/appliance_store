@@ -15,6 +15,7 @@ public class CurrentActor {
 
     private final UserRepository userRepository;
 
+    @Transactional(readOnly = true)
     public boolean hasRole(AccountRole expectedRole) {
         return AccountRole.from(requireUser()).filter(expectedRole::equals).isPresent();
     }

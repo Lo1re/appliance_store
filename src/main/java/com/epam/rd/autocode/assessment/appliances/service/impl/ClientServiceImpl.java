@@ -1,6 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
 import com.epam.rd.autocode.assessment.appliances.aspect.Loggable;
+import com.epam.rd.autocode.assessment.appliances.security.RevokesAccountSessions;
 import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceBoundary;
 import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceOperation;
 import com.epam.rd.autocode.assessment.appliances.logging.BusinessAction;
@@ -85,6 +86,7 @@ public class ClientServiceImpl implements ClientService {
     @Transactional
     @Loggable
     @PersistenceBoundary(PersistenceOperation.CLIENT_DELETE)
+    @RevokesAccountSessions
     public void delete(Long id) {
         Client client = requireClient(id);
 

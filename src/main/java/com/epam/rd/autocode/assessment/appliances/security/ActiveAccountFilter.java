@@ -1,0 +1,32 @@
+package com.epam.rd.autocode.assessment.appliances.security;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+/** Clears stale session authentication before authorization uses its cached authorities. */
+@RequiredArgsConstructor
+public class ActiveAccountFilter extends OncePerRequestFilter {
+    private final CurrentActor currentActor;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                                    FilterChain chain) throws IOException, ServletException {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof StorePrincipal) {
+            try {
+                currentActor.requireUser();
+            } catch (AccessDeniedException staleAccount) {
+                new SecurityContextLogoutHandler().logout(request, response, authentication);
+            }
+        }
+        chain.doFilter(request, response);
+    }
+}

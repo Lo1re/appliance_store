@@ -8,14 +8,24 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    @Bean
+    public SessionRegistry sessionRegistry() { return new SessionRegistryImpl(); }
+
+    @Bean
+    public HttpSessionEventPublisher sessionEventPublisher() { return new HttpSessionEventPublisher(); }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -34,9 +44,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, MvcSecurityFailures failures)
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, MvcSecurityFailures failures,
+                                                    CurrentActor actor, SessionRegistry sessions)
             throws Exception {
         return http
+                .addFilterAfter(new ActiveAccountFilter(actor), AnonymousAuthenticationFilter.class)
+                .sessionManagement(session -> session.maximumSessions(-1)
+                        .sessionRegistry(sessions).expiredUrl("/login?expired"))
                 .authorizeHttpRequests(requests -> requests
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers(
@@ -46,6 +60,9 @@ public class SecurityConfig {
                                 "/images/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/login").permitAll()
+                        .requestMatchers("/lookups/clients").hasRole("EMPLOYEE")
+                        .requestMatchers(HttpMethod.GET, "/lookups/products", "/lookups/manufacturers")
+                        .hasAnyRole("CLIENT", "EMPLOYEE")
                         .requestMatchers("/employees/**", "/clients/**")
                         .hasRole("EMPLOYEE")
                         .requestMatchers(

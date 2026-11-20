@@ -1,19 +1,17 @@
 package com.epam.rd.autocode.assessment.appliances.web.form;
 
-import com.epam.rd.autocode.assessment.appliances.dto.client.ClientResponse;
+import com.epam.rd.autocode.assessment.appliances.dto.lookup.SelectOption;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderItemRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderRequest;
 import com.epam.rd.autocode.assessment.appliances.mapper.OrderMapper;
 import com.epam.rd.autocode.assessment.appliances.security.AccountRole;
 import com.epam.rd.autocode.assessment.appliances.security.CurrentActor;
-import com.epam.rd.autocode.assessment.appliances.service.ApplianceService;
-import com.epam.rd.autocode.assessment.appliances.service.ClientService;
+import com.epam.rd.autocode.assessment.appliances.service.LookupService;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
@@ -23,8 +21,7 @@ import org.springframework.stereotype.Component;
 public class OrderFormAssembler {
     private final OrderService orderService;
     private final OrderMapper orderMapper;
-    private final ApplianceService applianceService;
-    private final ClientService clientService;
+    private final LookupService lookups;
     private final CurrentActor currentActor;
 
     public OrderFormData create() {
@@ -48,10 +45,12 @@ public class OrderFormAssembler {
             request.setItems(new ArrayList<>(List.of(new OrderItemRequest())));
         }
         boolean selectClient = id == null && currentActor.hasRole(AccountRole.EMPLOYEE);
-        Pageable options = Pageable.unpaged(Sort.by("name", "id"));
-        var products = applianceService.findAll("", options).getContent();
-        var clients = selectClient ? clientService.findAll("", options).getContent()
-                : List.<ClientResponse>of();
+        var selected = request.getItems().stream().filter(Objects::nonNull)
+                .map(OrderItemRequest::getApplianceId).filter(Objects::nonNull)
+                .distinct().limit(50).toList();
+        var products = lookups.products("", selected);
+        var clients = selectClient ? lookups.clients("", clientId == null ? List.of() : List.of(clientId))
+                : List.<SelectOption>of();
         return new OrderFormData(id, clientId, request, selectClient, products, clients);
     }
 }
