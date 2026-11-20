@@ -1,6 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.security;
 
 import jakarta.servlet.DispatcherType;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,6 +20,7 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @EnableMethodSecurity
+@EnableConfigurationProperties(AuthenticationProperties.class)
 public class SecurityConfig {
 
     @Bean

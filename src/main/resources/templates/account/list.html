@@ -7,26 +7,14 @@
 <body>
 <header th:insert="~{menunavy :: navy}"></header>
 <main>
-    <nav>
-        <a th:href="@{/}" th:text="#{nav.home}">Home</a>
-        <a th:href="@{/clients}" th:text="#{client.header.list}">Clients</a>
-        <a th:href="@{/employees}" th:text="#{employee.header.list}">Employees</a>
-        <a lang="uk"
-           th:href="@{${basePath}(lang='uk',search=${search},sort=${sort},page=${accounts.number})}">
-            Українська
-        </a>
-        <a lang="en"
-           th:href="@{${basePath}(lang='en',search=${search},sort=${sort},page=${accounts.number})}">
-            English
-        </a>
-    </nav>
+
 
     <h1 th:text="${#messages.msg(section + '.header.list')}">Accounts</h1>
     <p th:if="${errorKey != null}" role="alert" th:text="#{${errorKey}}"></p>
 
     <form th:action="@{${basePath}}" method="get">
         <label for="search" th:text="#{list.search}">Search</label>
-        <input id="search" name="search" type="search" th:value="${search}">
+        <input id="search" name="search" type="search" maxlength="100" th:value="${search}">
 
         <label for="sort" th:text="#{list.sort}">Sort by</label>
         <select id="sort" name="sort">

@@ -1,0 +1,10 @@
+# Optional local file. Copy to auth-inmemory.properties (ignored by Git).
+# Import it in the IDE with spring.config.additional-location=optional:file:./config/auth-inmemory.properties
+# Use a real local domain account email and a BCrypt hash, never a clear-text password.
+store.security.auth-mode=inmemory
+store.security.inmemory.accounts[0].email=mercury@gmail.com
+store.security.inmemory.accounts[0].password-hash=${MEMORY_CLIENT_PASSWORD_HASH}
+store.security.inmemory.accounts[0].role=CLIENT
+store.security.inmemory.accounts[1].email=phobos@gmail.com
+store.security.inmemory.accounts[1].password-hash=${MEMORY_EMPLOYEE_PASSWORD_HASH}
+store.security.inmemory.accounts[1].role=EMPLOYEE

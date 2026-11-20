@@ -7,17 +7,7 @@
 <body>
 <header th:insert="~{menunavy :: navy}"></header>
 <main>
-    <nav>
-        <a th:href="@{/}" th:text="#{nav.home}">Home</a>
-        <a lang="uk"
-           th:href="@{/orders(lang='uk',status=${status},sort=${sort},page=${orders.number})}">
-            Українська
-        </a>
-        <a lang="en"
-           th:href="@{/orders(lang='en',status=${status},sort=${sort},page=${orders.number})}">
-            English
-        </a>
-    </nav>
+
 
     <h1 th:text="#{order.header.list}">Orders</h1>
     <p th:if="${errorKey != null}" role="alert" th:text="#{${errorKey}}"></p>

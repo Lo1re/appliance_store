@@ -34,3 +34,5 @@ build/
 
 # Runtime application logs
 /logs/
+
+/config/auth-inmemory.properties

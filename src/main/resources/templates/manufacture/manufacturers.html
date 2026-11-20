@@ -7,17 +7,7 @@
 <body>
 <header th:insert="~{menunavy :: navy}"></header>
 <main>
-    <nav>
-        <a th:href="@{/}">← <span th:text="#{nav.home}">Home</span></a>
-        <a lang="uk"
-           th:href="@{/manufacturers(lang='uk',search=${search},sort=${sort},page=${manufacturers.number})}">
-            Українська
-        </a>
-        <a lang="en"
-           th:href="@{/manufacturers(lang='en',search=${search},sort=${sort},page=${manufacturers.number})}">
-            English
-        </a>
-    </nav>
+
 
     <h1 th:text="#{manufacturer.header.list}">Manufacturers</h1>
 
@@ -25,7 +15,7 @@
 
     <form th:action="@{/manufacturers}" method="get">
         <label for="search" th:text="#{list.search}">Search</label>
-        <input id="search" name="search" type="search" th:value="${search}">
+        <input id="search" name="search" type="search" maxlength="100" th:value="${search}">
 
         <label for="sort" th:text="#{list.sort}">Sort by</label>
         <select id="sort" name="sort">

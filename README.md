@@ -190,3 +190,43 @@ missing accountId remains invalid and is rejected by CurrentActor. Authenticatio
 added later must implement symmetric identity equality and hashCode by accountId.
 The production login path uses AccountRole directly; the string constructor is retained for
 existing callers and validates through the enum. This step does not add OAuth or JWT login.
+
+
+### Optional in-memory password authentication
+
+The default `store.security.auth-mode=database` keeps the normal PostgreSQL/H2 account
+passwords. To demonstrate in-memory credentials locally:
+
+1. Copy `config/auth-inmemory.properties.example` to `config/auth-inmemory.properties`.
+2. Use emails of existing local client/employee accounts. Set MEMORY_CLIENT_PASSWORD_HASH
+   and MEMORY_EMPLOYEE_PASSWORD_HASH in the IDE environment to BCrypt hashes. For local
+   demo use, hashes may be copied from the corresponding demo SQL; the password is the
+   clear-text demo password documented above, not the hash. To choose another password,
+   generate its hash with BCryptPasswordEncoder in an IDE scratch/debug evaluation.
+3. Keep Spring profile `local` and add this application program argument in IntelliJ:
+   `--spring.config.additional-location=optional:file:./config/auth-inmemory.properties`.
+4. Start the application normally. Only configured memory credentials can authenticate;
+   the database still stores business accounts, roles, catalog and orders.
+5. Remove the additional-location argument to return to the default database login.
+
+No new Spring/Maven profile or PostgreSQL test database is needed. `inmemory` is rejected
+outside local/test and whenever prod is active. Clear-text configured passwords, duplicate
+canonical emails and configured/domain role mismatches are rejected. Missing local domain
+accounts refuse login without crashing startup. Unknown auth-mode values fail binding.
+The local properties file is ignored by Git. Do not commit real credentials.
+
+### Foundation acceptance
+
+Run Maven `test`, then `verify` yourself. The existing JaCoCo gate is unchanged: zero missed
+lines and branches outside the model exclusions. Passing `test` alone does not establish
+passing coverage. Inspect `target/site/jacoco/index.html` after verify; no passing verify or
+coverage claim is made for the new code before it has actually run. Existing reports before
+this step contained 300 tests with zero failures/errors (20 November 2026).
+
+Manually check PostgreSQL startup/restart, database login for both roles, all CRUD/order
+forms, search/sort/page links and language switching, duplicate/reference errors, and session
+expiration after account deletion. Then opt into memory authentication and check both roles
+with their configured passwords. H2 service races cover duplicate email/name and a new FK
+reference committed after a precheck; they do not establish PostgreSQL concurrency behavior.
+No DB reset, Flyway clean/repair or additional migration is required by this code change.
+The external Autocode result remains a separate acceptance check.
