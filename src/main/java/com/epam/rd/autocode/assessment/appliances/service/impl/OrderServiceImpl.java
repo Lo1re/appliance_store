@@ -87,8 +87,10 @@ public class OrderServiceImpl implements OrderService {
 
     private Orders requireAccessibleOrder(Long orderId) {
         User actor = currentActor.requireUser();
-        Orders order = ordersRepository.findDetailedById(orderId)
-                .orElseThrow(() -> new OrderException(OrderError.NOT_FOUND));
+        var accessible = actor instanceof Client client
+                ? ordersRepository.findDetailedByIdAndClient_Id(orderId, client.getId())
+                : ordersRepository.findDetailedById(orderId);
+        Orders order = accessible.orElseThrow(() -> new OrderException(OrderError.NOT_FOUND));
         orderAccessPolicy.requireAccess(actor, order);
         return order;
     }
@@ -117,7 +119,7 @@ public class OrderServiceImpl implements OrderService {
     @PersistenceBoundary(PersistenceOperation.ORDER_WRITE)
     public OrderResponse update(Long orderId, OrderRequest request) {
         User currentUser = currentActor.requireUser();
-        Orders order = requireOrderForUpdate(orderId);
+        Orders order = requireOrderForUpdate(orderId, currentUser);
         orderAccessPolicy.requireAccess(currentUser, order);
 
         order.assertEditable();
@@ -134,7 +136,7 @@ public class OrderServiceImpl implements OrderService {
     @PersistenceBoundary(PersistenceOperation.ORDER_DELETE)
     public void delete(Long orderId) {
         User currentUser = currentActor.requireUser();
-        Orders order = requireOrderForUpdate(orderId);
+        Orders order = requireOrderForUpdate(orderId, currentUser);
         orderAccessPolicy.requireAccess(currentUser, order);
         order.assertEditable();
 
@@ -152,7 +154,7 @@ public class OrderServiceImpl implements OrderService {
 
         Employee employee = orderAccessPolicy.requireEmployee(currentUser);
 
-        Orders order = requireOrderForUpdate(orderId);
+        Orders order = requireOrderForUpdate(orderId, currentUser);
 
         order.approve(employee);
         audit.record(BusinessAction.ORDER_APPROVED, order.getId());
@@ -177,9 +179,11 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new OrderException(OrderError.CLIENT_NOT_FOUND));
     }
 
-    private Orders requireOrderForUpdate(Long orderId) {
-        return ordersRepository.findForUpdate(orderId)
-                .orElseThrow(() -> new OrderException(OrderError.NOT_FOUND));
+    private Orders requireOrderForUpdate(Long orderId, User actor) {
+        var accessible = actor instanceof Client client
+                ? ordersRepository.findOwnedForUpdate(orderId, client.getId())
+                : ordersRepository.findForUpdate(orderId);
+        return accessible.orElseThrow(() -> new OrderException(OrderError.NOT_FOUND));
     }
 
     private BigDecimal calculateTotal(Orders order) {

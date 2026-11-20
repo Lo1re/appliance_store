@@ -230,3 +230,22 @@ with their configured passwords. H2 service races cover duplicate email/name and
 reference committed after a precheck; they do not establish PostgreSQL concurrency behavior.
 No DB reset, Flyway clean/repair or additional migration is required by this code change.
 The external Autocode result remains a separate acceptance check.
+
+
+### Security response policy
+
+Client order queries are scoped by accountId at the repository level, including write locks.
+A foreign and an absent order use the same NOT_FOUND code and localized 404 template.
+The ownership policy remains a defensive check for loaded objects. Employee-only actions
+are rejected with 403 for clients before loading an order, independently of its ID. CSRF
+failures also remain 403 before resource access. An anonymous MVC request to a protected
+route redirects to login; an unknown GET/HEAD route returns 404. Route classification checks
+handler mappings only, not database existence. Known route names are not treated as secrets.
+Error responses do not expose owners, object fields, stack traces or database details;
+Spring Security cache-control prevents caching personalized responses. These assertions
+are covered by ResourcePrivacyIntegrationTest and ScopedOrderAccessTest, pending execution.
+Equivalent status/content does not imply constant-time responses or a complete security audit.
+
+InMemoryAuthenticationValidator checks local settings and configured/domain role consistency;
+InMemoryAuthenticationConfig only constructs the selected authentication components.
+MvcRouteClassifier classifies mappings; MvcSecurityFailures handles the security response.

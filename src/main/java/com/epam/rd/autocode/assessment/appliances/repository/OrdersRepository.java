@@ -38,6 +38,11 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
     })
     Optional<Orders> findDetailedById(Long id);
 
+    @EntityGraph(attributePaths = {"client", "employee", "orderRowSet", "orderRowSet.appliance",
+            "orderRowSet.appliance.manufacturer"})
+    Optional<Orders> findDetailedByIdAndClient_Id(Long id, Long clientId);
+
+
     boolean existsByClient_Id(Long clientId);
 
     boolean existsByEmployee_Id(Long employeeId);
@@ -51,4 +56,9 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select o from Orders o where o.id = :id")
     Optional<Orders> findForUpdate(@Param("id") Long id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select o from Orders o where o.id = :id and o.client.id = :clientId")
+    Optional<Orders> findOwnedForUpdate(@Param("id") Long id, @Param("clientId") Long clientId);
+
 }

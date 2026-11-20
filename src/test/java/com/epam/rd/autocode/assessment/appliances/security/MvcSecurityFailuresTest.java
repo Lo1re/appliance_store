@@ -1,6 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.security;
 
 import org.junit.jupiter.api.Test;
+import com.epam.rd.autocode.assessment.appliances.web.error.MvcRouteClassifier;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.access.AccessDeniedException;
@@ -14,7 +15,7 @@ import static org.mockito.Mockito.*;
 
 class MvcSecurityFailuresTest {
     private final RequestMappingHandlerMapping routes = mock(RequestMappingHandlerMapping.class);
-    private final MvcSecurityFailures failures = new MvcSecurityFailures(routes);
+    private final MvcSecurityFailures failures = new MvcSecurityFailures(new MvcRouteClassifier(routes));
 
     @Test
     void unknownReadIs404AndKnownDeniedRouteIs403() throws Exception {
