@@ -31,6 +31,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class InMemoryAuthenticationIntegrationTest {
     @Autowired MockMvc mvc;
     @Autowired UserRepository users;
+    @Autowired com.epam.rd.autocode.assessment.appliances.repository.LoginAttemptRepository attempts;
+
+    @org.junit.jupiter.api.BeforeEach
+    void clearCounters() { attempts.deleteAll(); }
+
+    @Test
+    void memoryPasswordLoginCannotBypassTheLock() throws Exception {
+        for (int i = 0; i < 5; i++) mvc.perform(formLogin().user("mercury@gmail.com").password("wrong"))
+                .andExpect(unauthenticated());
+        mvc.perform(formLogin().user("mercury@gmail.com").password("PhobosLocal2026!"))
+                .andExpect(unauthenticated()).andExpect(redirectedUrl("/login?locked"));
+        assertThat(attempts.findById("mercury@gmail.com").orElseThrow().getFailedCount()).isEqualTo(5);
+    }
+
 
     @Test
     void acceptsOnlyConfiguredMemoryPasswordAndKeepsTheRealLocalIdentity() throws Exception {

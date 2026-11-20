@@ -1,10 +1,16 @@
 package com.epam.rd.autocode.assessment.appliances.security;
 
+import com.epam.rd.autocode.assessment.appliances.security.login.LoginAttemptService;
+import com.epam.rd.autocode.assessment.appliances.security.login.LoginProtectedAuthenticationProvider;
+import com.epam.rd.autocode.assessment.appliances.security.login.LoginProtectionProperties;
+import com.epam.rd.autocode.assessment.appliances.security.login.PasswordLoginFailureHandler;
 import jakarta.servlet.DispatcherType;
+import java.time.Clock;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -20,8 +26,12 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @EnableMethodSecurity
-@EnableConfigurationProperties(AuthenticationProperties.class)
+@EnableConfigurationProperties({AuthenticationProperties.class, LoginProtectionProperties.class, SessionPolicyProperties.class})
+@EnableScheduling
 public class SecurityConfig {
+
+    @Bean
+    public Clock securityClock() { return Clock.systemUTC(); }
 
     @Bean
     public SessionRegistry sessionRegistry() { return new SessionRegistryImpl(); }
@@ -37,22 +47,26 @@ public class SecurityConfig {
     @Bean
     public AuthenticationProvider authenticationProvider(
             UserDetailsService userDetailsService,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder, LoginAttemptService attempts
     ) {
         var provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
-        return provider;
+        return new LoginProtectedAuthenticationProvider(provider, attempts);
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, MvcSecurityFailures failures,
-                                                    CurrentActor actor, SessionRegistry sessions)
+                                                    CurrentActor actor, SessionRegistry sessions,
+                                                    SessionPolicyProperties sessionPolicy, PasswordLoginFailureHandler loginFailures)
             throws Exception {
         return http
                 .addFilterAfter(new ActiveAccountFilter(actor), AnonymousAuthenticationFilter.class)
-                .sessionManagement(session -> session.maximumSessions(-1)
-                        .sessionRegistry(sessions).expiredUrl("/login?expired"))
+                .sessionManagement(session -> {
+                    session.sessionFixation(fixation -> fixation.changeSessionId());
+                    session.maximumSessions(sessionPolicy.maximum()).maxSessionsPreventsLogin(false)
+                            .sessionRegistry(sessions).expiredUrl("/login?expired");
+                })
                 .authorizeHttpRequests(requests -> requests
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers(
@@ -87,7 +101,7 @@ public class SecurityConfig {
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
-                        .failureUrl("/login?error")
+                        .failureHandler(loginFailures)
                         .defaultSuccessUrl("/", false)
                         .permitAll()
                 )

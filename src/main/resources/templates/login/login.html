@@ -24,6 +24,10 @@
         Your session has ended. Sign in again.
     </p>
 
+    <p th:if="${param.locked != null}" role="alert" th:text="#{login.locked}">
+        Password sign-in is temporarily unavailable. Try again later.
+    </p>
+
     <form th:action="@{/login}" method="post">
         <div>
             <label for="username" th:text="#{login.username}">Email</label>

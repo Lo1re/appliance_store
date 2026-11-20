@@ -249,3 +249,38 @@ Equivalent status/content does not imply constant-time responses or a complete s
 InMemoryAuthenticationValidator checks local settings and configured/domain role consistency;
 InMemoryAuthenticationConfig only constructs the selected authentication components.
 MvcRouteClassifier classifies mappings; MvcSecurityFailures handles the security response.
+
+
+### Password login limits and sessions
+
+V2__login_attempt.sql adds durable canonical-email counters. Flyway applies it on the next
+startup/test run; existing migrations remain unchanged and no database reset is needed.
+Five failed password logins within 15 minutes lock password login for 15 minutes. The same
+policy applies to unknown accounts and to database/in-memory authentication. Settings are
+store.security.login.max-failures, window and lock-duration. Successful unlocked login
+clears the counter; blocked retries do not extend the deadline. MVC redirects blocked
+attempts to /login?locked with a generic EN/UK message. API 429/Retry-After belongs to the
+future API handler and is not implemented by this MVC redirect.
+
+LoginAttemptPolicy owns time-window rules. LoginAttemptService owns independent counter
+transactions, locking and retries. Explicit Persistable new-state prevents merge from
+silently overwriting another transaction's initial count. LoginAttemptEvents records one
+BadCredentials event per password failure and resets successful password authentication;
+locked retries and third-party token events are excluded. The provider checks current lock
+state before/after password verification. Cleanup removes expired counters after 24 hours,
+once per hour; retention and cleanup-interval-ms are configurable. Raw Hibernate SQL error
+logging is disabled for constraint races; safe application error/security logging remains.
+
+Sessions expire after 30 minutes of inactivity. At most two active sessions are allowed;
+a third login expires the oldest, whose next request redirects to /login?expired. Session
+IDs change on authentication. Cookies use HttpOnly and SameSite=Lax; Secure/HTTPS and
+production deployment configuration are still part of the later HTTPS block. Maximum
+sessions is store.security.sessions.maximum (1–10). The registry remains single-instance.
+
+Verification: run Maven test, then verify. LoginProtectionIntegrationTest covers lock
+expiry, generic unknown-account behavior, canonicalization, rollback persistence, cleanup,
+simultaneous initial counters, session eviction and session ID rotation. In-memory login
+has a lock regression scenario too. Tests have been added but not run by the assistant.
+For a manual check, submit five wrong passwords, then the correct password: login remains
+blocked until lock expiry. Use three separate browser profiles to check session eviction.
+Per-email locking is this project's specified policy, not a complete anti-bot/IP rate limiter.

@@ -1,0 +1,36 @@
+package com.epam.rd.autocode.assessment.appliances.security.login;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.LockedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+
+/** Gates password authentication using fresh lock state, never a principal snapshot. */
+@RequiredArgsConstructor
+public class LoginProtectedAuthenticationProvider implements AuthenticationProvider {
+    private final AuthenticationProvider passwords;
+    private final LoginAttemptService attempts;
+
+    @Override
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        try {
+            requireUnlocked(authentication.getName());
+            Authentication authenticated = passwords.authenticate(authentication);
+            requireUnlocked(authentication.getName());
+            return authenticated;
+        } catch (DataAccessException failure) {
+            throw new AuthenticationServiceException("Authentication temporarily unavailable", failure);
+        }
+    }
+
+    private void requireUnlocked(String username) {
+        if (!attempts.remainingLock(username).isZero()) {
+            throw new LockedException("Password login temporarily unavailable");
+        }
+    }
+
+    @Override public boolean supports(Class<?> authentication) { return passwords.supports(authentication); }
+}

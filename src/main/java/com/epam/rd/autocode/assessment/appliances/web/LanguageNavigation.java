@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 /** Prepares language links, retaining only non-sensitive list filters. */
 @Component
 public class LanguageNavigation {
-    private static final List<String> FILTERS = List.of("search", "sort", "page", "status", "error", "logout", "expired");
+    private static final List<String> FILTERS = List.of("search", "sort", "page", "status", "error", "logout", "expired", "locked");
 
     public Links links(HttpServletRequest request) {
         String path = request.getRequestURI();
