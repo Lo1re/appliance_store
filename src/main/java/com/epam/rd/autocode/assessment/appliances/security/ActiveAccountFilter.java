@@ -20,7 +20,7 @@ public class ActiveAccountFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain chain) throws IOException, ServletException {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof StorePrincipal) {
+        if (authentication != null && authentication.getPrincipal() instanceof AccountPrincipal) {
             try {
                 currentActor.requireUser();
             } catch (AccessDeniedException staleAccount) {

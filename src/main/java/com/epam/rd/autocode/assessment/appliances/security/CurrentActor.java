@@ -28,7 +28,7 @@ public class CurrentActor {
         if (authentication == null
                 || !authentication.isAuthenticated()
                 || !(authentication.getPrincipal()
-                instanceof StorePrincipal principal)) {
+                instanceof AccountPrincipal principal)) {
             throw new AccessDeniedException("Access denied");
         }
 

@@ -34,7 +34,7 @@ public class AccountSessionRevocation {
 
     private void expire(Long accountId) {
         sessions.getAllPrincipals().stream()
-                .filter(StorePrincipal.class::isInstance).map(StorePrincipal.class::cast)
+                .filter(AccountPrincipal.class::isInstance).map(AccountPrincipal.class::cast)
                 .filter(principal -> accountId.equals(principal.getAccountId()))
                 .flatMap(principal -> sessions.getAllSessions(principal, false).stream())
                 .forEach(session -> session.expireNow());

@@ -13,7 +13,7 @@ public final class SecurityLogContext {
     }
 
     public static Long accountId(Authentication authentication) {
-        return authentication != null && authentication.getPrincipal() instanceof StorePrincipal principal
+        return authentication != null && authentication.getPrincipal() instanceof AccountPrincipal principal
                 ? principal.getAccountId() : null;
     }
 

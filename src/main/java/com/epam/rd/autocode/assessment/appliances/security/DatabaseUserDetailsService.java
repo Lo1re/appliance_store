@@ -39,7 +39,7 @@ public class DatabaseUserDetailsService implements UserDetailsService {
                 user.getId(),
                 user.getEmail(),
                 user.getPassword(),
-                role.name()
+                role
         );
     }
 }

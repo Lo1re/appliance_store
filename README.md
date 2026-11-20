@@ -178,3 +178,15 @@ binding or search/sort values longer than 100 characters return HTTP 400. Order 
 remains a separate filter. ApplianceRepository escapes custom LIKE patterns using !;
 derived Containing queries retain Spring Data's own escaping. %, _ and ! are literal
 search characters, not additional wildcard controls.
+
+
+### Principal identity
+
+StorePrincipal implements AccountPrincipal and delegates UserDetails credential handling to
+Spring Security User. Equality and hashCode use the immutable accountId, not the editable
+email. SessionRegistry therefore groups sessions before and after an email change, while
+reusing an email for a different account cannot merge those accounts. A principal with a
+missing accountId remains invalid and is rejected by CurrentActor. Authentication adapters
+added later must implement symmetric identity equality and hashCode by accountId.
+The production login path uses AccountRole directly; the string constructor is retained for
+existing callers and validates through the enum. This step does not add OAuth or JWT login.
