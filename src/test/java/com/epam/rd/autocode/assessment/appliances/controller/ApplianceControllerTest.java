@@ -43,7 +43,7 @@ class ApplianceControllerTest {
     @BeforeEach
     void setUp() {
         mvc = MockMvcBuilders.standaloneSetup(
-                        new ApplianceController(service, new ApplianceFormAssembler(service, Mappers.getMapper(ApplianceMapper.class), lookups)))
+                        new ApplianceController(service, new ApplianceFormAssembler(service, Mappers.getMapper(ApplianceMapper.class), lookups), new ListPageFactory(10)))
                 .setControllerAdvice(new BusinessExceptionAdvice())
                 .build();
     }

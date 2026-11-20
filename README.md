@@ -167,3 +167,14 @@ support MVC forms; they do not implement the planned stateless JWT API.
 
 DatabaseConstraintExtractor reads SQL metadata; PersistenceConflictTranslator maps only
 known constraints to domain errors. SQL migrations and database profiles are unchanged.
+
+
+### List pagination and search
+
+MVC lists bind shared ListQuery parameters. ListPageFactory applies each resource's sort
+allowlist, adds id as a stable tie-breaker and clamps negative page numbers to zero.
+store.pagination.page-size defaults to 10 and accepts values from 1 to 100. Invalid page
+binding or search/sort values longer than 100 characters return HTTP 400. Order status
+remains a separate filter. ApplianceRepository escapes custom LIKE patterns using !;
+derived Containing queries retain Spring Data's own escaping. %, _ and ! are literal
+search characters, not additional wildcard controls.

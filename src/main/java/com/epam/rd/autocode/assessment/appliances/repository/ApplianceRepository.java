@@ -11,21 +11,26 @@ import org.springframework.data.repository.query.Param;
 public interface ApplianceRepository
         extends JpaRepository<Appliance, Long> {
 
+    default Page<Appliance> search(String search, Pageable pageable) {
+        String literal = search.replace("!", "!!").replace("%", "!%").replace("_", "!_");
+        return searchLiteral(literal, pageable);
+    }
+
     @EntityGraph(attributePaths = "manufacturer")
     @Query("""
             select a
             from Appliance a
             where lower(a.name) like lower(
                 concat('%', concat(:search, '%'))
-            )
+            ) escape '!'
             or lower(a.model) like lower(
                 concat('%', concat(:search, '%'))
-            )
+            ) escape '!'
             or lower(a.manufacturer.name) like lower(
                 concat('%', concat(:search, '%'))
-            )
+            ) escape '!'
             """)
-    Page<Appliance> search(
+    Page<Appliance> searchLiteral(
             @Param("search") String search,
             Pageable pageable
     );

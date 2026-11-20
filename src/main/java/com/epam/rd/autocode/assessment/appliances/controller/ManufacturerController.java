@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @ControllerSection(path = "/manufacturers", errorView = "error/catalog")
@@ -33,18 +32,18 @@ public class ManufacturerController {
     private final ManufacturerService manufacturerService;
     private final ManufacturerMapper manufacturerMapper;
 
+    private final ListPageFactory pages;
+
     @GetMapping
     public String list(
-            @RequestParam(defaultValue = "") String search,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "name") String sort,
+            @Valid @ModelAttribute ListQuery query,
             HttpServletRequest request,
             Model model
     ) {
-        ListPage listPage = ListPage.of(page, sort, SORT_FIELDS);
+        ListPage listPage = pages.create(query, SORT_FIELDS);
 
-        model.addAttribute("manufacturers", manufacturerService.findAll(search, listPage.pageable()));
-        model.addAttribute("search", search);
+        model.addAttribute("manufacturers", manufacturerService.findAll(query.getSearch(), listPage.pageable()));
+        model.addAttribute("search", query.getSearch());
         model.addAttribute("sort", listPage.sort());
         model.addAttribute("canManage", request.isUserInRole("EMPLOYEE"));
         return LIST;

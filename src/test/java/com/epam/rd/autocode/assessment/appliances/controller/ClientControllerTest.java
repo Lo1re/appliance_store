@@ -33,7 +33,7 @@ class ClientControllerTest {
     @BeforeEach
     void setUp() {
         mvc = MockMvcBuilders.standaloneSetup(
-                        new ClientController(service, Mappers.getMapper(ClientMapper.class), new AccountFormView()))
+                        new ClientController(service, Mappers.getMapper(ClientMapper.class), new AccountFormView(), new ListPageFactory(10)))
                 .setControllerAdvice(new BusinessExceptionAdvice())
                 .build();
     }

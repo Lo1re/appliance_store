@@ -41,7 +41,7 @@ class ManufacturerControllerTest {
     @BeforeEach
     void setUp() {
         var mapper = Mappers.getMapper(ManufacturerMapper.class);
-        mvc = MockMvcBuilders.standaloneSetup(new ManufacturerController(service, mapper))
+        mvc = MockMvcBuilders.standaloneSetup(new ManufacturerController(service, mapper, new ListPageFactory(10)))
                 .setControllerAdvice(new BusinessExceptionAdvice())
                 .build();
     }

@@ -33,7 +33,7 @@ class EmployeeControllerTest {
     @BeforeEach
     void setUp() {
         mvc = MockMvcBuilders.standaloneSetup(
-                        new EmployeeController(service, Mappers.getMapper(EmployeeMapper.class), new AccountFormView()))
+                        new EmployeeController(service, Mappers.getMapper(EmployeeMapper.class), new AccountFormView(), new ListPageFactory(10)))
                 .setControllerAdvice(new BusinessExceptionAdvice())
                 .build();
     }

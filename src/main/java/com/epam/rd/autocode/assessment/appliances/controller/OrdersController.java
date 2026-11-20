@@ -37,14 +37,15 @@ public class OrdersController {
     private final OrderService orderService;
     private final OrderFormAssembler orderFormAssembler;
 
+    private final ListPageFactory pages;
+
     @GetMapping
     public String list(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "id") String sort,
+            @Valid @ModelAttribute ListQuery query,
             @RequestParam(defaultValue = "all") String status,
             Model model
     ) {
-        ListPage listPage = ListPage.of(page, sort, SORT_FIELDS, "id");
+        ListPage listPage = pages.create(query, SORT_FIELDS, "id");
         OrderFilter filter = OrderFilter.fromParameter(status);
         model.addAttribute("orders", orderService.findAll(filter.approved(), listPage.pageable()));
         model.addAttribute("sort", listPage.sort());

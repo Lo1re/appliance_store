@@ -44,7 +44,7 @@ class OrdersControllerTest {
     @BeforeEach
     void setUp() {
         mvc = MockMvcBuilders.standaloneSetup(
-                        new OrdersController(orders, new OrderFormAssembler(orders, Mappers.getMapper(OrderMapper.class), lookups, actor)))
+                        new OrdersController(orders, new OrderFormAssembler(orders, Mappers.getMapper(OrderMapper.class), lookups, actor), new ListPageFactory(10)))
                 .setControllerAdvice(new BusinessExceptionAdvice())
                 .build();
     }
