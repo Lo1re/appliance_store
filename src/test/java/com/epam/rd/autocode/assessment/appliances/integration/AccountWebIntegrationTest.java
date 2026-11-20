@@ -157,7 +157,7 @@ class AccountWebIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(model().attributeHasFieldErrors(
                         "credentials",
-                        "withinBcryptLimit"
+                        "password"
                 ))
                 .andExpect(content().string(containsString(
                         "The password must not exceed 72 UTF-8 bytes."
@@ -169,6 +169,29 @@ class AccountWebIntegrationTest {
         assertThat(users.existsByEmailIgnoreCase(
                 "invalid-password@example.com"
         )).isFalse();
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "en, The password must contain at least 12 characters.",
+            "uk, Пароль має містити щонайменше 12 символів."
+    })
+    void localizesPasswordStrengthErrorsOnThePasswordField(String language, String message)
+            throws Exception {
+        var employee = login("phobos@gmail.com", "PhobosLocal2026!", "EMPLOYEE");
+        mvc.perform(post("/clients/add")
+                        .session(employee)
+                        .cookie(new jakarta.servlet.http.Cookie("store-lang", language))
+                        .with(csrf())
+                        .param("name", "Validation Test")
+                        .param("email", "strength-check@example.com")
+                        .param("card", "TEST-CARD")
+                        .param("password", "Short1!"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeHasFieldErrors("credentials", "password"))
+                .andExpect(content().string(containsString(message)))
+                .andExpect(content().string(not(containsString("Short1!"))));
+        assertThat(users.existsByEmailIgnoreCase("strength-check@example.com")).isFalse();
     }
 
     @Test

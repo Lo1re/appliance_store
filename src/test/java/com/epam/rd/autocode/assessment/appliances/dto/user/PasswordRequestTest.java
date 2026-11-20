@@ -1,6 +1,5 @@
 package com.epam.rd.autocode.assessment.appliances.dto.user;
 
-import com.epam.rd.autocode.assessment.appliances.dto.user.PasswordRequest;
 import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.Test;
@@ -23,6 +22,7 @@ class PasswordRequestTest {
             assertThat(validator.validate(request)).isEmpty();
             request.setPassword(accepted + "я");
             assertThat(validator.validate(request))
+                    .allSatisfy(violation -> assertThat(violation.getPropertyPath().toString()).isEqualTo("password"))
                     .extracting(v -> v.getMessageTemplate())
                     .containsExactly("{user.password.too-long}");
         }
