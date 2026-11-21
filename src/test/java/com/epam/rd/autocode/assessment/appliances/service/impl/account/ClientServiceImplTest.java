@@ -19,6 +19,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ClientServiceImplTest {
     @Mock private BusinessAudit audit;
+    @Mock private AccountCredentialsService credentials;
     @Mock private ClientRepository repository;
     @Mock private OrdersRepository dependencies;
     @InjectMocks private ClientServiceImpl service;

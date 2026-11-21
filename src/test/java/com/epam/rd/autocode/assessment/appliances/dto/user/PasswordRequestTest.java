@@ -14,7 +14,12 @@ class PasswordRequestTest {
             request.setPassword(null);
             assertThat(validator.validate(request)).hasSize(1);
             request.setPassword("longbutonlylowercase");
-            assertThat(validator.validate(request)).hasSize(1);
+            assertThat(validator.validate(request))
+                    .extracting(violation -> violation.getMessageTemplate())
+                    .containsExactlyInAnyOrder(
+                            "{user.password.uppercase}",
+                            "{user.password.digit}",
+                            "{user.password.special}");
             String accepted = " A1!" + "я".repeat(34);
             request.setPassword(accepted);
             assertThat(request.getPassword()).isEqualTo(accepted);

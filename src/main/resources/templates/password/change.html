@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="#{password.change.title}">Change password</title></head>
+<body><header th:insert="~{menunavy :: navy}"></header>
+<main><h1 th:text="#{password.change.title}">Change password</h1>
+    <p th:text="#{password.change.description}">After changing your password, sign in again.</p>
+    <form th:action="@{/password/change}" th:object="${passwordForm}" method="post">
+        <ul th:if="${#fields.hasGlobalErrors()}" role="alert">
+            <li th:each="error : ${#fields.globalErrors()}" th:text="${error}"></li>
+        </ul>
+        <div><label for="currentPassword" th:text="#{password.current.label}">Current password</label>
+            <input id="currentPassword" name="currentPassword" type="password" autocomplete="current-password" required>
+            <p th:errors="*{currentPassword}" role="alert"></p></div>
+        <div><label for="newPassword" th:text="#{password.new.label}">New password</label>
+            <input id="newPassword" name="newPassword" type="password" autocomplete="new-password" required>
+            <p th:errors="*{newPassword}" role="alert"></p></div>
+        <div><label for="confirmPassword" th:text="#{password.confirm.label}">Confirm password</label>
+            <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" required>
+            <p th:errors="*{confirmPassword}" role="alert"></p></div>
+        <button type="submit" th:text="#{password.change.submit}">Change password</button>
+        <a th:href="@{/}" th:text="#{form.cancel}">Cancel</a>
+    </form>
+</main></body></html>

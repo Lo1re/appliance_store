@@ -1,4 +1,4 @@
-package com.epam.rd.autocode.assessment.appliances.validation;
+package com.epam.rd.autocode.assessment.appliances.validation.password;
 
 import com.epam.rd.autocode.assessment.appliances.dto.user.PasswordRequest;
 import jakarta.validation.Validation;
@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,10 +35,17 @@ class StrongPasswordValidationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"abcdefghijkl!1", "ABCDEFGHIJKL!1", "Abcdefghijkl!", "Abcdefghijkl1"})
-    void rejectsMissingCharacterCategories(String value) {
+    @CsvSource({"abcdefghijkl!1,uppercase", "ABCDEFGHIJKL!1,lowercase", "Abcdefghijkl!,digit", "Abcdefghijkl1,special"})
+    void rejectsMissingCharacterCategories(String value, String category) {
         assertThat(validator.validate(request(value)))
-                .extracting(v -> v.getMessageTemplate()).containsExactly("{user.password.complexity}");
+                .extracting(v -> v.getMessageTemplate()).containsExactly("{user.password." + category + "}");
+    }
+
+    @Test
+    void reportsEveryMissingCategoryTogether() {
+        assertThat(validator.validate(request("abcdefghijkl")))
+                .extracting(v -> v.getMessageTemplate()).containsExactlyInAnyOrder(
+                        "{user.password.uppercase}", "{user.password.digit}", "{user.password.special}");
     }
 
     @Test

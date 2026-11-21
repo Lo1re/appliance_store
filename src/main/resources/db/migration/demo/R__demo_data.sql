@@ -15,15 +15,15 @@ INSERT INTO users (name, email, password)
 SELECT seed.name,
        seed.email,
        seed.password_hash
-FROM (VALUES ('Mercury', 'mercury@gmail.com', '$2a$10$1AKtymfGSBjTIz.y82Jdke2w8Z2lE.KGMhD1ZYtKDiYX8Pa7cx/Da'),
-             ('Venus', 'venus@gmail.com', '$2a$10$.2BYYUwe5RPu/Rsx8x4d5.TK2RhpvZy/sw3l5E0uXEqF7n1Xv6edq'),
-             ('Earth', 'earth@gmail.com', '$2a$10$2/zwG0mdZsM6AM0fnESg9uQo1kDebpsPnbO74BRvqJOis6MO7mEbu'),
-             ('Mars', 'iamgod@gmail.com', '$2a$10$I0n6u1r2rnIRyY5jQSBesuyIi3FY4RHvo35oL65V2Cu2ZVzwUFt9S'),
-             ('Jupiter', 'jupiter@gmail.com', '$2a$10$6gaQ.8b21MCzSdJxSN04W.cIgeyZvZR5L6ul8V1/AVddHqyChxWqS'),
-             ('Saturn', 'saturn@gmail.com', '$2a$10$XvZyRsOSGFw7QFi3nT8fGuratMseTDQnYvxJJm7oES2.5KaWVcyva'),
-             ('Uranus', 'uranus@gmail.com', '$2a$10$Iw.ZO/zV1EbG2XrLE8J68OF6N9c1Yb1i7WJ8FAXNL44K/F6TDG4Cy'),
+FROM (VALUES ('Mercury', 'mercury@gmail.com', '${demoPasswordMercury}'),
+             ('Venus', 'venus@gmail.com', '${demoPasswordVenus}'),
+             ('Earth', 'earth@gmail.com', '${demoPasswordEarth}'),
+             ('Mars', 'iamgod@gmail.com', '${demoPasswordMars}'),
+             ('Jupiter', 'jupiter@gmail.com', '${demoPasswordJupiter}'),
+             ('Saturn', 'saturn@gmail.com', '${demoPasswordSaturn}'),
+             ('Uranus', 'uranus@gmail.com', '${demoPasswordUranus}'),
              ('Neptune', 'neptune@gmail.com',
-              '$2a$10$oK7l/HpJS5ye1f4OVYBQAuysFDfKUt6puVjgnbizM9YlyzbE2ct3K')) AS seed(name, email, password_hash)
+              '${demoPasswordNeptune}')) AS seed(name, email, password_hash)
 WHERE NOT EXISTS (SELECT 1
                   FROM users existing
                   WHERE LOWER(existing.email) = seed.email);
@@ -52,11 +52,11 @@ INSERT INTO users (name, email, password)
 SELECT seed.name,
        seed.email,
        seed.password_hash
-FROM (VALUES ('Phobos', 'phobos@gmail.com', '$2a$10$PsRnmS7huldXCKf0kWLObOB7ndzQZaCC3Bt/gO6X4kohWInxkC//W'),
-             ('Moon', 'moon@gmail.com', '$2a$10$.HBCvQaK.5FhG249uYw83uynn8LHtRmXXuGhC0UnSX1IpcfiMCCGq'),
-             ('Deimos', 'deimos@gmail.com', '$2a$10$upqOsEiH1ZOe7GGUzqYXXOnDHDeTGp0MSNCwHHKCvb1yNDRORqzIq'),
+FROM (VALUES ('Phobos', 'phobos@gmail.com', '${demoPasswordPhobos}'),
+             ('Moon', 'moon@gmail.com', '${demoPasswordMoon}'),
+             ('Deimos', 'deimos@gmail.com', '${demoPasswordDeimos}'),
              ('Europa', 'europa@gmail.com',
-              '$2a$10$iHRrWTZZum1KLNm0PBb5AOIdwtnayXtpFjPNwZVSNAmPDQYchE4Fy')) AS seed(name, email, password_hash)
+              '${demoPasswordEuropa}')) AS seed(name, email, password_hash)
 WHERE NOT EXISTS (SELECT 1
                   FROM users existing
                   WHERE LOWER(existing.email) = seed.email);

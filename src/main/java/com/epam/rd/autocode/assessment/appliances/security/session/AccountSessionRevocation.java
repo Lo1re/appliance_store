@@ -1,13 +1,11 @@
 package com.epam.rd.autocode.assessment.appliances.security.session;
 
-import com.epam.rd.autocode.assessment.appliances.security.identity.AccountPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -17,7 +15,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 @RequiredArgsConstructor
 @Order(Ordered.LOWEST_PRECEDENCE - 25)
 public class AccountSessionRevocation {
-    private final SessionRegistry sessions;
+    private final AccountSessionInvalidator sessions;
 
     @Around(value = "@annotation(com.epam.rd.autocode.assessment.appliances.security.session.RevokesAccountSessions) && args(accountId)",
             argNames = "operation,accountId")
@@ -34,10 +32,6 @@ public class AccountSessionRevocation {
     }
 
     private void expire(Long accountId) {
-        sessions.getAllPrincipals().stream()
-                .filter(AccountPrincipal.class::isInstance).map(AccountPrincipal.class::cast)
-                .filter(principal -> accountId.equals(principal.getAccountId()))
-                .flatMap(principal -> sessions.getAllSessions(principal, false).stream())
-                .forEach(session -> session.expireNow());
+        sessions.expire(accountId);
     }
 }

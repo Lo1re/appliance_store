@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.PageRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@org.springframework.context.annotation.Import(com.epam.rd.autocode.assessment.appliances.config.demo.DemoMigrationConfiguration.class)
 @DataJpaTest
 class OrderRowRepositoryTest {
     @Autowired private OrderRowRepository rows;

@@ -1,4 +1,4 @@
-package com.epam.rd.autocode.assessment.appliances.validation;
+package com.epam.rd.autocode.assessment.appliances.validation.password;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

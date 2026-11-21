@@ -14,7 +14,7 @@ class AccountSessionRevocationTest {
         var registry = new SessionRegistryImpl();
         registry.registerNewSession("target", new StorePrincipal(2L, "target@example.com", "hash", "EMPLOYEE"));
         registry.registerNewSession("other", new StorePrincipal(3L, "other@example.com", "hash", "EMPLOYEE"));
-        new AccountSessionRevocation(registry).afterDeletion(mock(ProceedingJoinPoint.class), 2L);
+        new AccountSessionRevocation(new AccountSessionInvalidator(registry)).afterDeletion(mock(ProceedingJoinPoint.class), 2L);
         assertThat(registry.getSessionInformation("target").isExpired()).isTrue();
         assertThat(registry.getSessionInformation("other").isExpired()).isFalse();
     }
@@ -26,7 +26,7 @@ class AccountSessionRevocationTest {
         TransactionSynchronizationManager.setActualTransactionActive(true);
         TransactionSynchronizationManager.initSynchronization();
         try {
-            new AccountSessionRevocation(registry).afterDeletion(mock(ProceedingJoinPoint.class), 2L);
+            new AccountSessionRevocation(new AccountSessionInvalidator(registry)).afterDeletion(mock(ProceedingJoinPoint.class), 2L);
             assertThat(registry.getSessionInformation("target").isExpired()).isFalse();
             var hooks = TransactionSynchronizationManager.getSynchronizations();
             hooks.forEach(hook -> hook.afterCompletion(1));
@@ -45,7 +45,7 @@ class AccountSessionRevocationTest {
         var operation = mock(ProceedingJoinPoint.class);
         var failure = new IllegalStateException("failed");
         when(operation.proceed()).thenThrow(failure);
-        assertThatThrownBy(() -> new AccountSessionRevocation(registry).afterDeletion(operation, 2L)).isSameAs(failure);
+        assertThatThrownBy(() -> new AccountSessionRevocation(new AccountSessionInvalidator(registry)).afterDeletion(operation, 2L)).isSameAs(failure);
         assertThat(registry.getSessionInformation("target").isExpired()).isFalse();
     }
 }

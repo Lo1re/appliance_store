@@ -28,6 +28,8 @@
         Password sign-in is temporarily unavailable. Try again later.
     </p>
 
+    <p th:if="${param.passwordChanged != null}" role="status" th:text="#{password.change.completed}">Password changed. Sign in again.</p>
+
     <form th:action="@{/login}" method="post">
         <div>
             <label for="username" th:text="#{login.username}">Email</label>

@@ -1,6 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.dto.user;
 
-import com.epam.rd.autocode.assessment.appliances.validation.StrongPassword;
+import com.epam.rd.autocode.assessment.appliances.validation.password.StrongPassword;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;

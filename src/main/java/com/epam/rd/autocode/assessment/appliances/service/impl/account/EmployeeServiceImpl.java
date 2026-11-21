@@ -79,6 +79,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Loggable
     @PersistenceBoundary(PersistenceOperation.ACCOUNT_WRITE)
     public EmployeeResponse update(Long id, EmployeeRequest request) {
+        credentials.lockAccount(id, AccountError.EMPLOYEE_NOT_FOUND);
         Employee employee = requireEmployee(id);
         employeeMapper.applyRequest(request, employee);
         credentials.assignEmail(employee, request.getEmail());
@@ -92,6 +93,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     @PersistenceBoundary(PersistenceOperation.EMPLOYEE_DELETE)
     @RevokesAccountSessions
     public void delete(Long id) {
+        credentials.lockEmployeeAccounts();
+        credentials.lockAccount(id, AccountError.EMPLOYEE_NOT_FOUND);
         employeeRepository.findAllForDeletionLock();
         var actor = currentActor.requireUser();
         Employee employee = requireEmployee(id);

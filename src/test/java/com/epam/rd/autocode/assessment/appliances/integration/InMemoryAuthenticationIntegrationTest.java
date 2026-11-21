@@ -58,6 +58,7 @@ class InMemoryAuthenticationIntegrationTest {
         assertThat(((AccountPrincipal) context.getAuthentication().getPrincipal()).getAccountId())
                 .isEqualTo(users.findByEmailIgnoreCase("mercury@gmail.com").orElseThrow().getId());
         mvc.perform(get("/orders").session(session)).andExpect(status().isOk());
+        mvc.perform(get("/password/change").session(session)).andExpect(status().isNotFound());
         mvc.perform(get("/clients").session(session)).andExpect(status().isForbidden());
         mvc.perform(formLogin().user("absent@example.com").password("PhobosLocal2026!"))
                 .andExpect(unauthenticated());

@@ -22,10 +22,13 @@ class EmployeeDeletionServiceTest {
         when(currentActor.requireUser()).thenReturn(actor);
         when(repository.findById(2L)).thenReturn(Optional.of(target));
         when(repository.count()).thenReturn(2L);
+        var credentials = mock(AccountCredentialsService.class);
         var service = new EmployeeServiceImpl(repository, orders, mock(EmployeeMapper.class),
-                mock(AccountCredentialsService.class), currentActor, new EmployeeDeletionPolicy(), mock(BusinessAudit.class));
+                credentials, currentActor, new EmployeeDeletionPolicy(), mock(BusinessAudit.class));
         service.delete(2L);
-        var sequence = inOrder(repository, currentActor, orders);
+        var sequence = inOrder(credentials, repository, currentActor, orders);
+        sequence.verify(credentials).lockEmployeeAccounts();
+        sequence.verify(credentials).lockAccount(2L, com.epam.rd.autocode.assessment.appliances.exception.AccountError.EMPLOYEE_NOT_FOUND);
         sequence.verify(repository).findAllForDeletionLock();
         sequence.verify(currentActor).requireUser();
         sequence.verify(repository).findById(2L);

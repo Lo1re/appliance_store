@@ -543,6 +543,50 @@ switches, preserved cookies on an outage, backend 503 responses and failed serve
 The earlier browser-background-CSRF regression remains. Only static checks were performed;
 Maven/build/test/application/database execution remains for the user. No migration changed.
 
+### Change your own database password
+
+Database authentication now offers GET/POST /password/change through the signed-in
+navigation. The Thymeleaf form requires the current password, a strong new password and
+matching confirmation. It uses CSRF and never re-renders any password value. The current
+secret is checked against fresh locked credential state and the shared password-attempt
+limit; five wrong current-password checks cannot bypass the existing login lock. Failed
+attempts remain persisted even when the change transaction rolls back. Successful current
+verification is not a separate login and does not reset counters ahead of commit.
+
+The new BCrypt hash, revocation of ALL account refresh records and removal of the login
+counter are one transaction. Reusing the current password as the new password is rejected.
+PasswordChanged contains only accountId. After successful commit, separate listeners expire
+tracked sessions and log safe security metadata. The controller then clears the current
+JWT/CSRF cookies and HTTP session and redirects to /login?passwordChanged. Sign in again.
+A previously copied access JWT remains bounded by its existing <=15-minute TTL, as in the
+accepted access-token policy; the operation does not introduce an access-token denylist.
+
+In-memory credentials are configuration-backed and cannot be changed by writing the DB.
+Consequently this form/service are disabled in the explicit in-memory demo mode; the
+navigation hides the action and direct GET returns 404. Database-backed authentication is
+the default production-capable path. Password reset/email and OAuth remain later blocks.
+
+The new folders keep concerns separate: dto/password, validation/password, controller/password,
+service/password, security/password, repository/lock and repository/projection. Existing
+StrongPassword constraints are grouped with PasswordsMatch under validation/password.
+AccountRowLock locks the users base row and refreshes the JPA first-level entity state.
+Account profile update/delete also obtain this lock before touching joined tables, so a
+stale outer profile transaction cannot restore a previous password hash. Employee deletion
+locks its target parent before the existing employee-set lock. Package-private account
+helpers remain together, and the existing deletion tests are adapted.
+
+No schema migration, new dependency, SMTP secret or provider registration is needed for
+this block. H2 tests cover hash storage, atomic rollback, refresh/session revocation,
+password lock, validation/no echo, JWT-cookie cleanup, legacy session logout and stale
+profile concurrency. They were prepared but not run by the assistant.
+
+Manual check after Maven clean/test and restart: create a disposable client, sign in as
+that client, open Change password, try a wrong current password and a confirmation
+mismatch, then change correctly. The form must not echo values; success signs you out,
+old password fails and new password works. Previously captured refresh credentials can
+no longer renew. Do not test by publishing real credentials or resetting shared demo
+users unless you intend to keep their changed password. Flyway never resets it on startup.
+
 Pagination review: MVC and API now share web.pagination.ListPageFactory/ListPage.
 The duplicate ApiPageFactory was removed; the shared factory accepts transport-neutral
 values and uses store.pagination.page-size when API size is omitted. Request DTOs remain
@@ -550,3 +594,9 @@ separate because MVC clamps negative page numbers while API rejects them. Both r
 numbers over 1,000,000 before querying. API-only error helpers are conditional on enabled.
 After this package move, run Maven clean then test to remove stale target/classes entries.
 No database or migration changes are required by the move.
+
+### Demo migration credentials
+
+`R__demo_data.sql` contains placeholder names, without embedded password hashes or plaintext passwords. `config.demo.DemoMigrationConfiguration` supplies freshly salted BCrypt hashes for local/test demo accounts only; production does not enable this configuration. Demo login passwords remain `<Name>Local2026!` (for example, `MercuryLocal2026!`). These are public demonstration credentials, never production credentials.
+
+Fresh salts change the repeatable migration checksum on a new application context, so Flyway can execute the demo script again on restart. Its conditional inserts preserve existing account passwords and user changes. Re-running migrate within the same context uses the same placeholders. Never copy these demo settings into production. Database password columns must always contain one-way hashes.

@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@org.springframework.context.annotation.Import(com.epam.rd.autocode.assessment.appliances.config.demo.DemoMigrationConfiguration.class)
 @DataJpaTest
 class ApplianceRepositoryTest {
     @Autowired EntityManager entityManager;

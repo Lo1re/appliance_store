@@ -75,6 +75,7 @@ public class ClientServiceImpl implements ClientService {
     @Loggable
     @PersistenceBoundary(PersistenceOperation.ACCOUNT_WRITE)
     public ClientResponse update(Long id, ClientRequest request) {
+        credentials.lockAccount(id, AccountError.CLIENT_NOT_FOUND);
         Client client = requireClient(id);
         clientMapper.applyRequest(request, client);
         credentials.assignEmail(client, request.getEmail());
@@ -88,6 +89,7 @@ public class ClientServiceImpl implements ClientService {
     @PersistenceBoundary(PersistenceOperation.CLIENT_DELETE)
     @RevokesAccountSessions
     public void delete(Long id) {
+        credentials.lockAccount(id, AccountError.CLIENT_NOT_FOUND);
         Client client = requireClient(id);
 
         if (ordersRepository.existsByClient_Id(id)) {
