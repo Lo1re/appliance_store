@@ -11,6 +11,6 @@ public class AccessTokenAuthenticationConverter implements Converter<Jwt, Access
         var roles = jwt.getClaimAsStringList("roles");
         var authorities = Arrays.stream(AccountRole.values()).filter(role -> roles.contains(role.name()))
                 .map(role -> new org.springframework.security.core.authority.SimpleGrantedAuthority(role.authority())).toList();
-        return new AccessTokenAuthentication(new AccessTokenPrincipal(Long.parseLong(jwt.getSubject())), authorities, jwt.getExpiresAt());
+        return new AccessTokenAuthentication(new AccessTokenPrincipal(Long.parseLong(jwt.getSubject())), authorities, jwt.getExpiresAt(), AccessTokenVersion.read(jwt));
     }
 }

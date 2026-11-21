@@ -1,5 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.security.oauth.google.flow;
 
+import com.epam.rd.autocode.assessment.appliances.security.jwt.access.AccessTokenVersion;
+import com.epam.rd.autocode.assessment.appliances.security.jwt.access.AccessTokenVersionService;
 import com.epam.rd.autocode.assessment.appliances.security.jwt.cookie.AuthTokenCookies;
 import com.epam.rd.autocode.assessment.appliances.security.oauth.google.identity.GoogleLoginException;
 import com.epam.rd.autocode.assessment.appliances.security.password.reset.ResetTokenCodec;
@@ -15,11 +17,15 @@ public class GoogleLinkVerifier {
     private final AuthTokenCookies cookies;
     private final JwtDecoder decoder;
     private final ResetTokenCodec hashes;
+    private final AccessTokenVersionService versions;
     public void verify(HttpServletRequest request, GoogleFlowSession.LinkIntent intent) {
         String access = cookies.read(request);
         if (access == null || !MessageDigest.isEqual(hashes.hash(access).getBytes(StandardCharsets.US_ASCII),
-                intent.accessHash().getBytes(StandardCharsets.US_ASCII))
-                || !intent.accountId().toString().equals(decoder.decode(access).getSubject()))
+                intent.accessHash().getBytes(StandardCharsets.US_ASCII)))
             throw new GoogleLoginException(GoogleLoginException.Reason.FLOW_EXPIRED);
+        var jwt = decoder.decode(access);
+        if (!intent.accountId().toString().equals(jwt.getSubject()))
+            throw new GoogleLoginException(GoogleLoginException.Reason.FLOW_EXPIRED);
+        versions.requireCurrent(intent.accountId(), AccessTokenVersion.read(jwt));
     }
 }

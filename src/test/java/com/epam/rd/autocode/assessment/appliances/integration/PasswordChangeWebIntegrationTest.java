@@ -34,6 +34,10 @@ class PasswordChangeWebIntegrationTest {
 
     @Test void ordinaryFormChangesPasswordClearsCookiesAndRevokesRefreshWithoutEchoingSecrets() throws Exception {
         var login=login(OLD);Cookie access=login.getResponse().getCookie(AuthTokenCookies.NAME);Cookie refresh=login.getResponse().getCookie(AuthTokenCookies.REFRESH_NAME);
+        var secondBrowser = login(OLD);
+        Cookie secondAccess = secondBrowser.getResponse().getCookie(AuthTokenCookies.NAME);
+        Cookie secondRefresh = secondBrowser.getResponse().getCookie(AuthTokenCookies.REFRESH_NAME);
+        mvc.perform(get("/orders").cookie(secondAccess, secondRefresh)).andExpect(status().isOk());
         var page=mvc.perform(get("/password/change").cookie(access)).andExpect(status().isOk()).andReturn();
         assertThat(page.getRequest().getSession(false)).isNull();
         mvc.perform(post("/password/change").cookie(access).param("currentPassword",OLD).param("newPassword",NEW).param("confirmPassword",NEW)).andExpect(status().isForbidden());
@@ -44,8 +48,16 @@ class PasswordChangeWebIntegrationTest {
         assertThat(result.getResponse().getCookie(AuthTokenCookies.NAME).getMaxAge()).isZero();
         assertThat(result.getResponse().getCookie(AuthTokenCookies.REFRESH_NAME).getMaxAge()).isZero();
         assertThat(result.getRequest().getSession(false)).isNull();
+        var stale = mvc.perform(get("/orders").cookie(secondAccess, secondRefresh))
+                .andExpect(status().is3xxRedirection()).andReturn();
+        assertThat(stale.getResponse().getRedirectedUrl()).endsWith("/login");
+        assertThat(stale.getResponse().getCookie(AuthTokenCookies.NAME).getMaxAge()).isZero();
+        assertThat(stale.getResponse().getCookie(AuthTokenCookies.REFRESH_NAME).getMaxAge()).isZero();
+        mvc.perform(get("/api/orders").cookie(secondAccess, secondRefresh)).andExpect(status().isUnauthorized());
         assertThat(login(OLD).getResponse().getCookie(AuthTokenCookies.NAME)).isNull();
-        assertThat(login(NEW).getResponse().getCookie(AuthTokenCookies.NAME)).isNotNull();
+        Cookie freshAccess = login(NEW).getResponse().getCookie(AuthTokenCookies.NAME);
+        assertThat(freshAccess).isNotNull();
+        mvc.perform(get("/orders").cookie(freshAccess)).andExpect(status().isOk());
         var bootstrap=mvc.perform(get("/api/auth/csrf")).andReturn();var token=json.readTree(bootstrap.getResponse().getContentAsString());
         mvc.perform(post("/api/auth/refresh").cookie(refresh,bootstrap.getResponse().getCookie("STORE-CSRF"))
                 .header(token.path("headerName").asText(),token.path("token").asText())).andExpect(status().isUnauthorized());

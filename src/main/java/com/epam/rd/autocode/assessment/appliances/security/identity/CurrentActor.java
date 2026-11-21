@@ -2,6 +2,8 @@ package com.epam.rd.autocode.assessment.appliances.security.identity;
 
 import com.epam.rd.autocode.assessment.appliances.model.User;
 import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
+import com.epam.rd.autocode.assessment.appliances.security.jwt.access.AccessTokenAuthentication;
+import com.epam.rd.autocode.assessment.appliances.security.jwt.access.AccessTokenVersionService;
 import java.util.EnumSet;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CurrentActor {
 
     private final UserRepository userRepository;
+    private final AccessTokenVersionService versions;
 
     @Transactional(readOnly = true)
     public boolean hasRole(AccountRole expectedRole) {
@@ -58,6 +61,8 @@ public class CurrentActor {
             throw new AccessDeniedException("Access denied");
         }
 
+        if (authentication instanceof AccessTokenAuthentication access)
+            versions.requireCurrent(principal.getAccountId(), access.getCredentialVersion());
         return user;
     }
 }

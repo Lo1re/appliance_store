@@ -2,6 +2,7 @@ package com.epam.rd.autocode.assessment.appliances.security.oauth.google.config;
 
 import com.epam.rd.autocode.assessment.appliances.security.identity.CurrentActor;
 import com.epam.rd.autocode.assessment.appliances.security.jwt.access.AccessTokenAuthenticationConverter;
+import com.epam.rd.autocode.assessment.appliances.security.jwt.access.AccessTokenVersionService;
 import com.epam.rd.autocode.assessment.appliances.security.jwt.cookie.AuthTokenCookies;
 import com.epam.rd.autocode.assessment.appliances.security.jwt.cookie.CookieCsrfProtection;
 import com.epam.rd.autocode.assessment.appliances.security.jwt.cookie.JwtCookieLifecycle;
@@ -70,11 +71,11 @@ public class GoogleLoginConfiguration {
             Clock clock, CurrentActor actor, MvcSecurityFailures failures, JwtDecoder decoder,
             AuthTokenCookies browserCookies, JwtCookieLifecycle cookies, RefreshTokenService tokens,
             CookieCsrfTokenRepository csrfTokens, GoogleIdentityService identities, GoogleIdentityVerifier verifier,
-            GoogleAccountAuthentication accounts, GoogleFlowSession flows, ResetTokenCodec hashes) throws Exception {
+            GoogleAccountAuthentication accounts, GoogleFlowSession flows, ResetTokenCodec hashes, AccessTokenVersionService versions) throws Exception {
         var resolver = new DefaultOAuth2AuthorizationRequestResolver(registrations, "/oauth2/authorization");
         resolver.setAuthorizationRequestCustomizer(OAuth2AuthorizationRequestCustomizers.withPkce());
         var success = new GoogleLoginSuccessHandler(verifier, identities, accounts, flows, tokens, cookies, browserCookies,
-                new GoogleLinkVerifier(browserCookies, decoder, hashes));
+                new GoogleLinkVerifier(browserCookies, decoder, hashes, versions));
         var bearer = new BrowserAccessTokenResolver(browserCookies);
         return http.securityMatcher("/oauth2/**", "/login/oauth2/**", "/onboarding/google/**", "/account/google/**")
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)

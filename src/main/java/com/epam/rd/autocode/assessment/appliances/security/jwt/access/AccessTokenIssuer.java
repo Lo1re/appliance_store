@@ -25,6 +25,7 @@ public class AccessTokenIssuer {
     private final JwtEncoder encoder;
     private final JwtProperties properties;
     private final Clock clock;
+    private final AccessTokenVersionService versions;
 
     public AccessTokenResponse issue(Authentication authentication) {
         var principal = (AccountPrincipal) authentication.getPrincipal();
@@ -33,7 +34,8 @@ public class AccessTokenIssuer {
         var now = clock.instant(); var expires = now.plus(properties.getTtl());
         var claims = JwtClaimsSet.builder().issuer(properties.getIssuer()).audience(List.of(properties.getAudience()))
                 .subject(principal.getAccountId().toString()).issuedAt(now).notBefore(now).expiresAt(expires)
-                .id(UUID.randomUUID().toString()).claim("roles", roles).build();
+                .id(UUID.randomUUID().toString()).claim("roles", roles)
+                .claim(AccessTokenVersion.CLAIM, versions.current(principal.getAccountId())).build();
         String token = encoder.encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims)).getTokenValue();
         return new AccessTokenResponse(token, "Bearer", properties.getTtl().toSeconds(), expires);
     }

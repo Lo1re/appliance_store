@@ -42,6 +42,7 @@ class PasswordChangeIntegrationTest {
     @Autowired RefreshTokenService refresh; @Autowired RefreshTokenCodec codec; @Autowired PasswordEncoder encoder;
     @Autowired PasswordChangeService passwords; @Autowired ClientService clientService;
     @Autowired LoginAttemptService attempts; @Autowired LoginAttemptRepository counters;
+    @Autowired com.epam.rd.autocode.assessment.appliances.security.jwt.access.AccessTokenVersionService tokenVersions;
     @Autowired SessionRegistry sessions; @Autowired PlatformTransactionManager manager;
     private Client client; private Authentication authentication;
     @BeforeEach void prepare() {
@@ -63,6 +64,7 @@ class PasswordChangeIntegrationTest {
         assertThat(encoder.matches(OLD,encoded)).isFalse();
         assertThat(tokens.findByTokenHash(codec.hash(pair.refreshToken())).orElseThrow().getRevokedAt()).isNotNull();
         assertThat(counters.findById(client.getEmail())).isEmpty();
+        assertThat(tokenVersions.current(client.getId())).isEqualTo(1);
         assertThat(sessions.getSessionInformation(target).isExpired()).isTrue();
         assertThat(sessions.getSessionInformation(other).isExpired()).isFalse();
     }
@@ -74,6 +76,7 @@ class PasswordChangeIntegrationTest {
         assertThat(encoder.matches(OLD,users.findById(client.getId()).orElseThrow().getPassword())).isTrue();
         assertThat(tokens.findByTokenHash(codec.hash(pair.refreshToken())).orElseThrow().getRevokedAt()).isNull();
         assertThat(counters.findById(client.getEmail()).orElseThrow().getFailedCount()).isEqualTo(1);
+        assertThat(tokenVersions.current(client.getId())).isZero();
         assertThat(sessions.getSessionInformation(session).isExpired()).isFalse();
     }
 

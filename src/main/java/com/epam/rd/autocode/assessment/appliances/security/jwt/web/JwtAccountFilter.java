@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.transaction.TransactionException;
@@ -45,7 +45,7 @@ public final class JwtAccountFilter extends OncePerRequestFilter {
             catch (AccessDeniedException stale) {
                 SecurityContextHolder.clearContext();
                 if (clearCookies) cookies.clear(request, response);
-                failures.commence(request, response, new InsufficientAuthenticationException("Account credentials are no longer valid"));
+                failures.commence(request, response, new CredentialsExpiredException("Account credentials are no longer valid"));
                 return;
             }
         }

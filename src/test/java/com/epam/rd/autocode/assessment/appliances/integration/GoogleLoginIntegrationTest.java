@@ -71,6 +71,7 @@ class GoogleLoginIntegrationTest {
     @Autowired JwtCookieLifecycle cookies;
     @Autowired ResetTokenCodec hashes;
     @Autowired JwtDecoder decoder;
+    @Autowired com.epam.rd.autocode.assessment.appliances.security.jwt.access.AccessTokenVersionService tokenVersions;
     @Autowired ClientRepository clients;
     @Autowired UserRepository users;
     @Autowired OAuthIdentityRepository links;
@@ -170,11 +171,13 @@ class GoogleLoginIntegrationTest {
         });
         assertThat(passwordState.status(id)).isEqualTo(com.epam.rd.autocode.assessment.appliances.security.password.PasswordCredentialStatus.NOT_SET);
         verify(mail, never()).sendPasswordChanged(eq(email), any(Locale.class));
+        mvc.perform(get("/orders").cookie(access)).andExpect(status().isOk());
         mvc.perform(post("/password/reset").with(csrf()).param("token", token)
                 .param("newPassword", "KnownStorePass2026!").param("confirmPassword", "KnownStorePass2026!"))
                 .andExpect(redirectedUrl("/login?passwordChanged"));
         assertThat(encoder.matches("KnownStorePass2026!", users.findById(id).orElseThrow().getPassword())).isTrue();
         verify(mail, timeout(3000)).sendPasswordChanged(eq(email), any(Locale.class));
+        mvc.perform(get("/orders").cookie(access)).andExpect(status().is3xxRedirection());
         Cookie afterSetup = access(id);
         mvc.perform(get("/password/change").cookie(afterSetup)).andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"currentPassword\"")))
@@ -218,7 +221,7 @@ class GoogleLoginIntegrationTest {
     private Cookie access(Long id) { return new Cookie(AuthTokenCookies.NAME, tokens.issue(accounts.forAccount(id)).access().accessToken()); }
     private GoogleLoginSuccessHandler handler() {
         return new GoogleLoginSuccessHandler(verifier, identities, accounts, flows, tokens, cookies, browserCookies,
-                new GoogleLinkVerifier(browserCookies, decoder, hashes));
+                new GoogleLinkVerifier(browserCookies, decoder, hashes, tokenVersions));
     }
     private OAuth2AuthenticationToken oidc() {
         var claims = new HashMap<String, Object>();

@@ -26,7 +26,7 @@ class OrderServiceImplTest {
     private final OrdersRepository orders = mock(OrdersRepository.class);
     private final OrderServiceImpl service = new OrderServiceImpl(
             orders,
-            new CurrentActor(users),
+            new CurrentActor(users, org.mockito.Mockito.mock(com.epam.rd.autocode.assessment.appliances.security.jwt.access.AccessTokenVersionService.class)),
             new OrderAccessPolicy(),
             mock(ClientRepository.class),
             new OrderRowsFactory(mock(ApplianceRepository.class)),

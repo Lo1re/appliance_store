@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.*;
 class GoogleLinkVerifierTest {
     @Test void rejectsAccountSwitchingAndRequiresTheSameValidJwt() {
         var cookies = mock(AuthTokenCookies.class); var decoder = mock(JwtDecoder.class); var hashes = new ResetTokenCodec();
-        var verifier = new GoogleLinkVerifier(cookies, decoder, hashes); var request = new MockHttpServletRequest();
+        var verifier = new GoogleLinkVerifier(cookies, decoder, hashes, mock(com.epam.rd.autocode.assessment.appliances.security.jwt.access.AccessTokenVersionService.class)); var request = new MockHttpServletRequest();
         var intent = new GoogleFlowSession.LinkIntent(1L, hashes.hash("original-access"), Instant.now().plusSeconds(900));
         when(cookies.read(request)).thenReturn("different-access");
         assertThatThrownBy(() -> verifier.verify(request, intent)).isInstanceOf(GoogleLoginException.class);

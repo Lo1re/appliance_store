@@ -9,6 +9,7 @@ import com.epam.rd.autocode.assessment.appliances.repository.RefreshTokenReposit
 import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.lock.AccountRowLock;
 import com.epam.rd.autocode.assessment.appliances.repository.password.PasswordResetRepository;
+import com.epam.rd.autocode.assessment.appliances.security.jwt.access.AccessTokenVersionService;
 import com.epam.rd.autocode.assessment.appliances.security.password.PasswordChanged;
 import com.epam.rd.autocode.assessment.appliances.security.password.PasswordCredentialStatusService;
 import com.epam.rd.autocode.assessment.appliances.validation.EmailAddress;
@@ -42,6 +43,7 @@ public class PasswordResetService {
     private final ApplicationEventPublisher events;
     private final Clock clock;
     private final PasswordCredentialStatusService passwordState;
+    private final AccessTokenVersionService tokenVersions;
     private final ResetLinkFactory links;
 
     @Transactional
@@ -75,6 +77,7 @@ public class PasswordResetService {
             throw new InvalidPasswordResetException();
         tokens.deleteAll(id);
         passwordState.markSet(id);
+        tokenVersions.revokePrevious(id);
         refresh.revokeAll(id, clock.instant());
         attempts.findLocked(current.email()).ifPresent(attempts::delete);
         events.publishEvent(new PasswordChanged(id));
