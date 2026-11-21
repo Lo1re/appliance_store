@@ -48,6 +48,7 @@ public class ApplianceServiceImpl implements ApplianceService {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('CLIENT', 'EMPLOYEE')")
     public ApplianceResponse findById(Long id) {
         return applianceMapper.toResponse(requireAppliance(id));
     }

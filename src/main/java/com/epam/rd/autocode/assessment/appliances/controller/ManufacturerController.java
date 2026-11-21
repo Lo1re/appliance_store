@@ -5,6 +5,8 @@ import com.epam.rd.autocode.assessment.appliances.exception.CatalogError;
 import com.epam.rd.autocode.assessment.appliances.exception.CatalogException;
 import com.epam.rd.autocode.assessment.appliances.mapper.ManufacturerMapper;
 import com.epam.rd.autocode.assessment.appliances.service.ManufacturerService;
+import com.epam.rd.autocode.assessment.appliances.web.pagination.ListPage;
+import com.epam.rd.autocode.assessment.appliances.web.pagination.ListPageFactory;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.Set;
@@ -40,7 +42,7 @@ public class ManufacturerController {
             HttpServletRequest request,
             Model model
     ) {
-        ListPage listPage = pages.create(query, SORT_FIELDS);
+        ListPage listPage = pages.create(query.getPage(), null, query.getSort(), SORT_FIELDS, "name");
 
         model.addAttribute("manufacturers", manufacturerService.findAll(query.getSearch(), listPage.pageable()));
         model.addAttribute("search", query.getSearch());

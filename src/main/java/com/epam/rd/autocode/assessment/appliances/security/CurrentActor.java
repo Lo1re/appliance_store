@@ -2,6 +2,7 @@ package com.epam.rd.autocode.assessment.appliances.security;
 
 import com.epam.rd.autocode.assessment.appliances.model.User;
 import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
+import java.util.EnumSet;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -46,12 +47,14 @@ public class CurrentActor {
                         new AccessDeniedException("Access denied")
                 );
 
-        boolean roleMatches = authentication.getAuthorities().stream()
-                .anyMatch(authority ->
-                        role.authority().equals(authority.getAuthority())
-                );
-
-        if (!roleMatches) {
+        var declaredRoles = EnumSet.noneOf(AccountRole.class);
+        for (AccountRole candidate : AccountRole.values()) {
+            if (authentication.getAuthorities().stream()
+                    .anyMatch(authority -> candidate.authority().equals(authority.getAuthority()))) {
+                declaredRoles.add(candidate);
+            }
+        }
+        if (!declaredRoles.equals(EnumSet.of(role))) {
             throw new AccessDeniedException("Access denied");
         }
 

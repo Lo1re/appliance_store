@@ -7,6 +7,8 @@ import com.epam.rd.autocode.assessment.appliances.service.OrderService;
 import com.epam.rd.autocode.assessment.appliances.web.OrderCapabilities;
 import com.epam.rd.autocode.assessment.appliances.web.form.OrderFormAssembler;
 import com.epam.rd.autocode.assessment.appliances.web.form.OrderFormData;
+import com.epam.rd.autocode.assessment.appliances.web.pagination.ListPage;
+import com.epam.rd.autocode.assessment.appliances.web.pagination.ListPageFactory;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.Set;
@@ -45,7 +47,7 @@ public class OrdersController {
             @RequestParam(defaultValue = "all") String status,
             Model model
     ) {
-        ListPage listPage = pages.create(query, SORT_FIELDS, "id");
+        ListPage listPage = pages.create(query.getPage(), null, query.getSort(), SORT_FIELDS, "id");
         OrderFilter filter = OrderFilter.fromParameter(status);
         model.addAttribute("orders", orderService.findAll(filter.approved(), listPage.pageable()));
         model.addAttribute("sort", listPage.sort());

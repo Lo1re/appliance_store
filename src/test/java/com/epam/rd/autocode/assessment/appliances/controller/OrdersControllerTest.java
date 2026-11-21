@@ -9,6 +9,7 @@ import com.epam.rd.autocode.assessment.appliances.security.CurrentActor;
 import com.epam.rd.autocode.assessment.appliances.service.LookupService;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
 import com.epam.rd.autocode.assessment.appliances.web.form.OrderFormAssembler;
+import com.epam.rd.autocode.assessment.appliances.web.pagination.ListPageFactory;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +24,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.*;

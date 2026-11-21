@@ -1,9 +1,11 @@
 package com.epam.rd.autocode.assessment.appliances.security.login;
 
+import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -18,6 +20,10 @@ public class LoginProtectedAuthenticationProvider implements AuthenticationProvi
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         try {
             requireUnlocked(authentication.getName());
+            if (authentication.getCredentials() instanceof String password
+                    && password.getBytes(StandardCharsets.UTF_8).length > 72) {
+                throw new BadCredentialsException("Bad credentials");
+            }
             Authentication authenticated = passwords.authenticate(authentication);
             requireUnlocked(authentication.getName());
             return authenticated;

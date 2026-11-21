@@ -6,6 +6,8 @@ import com.epam.rd.autocode.assessment.appliances.exception.AccountException;
 import com.epam.rd.autocode.assessment.appliances.mapper.ClientMapper;
 import com.epam.rd.autocode.assessment.appliances.service.ClientService;
 import com.epam.rd.autocode.assessment.appliances.web.form.AccountFormView;
+import com.epam.rd.autocode.assessment.appliances.web.pagination.ListPage;
+import com.epam.rd.autocode.assessment.appliances.web.pagination.ListPageFactory;
 import jakarta.validation.Valid;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +47,7 @@ public class ClientController {
             @Valid @ModelAttribute ListQuery query,
             Model model
     ) {
-        ListPage listPage = pages.create(query, SORT_FIELDS);
+        ListPage listPage = pages.create(query.getPage(), null, query.getSort(), SORT_FIELDS, "name");
         model.addAttribute("accounts", clientService.findAll(query.getSearch(), listPage.pageable()));
         model.addAttribute("search", query.getSearch());
         model.addAttribute("sort", listPage.sort());

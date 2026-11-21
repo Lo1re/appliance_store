@@ -30,8 +30,8 @@ class ServiceAuthorizationIntegrationTest {
         assertThatThrownBy(() -> employees.delete(1L)).isInstanceOf(AccessDeniedException.class);
         assertThatThrownBy(() -> appliances.delete(1L)).isInstanceOf(AccessDeniedException.class);
         assertThatThrownBy(() -> manufacturers.delete(1L)).isInstanceOf(AccessDeniedException.class);
-        assertThatThrownBy(() -> appliances.findById(1L)).isInstanceOf(AccessDeniedException.class);
-        assertThatThrownBy(() -> manufacturers.findById(1L)).isInstanceOf(AccessDeniedException.class);
+        assertThat(appliances.findById(1L)).isNotNull();
+        assertThat(manufacturers.findById(1L)).isNotNull();
     }
 
     @Test

@@ -4,15 +4,16 @@ import com.epam.rd.autocode.assessment.appliances.security.login.LoginAttemptSer
 import com.epam.rd.autocode.assessment.appliances.security.login.LoginProtectedAuthenticationProvider;
 import com.epam.rd.autocode.assessment.appliances.security.login.LoginProtectionProperties;
 import com.epam.rd.autocode.assessment.appliances.security.login.PasswordLoginFailureHandler;
-import jakarta.servlet.DispatcherType;
 import java.time.Clock;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.session.SessionRegistry;
@@ -26,7 +27,7 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @EnableMethodSecurity
-@EnableConfigurationProperties({AuthenticationProperties.class, LoginProtectionProperties.class, SessionPolicyProperties.class})
+@EnableConfigurationProperties({AuthenticationProperties.class, LoginProtectionProperties.class, SessionPolicyProperties.class, WebAuthenticationProperties.class})
 @EnableScheduling
 public class SecurityConfig {
 
@@ -38,6 +39,12 @@ public class SecurityConfig {
 
     @Bean
     public HttpSessionEventPublisher sessionEventPublisher() { return new HttpSessionEventPublisher(); }
+
+    @Bean
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -56,9 +63,10 @@ public class SecurityConfig {
     }
 
     @Bean
+    @ConditionalOnProperty(name = "store.security.web-auth", havingValue = "session")
     public SecurityFilterChain securityFilterChain(HttpSecurity http, MvcSecurityFailures failures,
                                                     CurrentActor actor, SessionRegistry sessions,
-                                                    SessionPolicyProperties sessionPolicy, PasswordLoginFailureHandler loginFailures)
+                                                    SessionPolicyProperties sessionPolicy, PasswordLoginFailureHandler loginFailures, WebAccessRules accessRules)
             throws Exception {
         return http
                 .addFilterAfter(new ActiveAccountFilter(actor), AnonymousAuthenticationFilter.class)
@@ -67,33 +75,7 @@ public class SecurityConfig {
                     session.maximumSessions(sessionPolicy.maximum()).maxSessionsPreventsLogin(false)
                             .sessionRegistry(sessions).expiredUrl("/login?expired");
                 })
-                .authorizeHttpRequests(requests -> requests
-                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-                        .requestMatchers(
-                                "/",
-                                "/css/**",
-                                "/js/**",
-                                "/images/**"
-                        ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/login").permitAll()
-                        .requestMatchers("/lookups/clients").hasRole("EMPLOYEE")
-                        .requestMatchers(HttpMethod.GET, "/lookups/products", "/lookups/manufacturers")
-                        .hasAnyRole("CLIENT", "EMPLOYEE")
-                        .requestMatchers("/employees/**", "/clients/**")
-                        .hasRole("EMPLOYEE")
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/appliances",
-                                "/manufacturers"
-                        ).hasAnyRole("CLIENT", "EMPLOYEE")
-                        .requestMatchers(
-                                "/appliances/**",
-                                "/manufacturers/**"
-                        ).hasRole("EMPLOYEE")
-                        .requestMatchers("/orders/**")
-                        .hasAnyRole("CLIENT", "EMPLOYEE")
-                        .anyRequest().denyAll()
-                )
+                .authorizeHttpRequests(accessRules)
                 .exceptionHandling(errors -> errors
                         .authenticationEntryPoint(failures)
                         .accessDeniedHandler(failures)

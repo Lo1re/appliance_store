@@ -284,3 +284,108 @@ has a lock regression scenario too. Tests have been added but not run by the ass
 For a manual check, submit five wrong passwords, then the correct password: login remains
 blocked until lock expiry. Use three separate browser profiles to check session eviction.
 Per-email locking is this project's specified policy, not a complete anti-bot/IP rate limiter.
+
+
+### One browser login: JWT cookie for the website and API
+
+The normal launch uses store.security.web-auth=jwt. Open /login and submit the usual
+email/password form. The server checks either database credentials (default) or the
+explicit in-memory provider and issues the same HttpOnly store_access cookie for HTML
+pages and the cookie-mode JSON API. There is no second browser login, no api-access.js,
+and no token in HTML, localStorage or JavaScript. Existing order-row/lookup scripts stay.
+
+Reload Maven for the resource-server dependency. Configure JWT_SECRET_BASE64 in the IDE
+run environment even if the optional JSON API is disabled: the website now needs JWT too.
+The secret must encode at least 32 cryptographically random bytes. Generate it locally:
+
+```powershell
+$jwtKeyBytes = New-Object byte[] 32
+$jwtKeyGenerator = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+$jwtKeyGenerator.GetBytes($jwtKeyBytes)
+[Convert]::ToBase64String($jwtKeyBytes)
+$jwtKeyGenerator.Dispose()
+```
+
+Keep the key out of Git. Properties now live under store.security.jwt.*, shared by HTML
+and API; the environment variable JWT_SECRET_BASE64 is unchanged. For JSON endpoints also
+set STORE_API_ENABLED=true. Default STORE_API_TOKEN_TRANSPORT=cookie makes the ordinary
+/login cookie work for both /orders and /api/orders. No additional login is needed.
+When the API is disabled, /login and the website still use JWT.
+
+### Cookie and CSRF behavior
+
+The access JWT uses HS256, TTL 15 minutes, clock skew 30 seconds and checks signature,
+algorithm, issuer, audience, subject and required claims. Each authenticated request
+rechecks the local account and exact supported role before URL authorization; services
+also enforce their own access rules. Deleted accounts and changed roles cannot keep
+using old claims. JWT requests never reset password-failure counters.
+
+store_access is host-only, HttpOnly, SameSite=Lax, with Path=/ (or the application's
+context path). Max-Age never exceeds token expiry. Successful login/logout expires the
+previous /api-scoped access cookie too. Shared cookie security is controlled by
+store.security.cookies.secure=true. Only local/test explicitly allow false for HTTP;
+HTTPS requests still receive Secure cookies. A production/non-local false is rejected.
+
+Both browser and API cookie chains are stateless with NullSecurityContextRepository and
+NullRequestCache. Existing JSESSIONID security contexts do not authenticate them. The
+separate HttpOnly STORE-CSRF cookie and masked hidden form field/header protect unsafe
+requests, including login/logout. SameSite does not replace CSRF. CookieCsrfProtection
+restores unsafe-method checks after Resource Server's automatic bearer exemption.
+Failed password login redirects with generic localized errors without creating a session.
+
+Use the usual POST /logout. It clears matching access/CSRF cookies. HTML missing login
+redirects to /login; forbidden mapped resources return 403; unknown GET/HEAD return 404;
+foreign/missing client orders remain 404. API errors remain safe localized JSON with
+status/code. Invalid/expired HTML credentials are cleared before redirecting to /login.
+
+The JWT currently expires 15 minutes after issuance, rather than extending on activity.
+Refresh tokens/rotation/reuse detection and server-side token revocation are the next
+block. Logout cookie clearing cannot invalidate a previously copied JWT before expiry.
+The 30-minute idle timeout and maximum-two sessions apply only to the session demo below.
+
+### JSON clients and optional header transport
+
+Cookie-mode clients first GET /api/auth/csrf, retain STORE-CSRF, and use the returned
+masked token and headerName on unsafe requests. POST /api/auth/login with JSON
+{"email":"...","password":"..."} sets the same access cookie and returns only expiresIn
+and expiresAt. Obtain fresh CSRF after login. POST /api/auth/logout requires CSRF and
+clears that same browser credential; it also signs this browser out of the website.
+
+Explicit STORE_API_TOKEN_TRANSPORT=header is for external API clients. JSON login then
+returns accessToken/tokenType/expiresIn/expiresAt; API requires Authorization Bearer,
+ignores credential cookies and disables API CSRF only for that explicit header chain.
+The website still uses its cookie and CSRF. URL/form access_token never authenticates.
+
+Catalog endpoints: GET /api/appliances, /api/appliances/{id}, /api/manufacturers,
+/api/manufacturers/{id}. Orders: GET/POST /api/orders, GET/PUT/DELETE /api/orders/{id},
+POST /api/orders/{id}/approve. Controllers call existing application services; prices,
+ownership and approval remain server rules. POST order JSON:
+{"clientId":null,"order":{"items":[{"applianceId":1,"quantity":2}]}}. PUT uses
+{"items":[{"applianceId":1,"quantity":2}]}. Lists have bounded pagination/search/sort.
+API error language uses Accept-Language EN/UK. Locked password login returns 429/Retry-After.
+
+### Explicit session demonstration and tests
+
+store.security.web-auth=session retains the existing session implementation for checking
+idle timeout, concurrent-session limits and session invalidation, which EPAM recommends
+for non-JWT implementations. It is not a second login used alongside JWT in normal mode.
+The test profile explicitly selects it for existing session regression tests. The new
+JwtCookieIntegrationTest and JwtInMemoryLoginIntegrationTest explicitly select jwt and
+verify the ordinary login, HTML/API sharing, real CSRF, absence of security sessions,
+database/in-memory credentials, stale roles, deleted accounts and safe error behavior.
+JwtApiIntegrationTest separately checks the external header API and session isolation.
+
+Run Maven clean then test yourself: removed/moved Spring components must not remain in
+target. Then run local with JWT_SECRET_BASE64 and STORE_API_ENABLED=true; open /login,
+log in, visit /orders and /api/orders without another login, and check cookies in DevTools.
+Test missing CSRF gives 403 and normal logout removes the cookie. Clear old localhost
+cookies once when switching versions. H2 tests and PostgreSQL local launch are unchanged.
+No migration, database operation, build/test run or commit was performed by the assistant.
+
+Pagination review: MVC and API now share web.pagination.ListPageFactory/ListPage.
+The duplicate ApiPageFactory was removed; the shared factory accepts transport-neutral
+values and uses store.pagination.page-size when API size is omitted. Request DTOs remain
+separate because MVC clamps negative page numbers while API rejects them. Both reject page
+numbers over 1,000,000 before querying. API-only error helpers are conditional on enabled.
+After this package move, run Maven clean then test to remove stale target/classes entries.
+No database or migration changes are required by the move.

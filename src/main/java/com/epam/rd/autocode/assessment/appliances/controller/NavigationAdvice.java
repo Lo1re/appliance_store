@@ -3,6 +3,7 @@ package com.epam.rd.autocode.assessment.appliances.controller;
 import com.epam.rd.autocode.assessment.appliances.web.LanguageNavigation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
@@ -10,6 +11,11 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 @RequiredArgsConstructor
 public class NavigationAdvice {
     private final LanguageNavigation languages;
+    private final Environment environment;
+
+    @ModelAttribute("apiEnabled")
+    public boolean apiEnabled() { return environment.getProperty("store.api.enabled", Boolean.class, false); }
+
 
     @ModelAttribute("languageLinks")
     public LanguageNavigation.Links languageLinks(HttpServletRequest request) {

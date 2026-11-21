@@ -49,6 +49,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('CLIENT', 'EMPLOYEE')")
     public ManufacturerResponse findById(Long id) {
         return manufacturerMapper.toResponse(requireManufacturer(id));
     }
