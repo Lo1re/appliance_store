@@ -30,6 +30,11 @@
 
     <p th:if="${param.passwordChanged != null}" role="status" th:text="#{password.change.completed}">Password changed. Sign in again.</p>
 
+    <p th:if="${param.googleError != null}" role="alert" th:text="#{google.login.error}"></p>
+    <p th:if="${param.googleExpired != null}" role="alert" th:text="#{google.flow.expired}"></p>
+    <p th:if="${param.googleLinkRequired != null}" role="alert" th:text="#{google.link.required}"></p>
+    <a th:if="${googleLoginEnabled}" th:href="@{/oauth2/authorization/google}" th:text="#{google.login}">Sign in with Google</a>
+
     <form th:action="@{/login}" method="post">
         <div>
             <label for="username" th:text="#{login.username}">Email</label>

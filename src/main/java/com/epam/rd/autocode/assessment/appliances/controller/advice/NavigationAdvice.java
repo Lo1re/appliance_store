@@ -6,6 +6,7 @@ import com.epam.rd.autocode.assessment.appliances.web.LanguageNavigation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
@@ -15,6 +16,12 @@ public class NavigationAdvice {
     private final LanguageNavigation languages;
     private final AuthenticationProperties authentication;
     private final ObjectProvider<PasswordResetService> passwordReset;
+
+    @Value("${store.security.google.enabled:false}")
+    private boolean googleEnabled;
+
+    @ModelAttribute("googleLoginEnabled")
+    public boolean googleLoginEnabled() { return googleEnabled; }
 
     @ModelAttribute("passwordResetEnabled")
     public boolean passwordResetEnabled() { return passwordReset.getIfAvailable() != null; }

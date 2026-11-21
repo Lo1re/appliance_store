@@ -56,6 +56,12 @@ class PasswordResetIntegrationTest {
     @Autowired MockMvc mvc;
     @Autowired org.springframework.security.core.session.SessionRegistry sessions;
     @MockBean SecurityMailSender mail;
+    @Autowired @org.springframework.beans.factory.annotation.Qualifier("securityMailExecutor")
+    org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor mailExecutor;
+    @org.junit.jupiter.api.AfterEach void drainSecurityMailQueue() throws Exception {
+        mailExecutor.submit(() -> { }).get(3, java.util.concurrent.TimeUnit.SECONDS);
+    }
+
     private Client client;
 
     @BeforeEach void prepare() {
@@ -77,6 +83,7 @@ class PasswordResetIntegrationTest {
         passwords.reset(form(token));
         assertThat(sessions.getSessionInformation(sessionId).isExpired()).isTrue();
         assertThat(jdbc.queryForObject("select count(*) from login_attempt where email = ?", Long.class, client.getEmail())).isZero();
+        verify(mail, timeout(3000)).sendPasswordChanged(eq(client.getEmail()), any(Locale.class));
         String hash = users.findById(client.getId()).orElseThrow().getPassword();
         assertThat(encoder.matches(NEW, hash)).isTrue();
         assertThat(encoder.matches(OLD, hash)).isFalse();
@@ -91,6 +98,7 @@ class PasswordResetIntegrationTest {
         String token = requestToken();
         tx.executeWithoutResult(status -> { passwords.reset(form(token)); status.setRollbackOnly(); });
         assertThat(encoder.matches(OLD, users.findById(client.getId()).orElseThrow().getPassword())).isTrue();
+        verify(mail, never()).sendPasswordChanged(anyString(), any(Locale.class));
         passwords.reset(form(token));
     }
 

@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="#{google.account.title}"></title></head>
+<body><header th:insert="~{menunavy :: navy}"></header><main>
+<h1 th:text="#{google.account.title}">Google account</h1>
+<p th:if="${googleLinked}" role="status" th:text="#{google.link.completed}"></p>
+<th:block th:unless="${googleLinked}">
+<p th:text="#{google.link.description}"></p>
+<form th:action="@{/account/google/link}" method="post"><button type="submit" th:text="#{google.link.submit}">Link Google</button></form>
+</th:block>
+</main></body></html>

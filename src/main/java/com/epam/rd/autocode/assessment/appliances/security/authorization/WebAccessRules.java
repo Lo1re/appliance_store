@@ -24,7 +24,7 @@ public class WebAccessRules implements Customizer<AuthorizeHttpRequestsConfigure
                 .requestMatchers(HttpMethod.POST, "/auth/renew").permitAll()
                 .requestMatchers(HttpMethod.GET, "/password/forgot", "/password/reset").permitAll()
                 .requestMatchers(HttpMethod.POST, "/password/forgot", "/password/reset").permitAll()
-                .requestMatchers("/password/change").hasAnyRole("CLIENT", "EMPLOYEE")
+                .requestMatchers("/password/change", "/password/setup").hasAnyRole("CLIENT", "EMPLOYEE")
                 .requestMatchers("/lookups/clients").hasRole("EMPLOYEE")
                 .requestMatchers(HttpMethod.GET, "/lookups/products", "/lookups/manufacturers")
                 .hasAnyRole("CLIENT", "EMPLOYEE")

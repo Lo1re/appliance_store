@@ -122,7 +122,7 @@ guard still covers all service subpackages.
 After pulling these moves, run Maven clean then test before restarting. Old compiled
 classes in target can otherwise register duplicate Spring beans. The package refactor was
 checked statically for unchanged code bodies and preserved Java type bindings; compilation,
-tests and application startup were not run by the assistant after these moves.
+tests and application startup were not run after these moves.
 
 
 The application has two profiles: `local` uses PostgreSQL and `test` uses H2 in memory. There are no additional runtime or Maven environment profiles. The original exercise description above is retained as historical assignment context.
@@ -143,7 +143,7 @@ DB_PASSWORD=your_local_password
 
 Maven tests activate `test` by default and use H2. Do not activate `local` in the Maven test configuration. Existing tests may use separate named H2 databases to isolate fixtures. Flyway creates the schema and test data in H2 as well as in the application PostgreSQL database.
 
-After reloading Maven dependencies in IDEA, run Maven `clean` and then `test`. Cleaning is necessary once after the removed/moved configuration and mapper classes so that stale classes in target are not loaded. Then start the application with `local`. Neither test compilation nor test execution has been performed by the assistant.
+After reloading Maven dependencies in IDEA, run Maven `clean` and then `test`. Cleaning is necessary once after the removed/moved configuration and mapper classes so that stale classes in target are not loaded. Then start the application with `local`. Neither test compilation nor test execution has been performed.
 
 The current Spring Boot 3.2 dependency management supplies Flyway. PostgreSQL 18 is newer than that Flyway release's verified database range and can produce an upgrade recommendation. Actual H2/PostgreSQL startup must be checked. The separate supported-framework upgrade in the project specification remains outstanding.
 
@@ -338,7 +338,7 @@ sessions is store.security.sessions.maximum (1–10). The registry remains singl
 Verification: run Maven test, then verify. LoginProtectionIntegrationTest covers lock
 expiry, generic unknown-account behavior, canonicalization, rollback persistence, cleanup,
 simultaneous initial counters, session eviction and session ID rotation. In-memory login
-has a lock regression scenario too. Tests have been added but not run by the assistant.
+has a lock regression scenario too. Tests have been added but not run.
 For a manual check, submit five wrong passwords, then the correct password: login remains
 blocked until lock expiry. Use three separate browser profiles to check session eviction.
 Per-email locking is this project's specified policy, not a complete anti-bot/IP rate limiter.
@@ -445,7 +445,7 @@ log in, visit /orders and /api/orders without another login, and check cookies i
 Test missing CSRF gives 403 and normal logout removes the cookie. Clear old localhost
 cookies once when switching versions. H2 tests and PostgreSQL local launch are unchanged.
 An additive V3 migration is prepared below. No database operation, build/test run or commit
-was performed by the assistant.
+was performed.
 
 ### Refresh credentials, rotation and browser renewal
 
@@ -507,7 +507,7 @@ expect V1, V2, V3 and the demo repeatable script. RefreshTokenIntegrationTest co
 storage, rotation, committed reuse revocation, concurrency, logout isolation, retention
 and cascade. RefreshHttpIntegrationTest checks real browser CSRF/renewal/logout and JSON
 cookie rotation. JwtApiIntegrationTest also covers header refresh/logout. Tests were
-prepared but NOT run by the assistant.
+prepared but NOT run.
 
 Manual check: Maven clean then test; restart local and sign in. In Chrome DevTools remove
 ONLY store_access, retain store_refresh, and visit /orders. On /auth/renew press Continue;
@@ -578,7 +578,7 @@ helpers remain together, and the existing deletion tests are adapted.
 No schema migration, new dependency, SMTP secret or provider registration is needed for
 this block. H2 tests cover hash storage, atomic rollback, refresh/session revocation,
 password lock, validation/no echo, JWT-cookie cleanup, legacy session logout and stale
-profile concurrency. They were prepared but not run by the assistant.
+profile concurrency. They were prepared but not run.
 
 Manual check after Maven clean/test and restart: create a disposable client, sign in as
 that client, open Change password, try a wrong current password and a confirmation
@@ -617,7 +617,7 @@ The new `V4__password_reset_token.sql` stores only SHA-256 digests, one active r
 
 Recovery is enabled only in `local`, never `prod`, with `store.mail.enabled=true` and database authentication. Other profiles keep the feature disabled; production email delivery is not implemented in this block. The bounded single-instance limiter defaults to 5 requests/email and 20/source IP per hour, including unknown emails. Configure `store.security.password-reset.max-email-requests`, `max-source-requests`, and `window-seconds` if needed. It uses the direct remote address, not untrusted forwarded headers; counters reset on restart and do not coordinate multiple instances. A distributed production deployment needs shared limits. Keep Mailpit bound to loopback as above; do not expose its inbox publicly.
 
-Run `clean` then `test` in Maven and restart the application before manual testing. Tests use a mocked mail sender and never deliver real mail. The assistant did not run Maven or the new application. SMTP dependency download occurs during your Maven reload/build.
+Run `clean` then `test` in Maven and restart the application before manual testing. Tests use a mocked mail sender and never deliver real mail. Maven and application verification remain a manual acceptance step. SMTP dependency download occurs during your Maven reload/build.
 
 ### Fast unit checks and the full test suite
 
@@ -629,7 +629,7 @@ Use `./mvnw.cmd test` with the `unit-tests` profile disabled for all tests, incl
 
 Demo BCrypt hashes are generated once per JVM and shared across isolated Spring test contexts. Passwords, random salts, BCrypt strength and normal credential checks remain unchanged. The cache contains only immutable public demo hashes, never real user credentials. Fresh salts on a new JVM may still rerun the insert-only repeatable demo migration; creating another context in the same JVM no longer regenerates all 12 hashes.
 
-Password replacement uses a native compare-and-set `UPDATE users` instead of a polymorphic JPQL bulk update. For the JOINED User hierarchy, Hibernate's H2 temporary-table strategy can perform DDL with implicit commits, persisting reset-token deletion before an enclosing rollback. Direct base-table DML removes that DDL while retaining the old-hash check, account lock, shared transaction and persistence-context clear. The existing integration rollback/one-time/concurrency assertions are unchanged. No runtime benchmark or Maven run was performed by the assistant.
+Password replacement uses a native compare-and-set `UPDATE users` instead of a polymorphic JPQL bulk update. For the JOINED User hierarchy, Hibernate's H2 temporary-table strategy can perform DDL with implicit commits, persisting reset-token deletion before an enclosing rollback. Direct base-table DML removes that DDL while retaining the old-hash check, account lock, shared transaction and persistence-context clear. The existing integration rollback/one-time/concurrency assertions are unchanged. No runtime benchmark or Maven run was performed.
 
 ### Recovery resend protection and responsive forms
 
@@ -650,3 +650,55 @@ When a recovery request is throttled, the form now returns HTTP 429 with `Retry-
 ### Recovery quota accounting correction
 
 Cooldown and other rejected requests no longer increment either hourly counter. Quota is reserved only after all gates pass, identically for known and unknown emails; this counts accepted recovery requests, not confirmed SMTP deliveries. For example, one accepted request followed by 100 repeats during its 60-second cooldown uses one hourly slot. The next request can succeed after the cooldown if hourly capacity remains. Real hourly limits still return their remaining wait. Restart the running app after applying the fix; existing in-memory counters from the earlier version are not rewritten in a running JVM.
+
+### Google sign-in (OAuth2 / OpenID Connect)
+
+Only Google is supported. Create an OAuth client of type **Web application** in Google Cloud Console / Google Auth Platform. Fill Branding, choose an appropriate Audience (External / Testing for personal development), and add the Google accounts you will test with under Test users when required. Add this exact **Authorized redirect URI**:
+
+```
+http://localhost:8080/login/oauth2/code/google
+```
+
+This is a server-side authorization-code flow; JavaScript origins are not required. Keep using the same `localhost` origin in the browser. Add these environment variables yourself to the normal application launch configuration:
+
+```
+GOOGLE_LOGIN_ENABLED=true
+GOOGLE_CLIENT_ID=<your client ID>
+GOOGLE_CLIENT_SECRET=<your client secret>
+```
+
+Keep existing `DB_*` and `JWT_SECRET_BASE64` values. Do not send secrets in chat, add them to source code, screenshots, archives or Git. Google sign-in is disabled by default. Enabling it requires database authentication, JWT website mode and complete client settings; malformed settings fail startup with a sanitized configuration error. The default fixed callback can be overridden with `GOOGLE_REDIRECT_URI`; HTTPS is required except loopback HTTP in local/test. The redirect must match Google exactly. Do not download credentials JSON into the project.
+
+Reload Maven, run `clean` then `test` and restart with the existing `local` profile. `clean` is important because the mail listener was renamed to `SecurityMailEventListener`. Mailpit remains the final project mail transport at `127.0.0.1:1025`, inbox `http://127.0.0.1:8025`.
+
+On `/login`, choose **Sign in with Google**. Spring Security handles authorization-code exchange, Google ID-token validation, state, nonce and PKCE. The authorization request is held in a temporary session with a hard 15-minute lifetime. The application does not retain Google API access/refresh tokens in its authorized-client repository or database and never uses a Google ID token as the shop access JWT.
+
+For a new Google subject, the site asks for name, email and client card. No employee role can be requested. Google `email_verified=true` is accepted only for the same normalized email. An edited, missing or unverified address must be confirmed through Mailpit using a session-bound one-time 256-bit challenge; only its hash is stored server-side, it expires after 10 minutes, and the 15-minute overall onboarding deadline still applies. Open that link in the same browser and click Continue again. No domain account or shop credentials are created before all required data and verification are complete. The password is initialized to a random unknown strong secret stored as BCrypt; the user can establish a known password through the existing recovery flow.
+
+Creation of User/Client and `oauth_identity` is atomic. External identity is keyed by Google `sub`, never email; changing the local email does not break an established Google login. A matching local email does **not** auto-link accounts: sign in with the existing password, open **Google account**, and explicitly submit **Link Google account**. Linking requires CSRF and the same unexpired shop JWT throughout the flow. A changed account/cookie, expired intent, or identity already owned by another user is rejected. The schema uniquely constrains provider+subject and user+provider; user deletion cascades to external identity metadata.
+
+After successful onboarding/login, the temporary session and SecurityContext are cleared and the existing shop JWT/refresh cookie lifecycle is used. Ordinary pages/API continue to authenticate via JWT, not a login session. Pending Google onboarding has no shop account/role. Cancel/error removes temporary state. Linking preserves the original shop credentials; provider credentials are never exposed in UI, logs or DTO output. `V5__oauth_identity.sql` is additive; previous versioned migrations remain unchanged.
+
+Automated tests use fake OAuth client credentials, mocked mail and synthetic OIDC users. A single Google integration context checks authorization redirect/state/nonce/PKCE parameters, invalid state, profile completion, Mailpit verification, JWT cookies, email collisions, stable subject mapping and explicit linking. Unit tests cover issuer/claims, temporary state expiry, one-time email challenges and account pinning. These tests do not demonstrate a real Google token-endpoint exchange; confirm it manually after configuring your own client. The test Spring profile disables Google by default so real environment credentials cannot silently enable network-dependent tests. Validation status: static checks completed; Maven tests, application startup and a real Google callback still require verification.
+
+Manual acceptance: verified new Google account -> complete profile -> CLIENT JWT -> orders; known subject -> existing account; existing local email -> password login and explicit linking; edited profile email -> Mailpit -> confirm in same browser -> account; cancel/expired/invalid state -> safe localized error; second user's account cannot steal an identity; Google sign-in remains disabled cleanly when feature flag is off. Check `store_access`/`store_refresh` HttpOnly cookies and absence of an authentication JSESSIONID after success. Google callbacks/temporary onboarding are the deliberate short-session exception to the stateless shop flow.
+
+### Password setup after Google signup and security notification emails
+
+A newly created Google account has an unknown random strong secret stored as BCrypt, not the user's Google password. Its initial value cannot be recovered; it was never kept in plaintext. The password page now explains the distinction for Google-linked accounts and offers a separate CSRF-protected **Set password through email** form. This form needs no current store password: it sends the existing single-use recovery link to the authenticated account's current database email. It does not accept an arbitrary recipient from the browser. The normal current-password change form remains available for users who already chose a store password.
+
+POST `/password/setup` requires a current CLIENT/EMPLOYEE identity, applies the same cooldown/hourly limits as forgot password, and preserves HTTP 429/Retry-After feedback. After following the email link and selecting a password, the existing atomic reset/session/refresh revocation rules apply. This is password setup for a Google account, not a change to the Google password. Mailpit remains the only destination for local application emails.
+
+After successful Google account creation, Mailpit receives an **Account created** notification. After successful password change/reset/setup, it receives a **Password changed** notification. Notifications are localized, contain no password/hash/access/refresh values, and are queued only after the database transaction commits. Rejected operations and rollbacks do not emit success notifications. Existing Google users are not sent a new welcome email for every sign-in. Verified Google email does not need an extra confirmation challenge unless the user chooses another address; welcome notification is separate from email verification.
+
+Tests cover the own-email setup route, CSRF, ignored forged recipient, actual known-password establishment, success emails and rollback behavior. The mail integration tests drain the worker queue between cases to prevent late messages interfering with mock state. Run the updated tests and restart before manual checks; no Maven or application run was performed for this change.
+
+### Explicit password-setup state
+
+`V6__password_credential_state.sql` adds credential metadata separately from `User`, preserving the original User fields and constructor contracts. New Google signups store `password_set=false`; random placeholder hashes do not count as a usable local password. Password login and current-password change are rejected for an explicitly passwordless account, while Google/JWT access continues to work.
+
+The password page initially shows only **Create a store password** and its email action. Successful verified setup/reset atomically marks the password as set. The next visit shows the regular current-password change form. Linking Google to an existing local account records its existing password status without overwriting an explicit passwordless marker. Local accounts without metadata retain normal password behavior.
+
+Old Google associations cannot reliably reveal whether their existing BCrypt hash is an unknown signup placeholder or a password already chosen by the user. The migration does not guess or overwrite credentials. Such accounts start with the setup view and a secondary **I already have a store password** option. A valid current-password change or verified reset establishes an explicit set state. Existing passwords/Google access are preserved. Legacy records are not globally marked passwordless, and no database reset is needed.
+
+Tests cover passwordless login rejection, separate setup/change markup, state rollback with token/password rollback, and the legacy fallback. No Maven tests/application startup were performed for this change. Run tests, restart to apply V6, then verify the two stages of the page.

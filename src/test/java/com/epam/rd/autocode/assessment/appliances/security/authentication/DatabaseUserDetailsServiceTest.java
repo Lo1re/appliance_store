@@ -20,8 +20,17 @@ class DatabaseUserDetailsServiceTest {
 
     private final UserRepository users = mock(UserRepository.class);
 
-    private final DatabaseUserDetailsService service =
-            new DatabaseUserDetailsService(users);
+    private final com.epam.rd.autocode.assessment.appliances.security.password.PasswordCredentialStatusService passwords =
+            mock(com.epam.rd.autocode.assessment.appliances.security.password.PasswordCredentialStatusService.class);
+    private final DatabaseUserDetailsService service = new DatabaseUserDetailsService(users, passwords);
+
+    @Test
+    void passwordlessGoogleAccountsCannotAuthenticateWithThePlaceholderHash() {
+        when(users.findByEmailIgnoreCase("google@example.test"))
+                .thenReturn(Optional.of(new Client(1L, "Google", "google@example.test", "placeholder-hash", "card")));
+        when(passwords.explicitlyMissing(1L)).thenReturn(true);
+        assertThatThrownBy(() -> service.loadUserByUsername("google@example.test")).isInstanceOf(UsernameNotFoundException.class);
+    }
 
     @Test
     void loadsClientAndNormalizesEmail() {

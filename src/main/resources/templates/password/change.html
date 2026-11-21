@@ -1,11 +1,26 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="#{password.change.title}">Change password</title></head>
+<title th:text="${showPasswordChangeForm} ? #{password.change.title} : #{password.setup.title}"></title></head>
 <body><header th:insert="~{menunavy :: navy}"></header>
-<main><h1 th:text="#{password.change.title}">Change password</h1>
-    <p th:text="#{password.change.description}">After changing your password, sign in again.</p>
-    <form th:action="@{/password/change}" th:object="${passwordForm}" method="post">
+<main><h1 th:text="${showPasswordChangeForm} ? #{password.change.title} : #{password.setup.title}"></h1>
+<p th:if="${showPasswordChangeForm}" th:text="#{password.change.description}"></p>
+<p th:if="${showPasswordChangeForm and googleLinked}" th:text="#{password.google.password-hint}"></p>
+<section th:unless="${showPasswordChangeForm}">
+    <p th:if="${passwordStateUnknown}" th:text="#{password.setup.unknown}"></p>
+    <p th:unless="${passwordStateUnknown}" th:text="#{password.setup.first}"></p>
+    <th:block th:if="${passwordResetEnabled}">
+        <p th:text="#{password.setup.destination(${passwordAccountEmail})}"></p>
+        <p th:if="${param.setupSent != null}" role="status" th:text="#{password.setup.sent}"></p>
+        <p th:if="${retryAfterSeconds != null}" role="alert" th:text="#{password.forgot.retry(${retryAfterSeconds})}"></p>
+        <form th:action="@{/password/setup}" method="post">
+            <button type="submit" th:text="#{password.setup.submit}"></button>
+        </form>
+    </th:block>
+    <p th:unless="${passwordResetEnabled}" th:text="#{password.setup.unavailable}"></p>
+    <a th:if="${passwordStateUnknown}" th:href="@{/password/change(mode='change')}" th:text="#{password.setup.existing}"></a>
+</section>
+    <form th:if="${showPasswordChangeForm}" th:action="@{/password/change}" th:object="${passwordForm}" method="post">
         <ul th:if="${#fields.hasGlobalErrors()}" role="alert">
             <li th:each="error : ${#fields.globalErrors()}" th:text="${error}"></li>
         </ul>

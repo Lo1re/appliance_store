@@ -1,14 +1,16 @@
 package com.epam.rd.autocode.assessment.appliances.security.password.reset;
 
 import com.epam.rd.autocode.assessment.appliances.dto.password.PasswordResetRequest;
-import com.epam.rd.autocode.assessment.appliances.exception.password.PasswordChangeException;
 import com.epam.rd.autocode.assessment.appliances.exception.password.PasswordChangeError;
+import com.epam.rd.autocode.assessment.appliances.exception.password.PasswordChangeException;
+import com.epam.rd.autocode.assessment.appliances.mail.SecurityNotificationMail;
 import com.epam.rd.autocode.assessment.appliances.repository.LoginAttemptRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.RefreshTokenRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.lock.AccountRowLock;
 import com.epam.rd.autocode.assessment.appliances.repository.password.PasswordResetRepository;
 import com.epam.rd.autocode.assessment.appliances.security.password.PasswordChanged;
+import com.epam.rd.autocode.assessment.appliances.security.password.PasswordCredentialStatusService;
 import com.epam.rd.autocode.assessment.appliances.validation.EmailAddress;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -18,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +41,7 @@ public class PasswordResetService {
     private final LoginAttemptRepository attempts;
     private final ApplicationEventPublisher events;
     private final Clock clock;
+    private final PasswordCredentialStatusService passwordState;
     private final ResetLinkFactory links;
 
     @Transactional
@@ -70,8 +74,10 @@ public class PasswordResetService {
         if (users.replacePassword(id, current.passwordHash(), encoder.encode(form.getNewPassword())) != 1)
             throw new InvalidPasswordResetException();
         tokens.deleteAll(id);
+        passwordState.markSet(id);
         refresh.revokeAll(id, clock.instant());
         attempts.findLocked(current.email()).ifPresent(attempts::delete);
         events.publishEvent(new PasswordChanged(id));
+        events.publishEvent(new SecurityNotificationMail(current.email(), SecurityNotificationMail.Kind.PASSWORD_CHANGED, LocaleContextHolder.getLocale()));
     }
 }

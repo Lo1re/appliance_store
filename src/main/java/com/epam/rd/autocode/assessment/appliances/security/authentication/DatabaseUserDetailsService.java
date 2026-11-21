@@ -4,6 +4,7 @@ import com.epam.rd.autocode.assessment.appliances.model.User;
 import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
 import com.epam.rd.autocode.assessment.appliances.security.identity.AccountRole;
 import com.epam.rd.autocode.assessment.appliances.security.identity.StorePrincipal;
+import com.epam.rd.autocode.assessment.appliances.security.password.PasswordCredentialStatusService;
 import com.epam.rd.autocode.assessment.appliances.validation.EmailAddress;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DatabaseUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final PasswordCredentialStatusService passwordState;
 
     @Override
     @Transactional(readOnly = true)
@@ -33,6 +35,8 @@ public class DatabaseUserDetailsService implements UserDetailsService {
                 .orElseThrow(() ->
                         new UsernameNotFoundException("Account not found")
                 );
+
+        if (passwordState.explicitlyMissing(user.getId())) throw new UsernameNotFoundException("Account not found");
 
         AccountRole role = AccountRole.from(user)
                 .orElseThrow(() ->
