@@ -1,12 +1,10 @@
 package com.epam.rd.autocode.assessment.appliances.mapper;
 
 import com.epam.rd.autocode.assessment.appliances.dto.client.ClientRequest;
-import com.epam.rd.autocode.assessment.appliances.mapper.ClientMapper;
-import com.epam.rd.autocode.assessment.appliances.model.*;
+import com.epam.rd.autocode.assessment.appliances.model.Client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ClientMapperTest {

@@ -4,9 +4,10 @@ import com.epam.rd.autocode.assessment.appliances.dto.client.ClientRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.employee.EmployeeRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.user.PasswordRequest;
 import com.epam.rd.autocode.assessment.appliances.exception.AccountException;
-import com.epam.rd.autocode.assessment.appliances.model.*;
-import com.epam.rd.autocode.assessment.appliances.repository.*;
-import com.epam.rd.autocode.assessment.appliances.service.*;
+import com.epam.rd.autocode.assessment.appliances.model.Employee;
+import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
+import com.epam.rd.autocode.assessment.appliances.service.ClientService;
+import com.epam.rd.autocode.assessment.appliances.service.EmployeeService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,7 +15,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithUserDetails;
-
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest(properties = {

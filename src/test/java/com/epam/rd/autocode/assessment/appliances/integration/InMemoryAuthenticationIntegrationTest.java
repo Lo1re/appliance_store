@@ -1,7 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.integration;
 
-import com.epam.rd.autocode.assessment.appliances.security.AccountPrincipal;
 import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
+import com.epam.rd.autocode.assessment.appliances.security.identity.AccountPrincipal;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

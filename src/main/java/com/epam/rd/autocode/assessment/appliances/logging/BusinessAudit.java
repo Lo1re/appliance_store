@@ -1,6 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.logging;
 
-import com.epam.rd.autocode.assessment.appliances.security.SecurityLogContext;
+import com.epam.rd.autocode.assessment.appliances.security.logging.SecurityLogContext;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.MDC;
 import org.springframework.context.ApplicationEventPublisher;

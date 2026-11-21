@@ -3,15 +3,11 @@ package com.epam.rd.autocode.assessment.appliances.repository;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
 import com.epam.rd.autocode.assessment.appliances.model.OrderRow;
 import com.epam.rd.autocode.assessment.appliances.model.Orders;
-import com.epam.rd.autocode.assessment.appliances.repository.ApplianceRepository;
-import com.epam.rd.autocode.assessment.appliances.repository.OrdersRepository;
-import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.PageRequest;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest

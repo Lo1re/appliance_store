@@ -8,7 +8,7 @@ import com.epam.rd.autocode.assessment.appliances.repository.ApplianceRepository
 import com.epam.rd.autocode.assessment.appliances.repository.OrderRowRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.OrdersRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
-import com.epam.rd.autocode.assessment.appliances.security.StorePrincipal;
+import com.epam.rd.autocode.assessment.appliances.security.identity.StorePrincipal;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
 import java.math.BigDecimal;
 import java.util.List;
@@ -24,7 +24,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;

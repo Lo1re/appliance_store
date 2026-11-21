@@ -1,13 +1,10 @@
 package com.epam.rd.autocode.assessment.appliances.dto.order;
 
-import com.epam.rd.autocode.assessment.appliances.dto.order.OrderItemRequest;
-import com.epam.rd.autocode.assessment.appliances.dto.order.OrderRequest;
 import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class OrderRequestTest {

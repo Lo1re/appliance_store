@@ -2,8 +2,8 @@ package com.epam.rd.autocode.assessment.appliances.api.error;
 
 import com.epam.rd.autocode.assessment.appliances.exception.BusinessException;
 import com.epam.rd.autocode.assessment.appliances.logging.SafeFailure;
-import com.epam.rd.autocode.assessment.appliances.security.jwt.InvalidRefreshTokenException;
-import com.epam.rd.autocode.assessment.appliances.security.jwt.PasswordLoginLockedException;
+import com.epam.rd.autocode.assessment.appliances.security.jwt.api.PasswordLoginLockedException;
+import com.epam.rd.autocode.assessment.appliances.security.jwt.refresh.InvalidRefreshTokenException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.util.LinkedHashMap;

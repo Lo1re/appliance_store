@@ -1,18 +1,21 @@
 package com.epam.rd.autocode.assessment.appliances.service;
 
-import com.epam.rd.autocode.assessment.appliances.dto.order.*;
+import com.epam.rd.autocode.assessment.appliances.dto.order.OrderItemRequest;
+import com.epam.rd.autocode.assessment.appliances.dto.order.OrderRequest;
+import com.epam.rd.autocode.assessment.appliances.dto.order.OrderResponse;
+import com.epam.rd.autocode.assessment.appliances.dto.order.OrderSummary;
 import com.epam.rd.autocode.assessment.appliances.exception.OrderError;
 import com.epam.rd.autocode.assessment.appliances.exception.OrderException;
 import com.epam.rd.autocode.assessment.appliances.mapper.OrderMapper;
-import com.epam.rd.autocode.assessment.appliances.security.AccountRole;
-import com.epam.rd.autocode.assessment.appliances.security.CurrentActor;
+import com.epam.rd.autocode.assessment.appliances.security.identity.AccountRole;
+import com.epam.rd.autocode.assessment.appliances.security.identity.CurrentActor;
+import com.epam.rd.autocode.assessment.appliances.service.lookup.LookupService;
 import com.epam.rd.autocode.assessment.appliances.web.form.OrderFormAssembler;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
-
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;

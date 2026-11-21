@@ -1,11 +1,9 @@
 package com.epam.rd.autocode.assessment.appliances.dto.appliance;
 
-import com.epam.rd.autocode.assessment.appliances.dto.appliance.ApplianceRequest;
 import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ApplianceRequestTest {

@@ -1,7 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.persistence;
 
-import com.epam.rd.autocode.assessment.appliances.exception.AccountException;
 import com.epam.rd.autocode.assessment.appliances.exception.AccountError;
+import com.epam.rd.autocode.assessment.appliances.exception.AccountException;
 import java.sql.SQLException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.Test;

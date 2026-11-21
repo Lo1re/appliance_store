@@ -1,12 +1,10 @@
 package com.epam.rd.autocode.assessment.appliances.model;
 
+import java.util.Arrays;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
-import java.util.List;
-
 import static com.epam.rd.autocode.assessment.appliances.model.TestConstants.POWER_TYPE_TYPE;
 import static com.epam.rd.autocode.assessment.appliances.model.TestConstants.PowerType.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;

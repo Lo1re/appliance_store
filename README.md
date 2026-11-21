@@ -67,6 +67,64 @@ Good luck.
 
 ## Current foundation setup
 
+
+### Package organization
+
+The existing layers are retained. Inside them, classes are grouped by responsibility:
+
+```text
+controller/
+  account/          Client and employee HTML controllers
+  auth/             Login and renewal HTML controllers
+  catalog/          Appliance and manufacturer HTML controllers
+  order/            Order controller and its package-private filter
+  advice/           Shared MVC model/error advice and section annotation
+api/
+  controller/       JSON endpoints
+  error/            Safe localized JSON errors
+service/
+  impl/account/     Account implementations and their internal credential helper
+  impl/catalog/     Catalog implementations
+  impl/order/       Order implementation and row factory
+  lookup/           Bounded form lookup service
+  policy/           Domain operation policies
+security/
+  identity/         Principals, current account and active-account guards
+  authentication/   Database and in-memory credential providers
+  authorization/    URL and order-access rules
+  config/           Shared security setup and browser-mode properties
+  login/            Password throttling/counters and password failure presentation
+  session/          Explicit session-mode policy and revocation
+  logging/          Security events and safe metadata
+  web/              Shared HTML security failures
+  jwt/
+    access/         Access-token issuing, claims, principal and authentication
+    refresh/        Opaque-token codec, persistence lifecycle and retention
+    cookie/         Browser-cookie attributes, CSRF and credential-cookie lifecycle
+    config/         Shared JWT activation/keys/properties and browser chain
+    web/            Browser token resolver, account filter and login/logout handlers
+    api/            JSON API chain, token resolver and password-login adapter
+    TokenPair       Internal result shared by JWT transports
+dto/query/          MVC/API list-query and pagination response contracts
+web/form/           Form preparation
+web/pagination/     Shared pagination/sort policy
+web/error/          HTML error representation and route classification
+```
+
+Model/repository packages and service-interface names remain in their original locations.
+Tests follow the packages of their subjects; multi-layer tests remain under integration.
+Moving packages does not change routes, bean names, configuration keys, SQL migrations or
+business methods. Package-private collaborators stay together: OrderFilter with the order
+controller, AccountCredentialsService with account service implementations, and the logout
+handlers with each other. AOP references use the new annotation path; the active-account
+guard still covers all service subpackages.
+
+After pulling these moves, run Maven clean then test before restarting. Old compiled
+classes in target can otherwise register duplicate Spring beans. The package refactor was
+checked statically for unchanged code bodies and preserved Java type bindings; compilation,
+tests and application startup were not run by the assistant after these moves.
+
+
 The application has two profiles: `local` uses PostgreSQL and `test` uses H2 in memory. There are no additional runtime or Maven environment profiles. The original exercise description above is retained as historical assignment context.
 
 Flyway is the only schema initializer. `V1__initial_schema.sql` creates the schema; `R__demo_data.sql` supplies local/test data. SQL initialization and Hibernate schema generation are disabled. Hibernate validates the migrated schema.

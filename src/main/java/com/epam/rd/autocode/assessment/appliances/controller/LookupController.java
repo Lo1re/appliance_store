@@ -1,7 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
 
 import com.epam.rd.autocode.assessment.appliances.dto.lookup.SelectOption;
-import com.epam.rd.autocode.assessment.appliances.service.LookupService;
+import com.epam.rd.autocode.assessment.appliances.service.lookup.LookupService;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

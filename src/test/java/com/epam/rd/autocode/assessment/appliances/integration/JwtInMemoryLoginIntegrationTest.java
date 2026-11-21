@@ -1,6 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.integration;
 
-import com.epam.rd.autocode.assessment.appliances.security.jwt.AuthTokenCookies;
+import com.epam.rd.autocode.assessment.appliances.security.jwt.cookie.AuthTokenCookies;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

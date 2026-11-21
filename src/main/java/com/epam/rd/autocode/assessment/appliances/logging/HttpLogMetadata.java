@@ -1,6 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.logging;
 
-import com.epam.rd.autocode.assessment.appliances.security.SecurityLogContext;
+import com.epam.rd.autocode.assessment.appliances.security.logging.SecurityLogContext;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Locale;
 import java.util.Set;

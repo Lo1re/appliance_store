@@ -1,15 +1,13 @@
 package com.epam.rd.autocode.assessment.appliances.model;
 
+import java.lang.reflect.*;
+import java.util.Arrays;
+import java.util.List;
 import net.bytebuddy.implementation.bytecode.constant.TextConstant;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.CsvSource;
-
-import java.lang.reflect.*;
-import java.util.Arrays;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class UserTest {

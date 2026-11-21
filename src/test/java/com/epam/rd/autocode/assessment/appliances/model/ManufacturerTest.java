@@ -1,13 +1,11 @@
 package com.epam.rd.autocode.assessment.appliances.model;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.List;
-
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import static com.epam.rd.autocode.assessment.appliances.model.TestConstants.*;
 import static com.epam.rd.autocode.assessment.appliances.model.TestConstants.Manufacturer.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
