@@ -774,3 +774,82 @@ No database reset or Flyway repair is required. Existing V1-V7 files remain inta
 New tests cover optional cards, duplicate create/edit, preserving/clearing a card,
 registration field errors, named-constraint translation and actual V8 SQL on H2.
 The assistant has not run Maven, applied V8 or changed the running database.
+
+
+### Docker Mailpit and PostgreSQL Testcontainers (2026-11-22)
+
+Prerequisite: start Docker Desktop (Linux containers / WSL 2). Reload Maven after
+pulling these changes. No IDE run-configuration files are needed or changed.
+
+With the `local` Spring profile, normal IDE **Run** starts Mailpit automatically
+through Spring Boot Docker Compose. Run from the project root so `compose.yaml`
+is found. Existing local DB_* and JWT/Google environment configuration stays as-is;
+the application still uses your local PostgreSQL. Docker Compose starts only Mailpit.
+Docker Desktop itself must already be running. Missing Docker/occupied ports produce
+a startup error; there is no hidden fallback to another mail server.
+
+- SMTP: 127.0.0.1:1025; inbox: http://127.0.0.1:8025.
+- Image: axllent/mailpit:v1.34.0; readiness checked with /mailpit readyz.
+- Both published ports bind only to loopback. No relay or forwarding is configured.
+- The `appliance-store_mailpit-data` volume stores /data/mailpit.db. Mailpit retains
+  up to 5000 messages; change MP_MAX_MESSAGES in compose.yaml if needed.
+- A fresh volume is used; the old D:\backend\mailpit.db is not imported, per user decision.
+  Stop any manually running mailpit.exe before using the same ports.
+- `start-only` keeps Mailpit running when the application stops, so the inbox remains
+  accessible and repeated Run reuses the service. `restart: unless-stopped` resumes
+  a running service after Docker restarts; a manually stopped service starts on next Run.
+- Existing `test` profile explicitly disables Compose, including local+test contexts.
+  Unit/H2 tests do not start Mailpit. No new Spring profile was added.
+
+Manual dependency commands, from the project root:
+
+```powershell
+docker compose up -d --wait mailpit
+docker compose ps
+docker compose stop mailpit
+```
+
+Stopping/removing the container does not erase the volume. Do not use `down -v`
+unless you intentionally want to erase the container inbox.
+
+Normal tests remain H2 and do not require Docker:
+
+```powershell
+mvn test
+mvn -Punit-tests test
+```
+
+New PostgreSQL tests are in `integration/postgresql/*ContainerIT.java`. They run
+only when selected explicitly (or from the IDE); the Maven `container-tests` profile
+adds them to Failsafe in the integration-test/verify phases:
+
+```powershell
+# Full tests, PostgreSQL containers and the existing coverage gate:
+mvn clean verify -Pcontainer-tests
+
+# Just the PostgreSQL suite; compiles tests, skips Surefire, verifies Failsafe results:
+mvn -Pcontainer-tests -DskipUTs=true test-compile failsafe:integration-test failsafe:verify
+```
+
+The targeted command does not constitute a full regression/coverage acceptance.
+The strict JaCoCo gate remains unchanged. `-Pcontainer-tests test` alone does not run
+Failsafe; use the commands above. Missing Docker fails container tests explicitly.
+
+Testcontainers 1.21.4 is pinned for Docker Engine 29 compatibility; PostgreSQL image
+is pinned to postgres:18.1-alpine. All classes share one disposable PostgreSQL per
+test JVM and one Spring context. The resource reaper removes its resources on JVM
+exit; reuse is disabled. Dynamic URL/credentials point only to that random-port
+container, never to DB_* / appliance_store / a permanent appliance_store_test DB.
+Test credentials are disposable fixtures, not personal credentials. The container
+tests do not launch Mailpit or send real email.
+
+The suite covers actual Flyway V1-V9 and demo migrations/restart preservation,
+optional-card and email constraints, concurrent email/card creation, competing order
+approvals, mutual employee deletion, refresh rotation/replay, and atomic rollback
+of the native password update plus reset-token consumption on real PostgreSQL.
+
+Verification performed: all 8 ContainerIT cases passed; Compose config validated,
+Mailpit health + synthetic SMTP delivery succeeded, the letter survived restart,
+and an isolated Spring Boot 3.2 lifecycle probe automatically started a stopped
+Mailpit. The actual store was not started and the personal PostgreSQL was untouched.
+This is not a claim that the full suite or 100% coverage acceptance has passed.
