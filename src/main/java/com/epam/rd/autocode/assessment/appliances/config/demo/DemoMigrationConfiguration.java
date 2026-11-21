@@ -13,16 +13,25 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 public class DemoMigrationConfiguration {
     @Bean
     FlywayConfigurationCustomizer demoPasswordPlaceholders() {
-        var encoder = new BCryptPasswordEncoder();
-        var credentials = new HashMap<String, String>();
-        for (String name : List.of("Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn",
-                "Uranus", "Neptune", "Phobos", "Moon", "Deimos", "Europa")) {
-            credentials.put("demoPassword" + name, encoder.encode(name + "Local2026!"));
-        }
         return configuration -> {
             var placeholders = new HashMap<>(configuration.getPlaceholders());
-            placeholders.putAll(credentials);
+            placeholders.putAll(Credentials.HASHES);
             configuration.placeholders(placeholders);
         };
+    }
+
+    /** Each demo password is salted once per JVM, shared by isolated test contexts. */
+    private static final class Credentials {
+        private static final java.util.Map<String, String> HASHES = generate();
+
+        private static java.util.Map<String, String> generate() {
+            var encoder = new BCryptPasswordEncoder();
+            var hashes = new HashMap<String, String>();
+            for (String name : List.of("Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn",
+                    "Uranus", "Neptune", "Phobos", "Moon", "Deimos", "Europa")) {
+                hashes.put("demoPassword" + name, encoder.encode(name + "Local2026!"));
+            }
+            return java.util.Map.copyOf(hashes);
+        }
     }
 }

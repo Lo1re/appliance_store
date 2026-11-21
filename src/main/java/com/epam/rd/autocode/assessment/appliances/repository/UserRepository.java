@@ -28,7 +28,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Transactional(propagation = Propagation.MANDATORY)
     @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query("update User u set u.password = :replacement where u.id = :id and u.password = :expected")
+    // A base-table CAS avoids Hibernate JOINED bulk-update temporary-table DDL (implicit commits in H2).
+    @Query(value = "update users set password = :replacement where id = :id and password = :expected", nativeQuery = true)
     int replacePassword(@Param("id") Long id, @Param("expected") String expected, @Param("replacement") String replacement);
 
     Optional<User> findByEmailIgnoreCase(String email);

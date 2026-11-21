@@ -7,6 +7,7 @@ import com.epam.rd.autocode.assessment.appliances.repository.LoginAttemptReposit
 import com.epam.rd.autocode.assessment.appliances.repository.RefreshTokenRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.lock.AccountRowLock;
+import com.epam.rd.autocode.assessment.appliances.repository.password.PasswordResetRepository;
 import com.epam.rd.autocode.assessment.appliances.security.identity.CurrentActor;
 import com.epam.rd.autocode.assessment.appliances.security.password.CurrentPasswordVerifier;
 import com.epam.rd.autocode.assessment.appliances.security.password.PasswordChanged;
@@ -38,6 +39,7 @@ public class PasswordChangeService {
     private final LoginAttemptRepository attempts;
     private final ApplicationEventPublisher events;
     private final Clock clock;
+    private final PasswordResetRepository resetTokens;
 
     @Transactional
     public void change(@NotNull @Valid PasswordChangeRequest request) {
@@ -50,6 +52,7 @@ public class PasswordChangeService {
         if (users.replacePassword(id, credentials.passwordHash(), encoder.encode(request.getNewPassword())) != 1)
             throw new PasswordChangeException(PasswordChangeError.CURRENT_INVALID);
         refresh.revokeAll(id, clock.instant());
+        resetTokens.deleteAll(id);
         attempts.findLocked(credentials.email()).ifPresent(attempts::delete);
         events.publishEvent(new PasswordChanged(id));
     }

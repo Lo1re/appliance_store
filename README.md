@@ -600,3 +600,53 @@ No database or migration changes are required by the move.
 `R__demo_data.sql` contains placeholder names, without embedded password hashes or plaintext passwords. `config.demo.DemoMigrationConfiguration` supplies freshly salted BCrypt hashes for local/test demo accounts only; production does not enable this configuration. Demo login passwords remain `<Name>Local2026!` (for example, `MercuryLocal2026!`). These are public demonstration credentials, never production credentials.
 
 Fresh salts change the repeatable migration checksum on a new application context, so Flyway can execute the demo script again on restart. Its conditional inserts preserve existing account passwords and user changes. Re-running migrate within the same context uses the same placeholders. Never copy these demo settings into production. Database password columns must always contain one-way hashes.
+
+### Local password recovery with Mailpit
+
+Start Mailpit separately:
+
+```
+mailpit.exe --smtp 127.0.0.1:1025 --listen 127.0.0.1:8025
+```
+
+Run the store with its existing `local` Spring profile and database/JWT environment settings. No email account, email password, external provider, or paid service is needed. Mailpit SMTP is configured at `127.0.0.1:1025`; its inbox is http://127.0.0.1:8025. Sender: `appliance-store@example.test`. Even if the recipient is `mercury@gmail.com`, the message stays in local Mailpit and does not go to Gmail.
+
+On `/login`, select “Forgot password?”, enter the email of a database account, and open the captured email in Mailpit. Follow its link and choose a strong password. The old password and reuse of the same link must fail; the new password must work. Requesting a second link invalidates the first; links expire after 30 minutes. Unknown emails and throttled requests get the same generic response. New secrets are never echoed into password inputs. No SMTP health check is required at startup; delivery failure is logged without recipient/link/token and does not disclose whether the account exists.
+
+The new `V4__password_reset_token.sql` stores only SHA-256 digests, one active reset token per account. Successful redemption deletes the token atomically with the password change, refresh revocation and login-lock reset. Rollback preserves the old password/token. Parent-account locking serializes concurrent redemption. Sessions expire after commit. Existing access JWTs can remain valid until their normal expiry (up to 15 minutes). Changing a known password also invalidates outstanding reset links. Expired token rows are cleaned hourly.
+
+Recovery is enabled only in `local`, never `prod`, with `store.mail.enabled=true` and database authentication. Other profiles keep the feature disabled; production email delivery is not implemented in this block. The bounded single-instance limiter defaults to 5 requests/email and 20/source IP per hour, including unknown emails. Configure `store.security.password-reset.max-email-requests`, `max-source-requests`, and `window-seconds` if needed. It uses the direct remote address, not untrusted forwarded headers; counters reset on restart and do not coordinate multiple instances. A distributed production deployment needs shared limits. Keep Mailpit bound to loopback as above; do not expose its inbox publicly.
+
+Run `clean` then `test` in Maven and restart the application before manual testing. Tests use a mocked mail sender and never deliver real mail. The assistant did not run Maven or the new application. SMTP dependency download occurs during your Maven reload/build.
+
+### Fast unit checks and the full test suite
+
+Use `./mvnw.cmd -Punit-tests test` (Windows) for fast unit checks without a full Spring/H2 startup. In IntelliJ's Maven tool window, explicitly enable the `unit-tests` Maven profile before running `test`; disable it before the full acceptance run. This is a Maven test-selection profile, not a Spring application profile.
+
+The fast profile excludes `*IntegrationTest`, repository slice tests, the full application smoke test and the two full-context home/login controller tests. It does not replace the integration suite or establish full coverage. The existing `src/test/java/com/epam/rd/autocode/assessment/appliances/integration` directory remains in place; integration tests in other layer-specific packages retain their existing locations and scenarios.
+
+Use `./mvnw.cmd test` with the `unit-tests` profile disabled for all tests, including database authentication, repositories, JWT cookies, password reset and transactional races. To reproduce just the reset regression, use `./mvnw.cmd -Dtest=PasswordResetIntegrationTest test`. Keep full tests enabled for acceptance/coverage; do not use the selective unit profile as the final verification.
+
+Demo BCrypt hashes are generated once per JVM and shared across isolated Spring test contexts. Passwords, random salts, BCrypt strength and normal credential checks remain unchanged. The cache contains only immutable public demo hashes, never real user credentials. Fresh salts on a new JVM may still rerun the insert-only repeatable demo migration; creating another context in the same JVM no longer regenerates all 12 hashes.
+
+Password replacement uses a native compare-and-set `UPDATE users` instead of a polymorphic JPQL bulk update. For the JOINED User hierarchy, Hibernate's H2 temporary-table strategy can perform DDL with implicit commits, persisting reset-token deletion before an enclosing rollback. Direct base-table DML removes that DDL while retaining the old-hash check, account lock, shared transaction and persistence-context clear. The existing integration rollback/one-time/concurrency assertions are unchanged. No runtime benchmark or Maven run was performed by the assistant.
+
+### Recovery resend protection and responsive forms
+
+Local reset requests now have a 60-second cooldown per normalized email, in addition to the hourly email/source limits. The same gate applies to unknown addresses and to different source IPs requesting the same email. Rapid repeated submissions return the same generic confirmation and do not send another email or invalidate the first link. Configure `store.security.password-reset.cooldown-seconds` if necessary; the existing replacement-link scenario test explicitly uses zero cooldown, while limiter unit tests cover the real cooldown boundaries.
+
+After commit, delivery is queued to a dedicated single mail worker with at most 100 waiting messages. The HTTP response does not wait for SMTP. Queue/delivery errors are logged without addresses or tokens; the local queue is in memory and is not a durable mail outbox. The confirmation page hides the submission form and explains the wait. The reset form contains one main submit action; its redundant footer sign-in link was removed.
+
+Resetting to the current password is rejected with the existing localized `password.new.unchanged` field error. The transaction rolls back token consumption so the same valid link can be used to choose a different password. Invalid/used tokens are still checked before returning a password comparison error. Mail integration assertions now wait for background delivery instead of assuming synchronous SMTP.
+
+Manual check after tests/restart: submit one address rapidly twice (one new Mailpit email), request again after at least 60 seconds (one more email, replacing the earlier link), and try the current password through the latest link (field error; choosing a different password with that link succeeds). Five sends/email/hour and source limits still apply. Reopening an old browser tab does not bypass server-side limits.
+
+### Final project mail scope and resend feedback
+
+Mailpit is the final mail transport for this project, by the user's decision. Connecting an external SMTP provider or delivering to real recipients is not a remaining acceptance task. Here “production quality” means safe handling of data, errors, access and secrets; it does not mean enabling public email delivery. Existing local-only safeguards remain.
+
+When a recovery request is throttled, the form now returns HTTP 429 with `Retry-After` and a localized remaining-seconds message. The value is calculated from the active email cooldown and hourly email/source windows, rounded up; accepted and unknown addresses follow identical rules. The submitted email stays in the form and no mail/token is issued on rejection. The displayed number is the server's value at response time, not a JavaScript countdown. The footer sign-in link on the forgot-password page was removed; the existing header sign-in navigation remains.
+
+### Recovery quota accounting correction
+
+Cooldown and other rejected requests no longer increment either hourly counter. Quota is reserved only after all gates pass, identically for known and unknown emails; this counts accepted recovery requests, not confirmed SMTP deliveries. For example, one accepted request followed by 100 repeats during its 60-second cooldown uses one hourly slot. The next request can succeed after the cooldown if hourly capacity remains. Real hourly limits still return their remaining wait. Restart the running app after applying the fix; existing in-memory counters from the earlier version are not rewritten in a running JVM.
