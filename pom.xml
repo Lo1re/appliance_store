@@ -227,6 +227,21 @@
 										</limit>
 									</limits>
 								</rule>
+                                <rule>
+                                    <element>CLASS</element>
+                                    <includes>
+                                        <include>*/controller/*</include>
+                                        <include>*/service/*</include>
+                                        <include>*/security/*Service</include>
+                                        <include>*/security/registration/*</include>
+                                        <include>*/security/jwt/api/ApiPasswordLogin</include>
+                                    </includes>
+                                    <limits>
+                                        <limit><counter>LINE</counter><value>MISSEDCOUNT</value><maximum>0</maximum></limit>
+                                        <limit><counter>METHOD</counter><value>MISSEDCOUNT</value><maximum>0</maximum></limit>
+                                        <limit><counter>BRANCH</counter><value>MISSEDCOUNT</value><maximum>0</maximum></limit>
+                                    </limits>
+                                </rule>
 							</rules>
 						</configuration>
 					</execution>

@@ -853,3 +853,37 @@ Mailpit health + synthetic SMTP delivery succeeded, the letter survived restart,
 and an isolated Spring Boot 3.2 lifecycle probe automatically started a stopped
 Mailpit. The actual store was not started and the personal PostgreSQL was untouched.
 This is not a claim that the full suite or 100% coverage acceptance has passed.
+
+
+### Service/controller coverage (2026-11-22)
+
+Added focused unit tests for failure paths, stale identities, role/transport checks,
+signup confirmation conflicts, password setup/reset, Google onboarding/linking,
+lookup normalization/selected options, login-counter insertion races and bounded
+retries, refresh successor-chain integrity and removed-owner cleanup. The existing
+HTTP, security, transaction and PostgreSQL integration tests remain in the suite.
+
+The JaCoCo report now confirms 100% LINE, BRANCH and METHOD for the 56 audited
+service/controller and registration-operation classes. The scope includes MVC/API
+controllers and advice, service packages, security *Service classes, registration
+operations, and ApiPasswordLogin. A new CLASS rule enforces zero misses for these
+classes; the pre-existing strict BUNDLE rule remains unchanged. No manual production
+logic was excluded and no threshold was reduced.
+
+Two small production cleanups removed an unreachable retry-loop exit (all paths
+already return or throw by the third attempt) and redundant null handling of
+non-null repository list/integer callback results. Retry bounds and security rules
+are unchanged; tests explicitly verify three-attempt exhaustion and cleanup races.
+
+Validation: the full run passed 528 Surefire tests plus 8 PostgreSQL tests before
+the final three input-edge cases; the final reports contain 531 Surefire cases,
+8 Failsafe cases, zero failures/errors/skips. The subsequent focused branch run
+passed 88 cases and the final selected-client lookup test passed. The current report
+includes these executions; no application or personal PostgreSQL was started.
+
+Full verify is still RED solely because the unchanged whole-project BUNDLE gate
+finds 106 uncovered lines and 223 uncovered branches in other components. Those
+remaining gaps are outside the completed service/controller scope (for example
+security filters/configuration, error/persistence/logging helpers and validation).
+Do not interpret service/controller 100% as whole-project 100% or a successful
+global verify. Inspect target/site/jacoco/index.html for the remaining work.

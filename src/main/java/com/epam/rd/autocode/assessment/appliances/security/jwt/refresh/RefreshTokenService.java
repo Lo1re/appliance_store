@@ -120,9 +120,8 @@ public class RefreshTokenService {
         Instant cutoff = clock.instant().minus(properties.retention());
         var owners = inTransaction(status -> tokens.findExpiredOwners(cutoff, PageRequest.of(0, 100)));
         int removed = 0;
-        if (owners != null) for (Long id : owners) {
-            Integer count = inTransaction(status -> users.lockIdentity(id).isPresent() ? tokens.deleteExpired(id, cutoff) : 0);
-            removed += count == null ? 0 : count;
+        for (Long id : owners) {
+            removed += inTransaction(status -> users.lockIdentity(id).isPresent() ? tokens.deleteExpired(id, cutoff) : 0);
         }
         return removed;
     }

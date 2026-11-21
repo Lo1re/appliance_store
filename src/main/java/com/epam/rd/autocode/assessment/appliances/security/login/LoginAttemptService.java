@@ -38,7 +38,7 @@ public class LoginAttemptService {
     public void failed(String username) {
         var key = key(username);
         if (key.isEmpty()) return;
-        for (int retry = 0; retry < 3; retry++) {
+        for (int retry = 0; ; retry++) {
             try {
                 transaction.executeWithoutResult(status -> {
                     var current = attempts.findLocked(key.get()).orElse(null);
@@ -60,8 +60,7 @@ public class LoginAttemptService {
 
     public int cleanup() {
         var now = clock.instant();
-        Integer removed = transaction.execute(status -> attempts.deleteExpired(now.minus(properties.retention()), now));
-        return removed == null ? 0 : removed;
+        return transaction.execute(status -> attempts.deleteExpired(now.minus(properties.retention()), now));
     }
 
     private Optional<String> key(String username) {

@@ -96,6 +96,14 @@ class OrderServiceImplTest {
 
         verifyNoInteractions(users, orders);
     }
+    @Test
+    void editableGuardAcceptsPendingAndRejectsApprovedOwnedOrder() {
+        signIn("CLIENT");var client=new Client();client.setId(3L);when(users.findById(3L)).thenReturn(Optional.of(client));
+        var order=new com.epam.rd.autocode.assessment.appliances.model.Orders();order.setClient(client);
+        when(orders.findDetailedByIdAndClient_Id(1L,3L)).thenReturn(Optional.of(order));service.requireEditable(1L);
+        order.setApproved(true);assertThatThrownBy(()->service.requireEditable(1L)).isInstanceOf(com.epam.rd.autocode.assessment.appliances.exception.OrderException.class).hasMessage("order.not-editable");
+    }
+
     private void signIn(String role) {
         var principal = new StorePrincipal(3L, "test", "unused", role);
         SecurityContextHolder.getContext().setAuthentication(
