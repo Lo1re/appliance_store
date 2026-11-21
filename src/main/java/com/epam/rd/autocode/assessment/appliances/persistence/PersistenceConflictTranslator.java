@@ -36,6 +36,9 @@ public class PersistenceConflictTranslator {
         }
         String name = constraint.toLowerCase(Locale.ROOT);
         if ("23505".equals(state)) {
+            if (operation == PersistenceOperation.ACCOUNT_WRITE && unique(name, "uq_client_card")) {
+                return new AccountException(AccountError.CARD_DUPLICATE);
+            }
             if (operation == PersistenceOperation.ACCOUNT_WRITE && unique(name, "uq_users_email")) {
                 return new AccountException(AccountError.EMAIL_DUPLICATE);
             }

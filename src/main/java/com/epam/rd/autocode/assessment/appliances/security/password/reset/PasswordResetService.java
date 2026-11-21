@@ -13,6 +13,7 @@ import com.epam.rd.autocode.assessment.appliances.security.jwt.access.AccessToke
 import com.epam.rd.autocode.assessment.appliances.security.password.PasswordChanged;
 import com.epam.rd.autocode.assessment.appliances.security.password.PasswordCredentialStatusService;
 import com.epam.rd.autocode.assessment.appliances.validation.EmailAddress;
+import com.epam.rd.autocode.assessment.appliances.mail.SecurityMailLinkFactory;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.time.Clock;
@@ -44,7 +45,7 @@ public class PasswordResetService {
     private final Clock clock;
     private final PasswordCredentialStatusService passwordState;
     private final AccessTokenVersionService tokenVersions;
-    private final ResetLinkFactory links;
+    private final SecurityMailLinkFactory links;
 
     @Transactional
     public long request(String email, String source, Locale locale) {

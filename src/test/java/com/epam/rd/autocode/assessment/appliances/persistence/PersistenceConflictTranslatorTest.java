@@ -28,6 +28,15 @@ class PersistenceConflictTranslatorTest {
         }
     }
 
+    @Test
+    void translatesLoyaltyCardConstraintIncludingH2GeneratedIndexName() {
+        for (String name : new String[]{"uq_client_card", "UQ_CLIENT_CARD_INDEX_7"}) {
+            var translated = translator.translate(PersistenceOperation.ACCOUNT_WRITE, failure("23505", name));
+            assertThat(translated).isInstanceOf(AccountException.class);
+            assertThat(((AccountException) translated).error()).isEqualTo(AccountError.CARD_DUPLICATE);
+        }
+    }
+
     private RuntimeException failure(String state, String name) {
         return new RuntimeException(new ConstraintViolationException(
                 "private database details", new SQLException("private values", state), name));

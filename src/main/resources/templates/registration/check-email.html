@@ -1,0 +1,6 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="#{registration.check.title}"></title></head>
+<body><header th:insert="~{menunavy :: navy}"></header><main><h1 th:text="#{registration.check.title}"></h1>
+<p role="status" th:text="#{registration.check.message}"></p><p th:text="#{registration.check.browser}"></p>
+<a th:href="@{/register}" th:text="#{registration.again}"></a></main></body></html>

@@ -11,6 +11,15 @@ import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.*;
 
 class SecurityMailEventListenerTest {
+    @Test void registrationUsesBackgroundDeliveryAndItsOwnTemplate() {
+        var sender = mock(SecurityMailSender.class); var executor = mock(TaskExecutor.class);
+        var listener = new SecurityMailEventListener(sender, executor);
+        var event = new RegistrationVerificationMail("client@example.test", URI.create("http://localhost:8080/register/verify?token=secret"), Locale.ENGLISH);
+        listener.deliverRegistration(event); verifyNoInteractions(sender);
+        var job = ArgumentCaptor.forClass(Runnable.class); verify(executor).execute(job.capture()); job.getValue().run();
+        verify(sender).sendRegistrationVerification(event.recipient(), event.link(), event.locale());
+    }
+
     @Test void queuesDeliveryWithoutBlockingTheCallingThread() {
         var sender = mock(SecurityMailSender.class);
         var executor = mock(TaskExecutor.class);

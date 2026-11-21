@@ -35,6 +35,11 @@ public class MailpitSecurityMailSender implements SecurityMailSender {
     }
 
     @Override
+    public void sendRegistrationVerification(String recipient, URI link, Locale locale) {
+        send(recipient, link, locale, "mail.registration.subject", "mail.registration.body");
+    }
+
+    @Override
     public void sendAccountCreated(String recipient, Locale locale) {
         send(recipient, locale, "mail.account-created.subject", "mail.account-created.body", new Object[0]);
     }

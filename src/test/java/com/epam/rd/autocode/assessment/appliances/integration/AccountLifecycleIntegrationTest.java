@@ -67,6 +67,26 @@ class AccountLifecycleIntegrationTest {
                 .isInstanceOf(AccountException.class).hasMessage("employee.not-found");
     }
 
+    @Test
+    void optionalCardsAreUniqueWhenPresentAndCanBeRetainedOrClearedOnEdit() {
+        var a = client("card-first@example.test", "First"); a.setCard("  UNIQUE-LOYALTY  ");
+        var first = clients.create(a, password());
+        var b = client("card-second@example.test", "Second"); b.setCard(null);
+        var second = clients.create(b, password());
+        var c = client("card-third@example.test", "Third"); c.setCard("   ");
+        var third = clients.create(c, password());
+        assertThat(second.getCard()).isNull(); assertThat(third.getCard()).isNull();
+        clients.update(first.getId(), a);
+        b.setCard(" UNIQUE-LOYALTY ");
+        assertThatThrownBy(() -> clients.update(second.getId(), b)).isInstanceOf(AccountException.class).hasMessage("client.card.duplicate");
+        var duplicate = client("card-duplicate@example.test", "Duplicate"); duplicate.setCard("UNIQUE-LOYALTY");
+        assertThatThrownBy(() -> clients.create(duplicate, password())).isInstanceOf(AccountException.class).hasMessage("client.card.duplicate");
+        a.setCard(null); clients.update(first.getId(), a);
+        assertThat(clients.findById(first.getId()).getCard()).isNull();
+        clients.update(second.getId(), b);
+        clients.delete(first.getId()); clients.delete(second.getId()); clients.delete(third.getId());
+    }
+
     private ClientRequest client(String email, String name) {
         var request = new ClientRequest();
         request.setName(name);

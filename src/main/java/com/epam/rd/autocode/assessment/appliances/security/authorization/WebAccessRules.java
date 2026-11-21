@@ -21,6 +21,10 @@ public class WebAccessRules implements Customizer<AuthorizeHttpRequestsConfigure
                         "/images/**"
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET, "/login", "/auth/renew").permitAll()
+                .requestMatchers(HttpMethod.GET, "/register", "/register/check-email").anonymous()
+                .requestMatchers(HttpMethod.POST, "/register").anonymous()
+                .requestMatchers(HttpMethod.GET, "/register/verify", "/register/confirm").permitAll()
+                .requestMatchers(HttpMethod.POST, "/register/complete").permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/renew").permitAll()
                 .requestMatchers(HttpMethod.GET, "/password/forgot", "/password/reset").permitAll()
                 .requestMatchers(HttpMethod.POST, "/password/forgot", "/password/reset").permitAll()

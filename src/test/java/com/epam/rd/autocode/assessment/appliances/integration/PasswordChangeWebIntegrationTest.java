@@ -30,7 +30,7 @@ class PasswordChangeWebIntegrationTest {
     private static final String OLD="OldReviewPass2026!",NEW="NewReviewPass2026!";
     @Autowired MockMvc mvc;@Autowired ClientRepository clients;@Autowired PasswordEncoder encoder;@Autowired ObjectMapper json;
     private String email;
-    @BeforeEach void prepare(){email="pw-web-"+UUID.randomUUID()+"@example.com";clients.saveAndFlush(new Client(null,"Password web",email,encoder.encode(OLD),"PW-WEB"));}
+    @BeforeEach void prepare(){email="pw-web-"+UUID.randomUUID()+"@example.com";clients.saveAndFlush(new Client(null,"Password web",email,encoder.encode(OLD),null));}
 
     @Test void ordinaryFormChangesPasswordClearsCookiesAndRevokesRefreshWithoutEchoingSecrets() throws Exception {
         var login=login(OLD);Cookie access=login.getResponse().getCookie(AuthTokenCookies.NAME);Cookie refresh=login.getResponse().getCookie(AuthTokenCookies.REFRESH_NAME);

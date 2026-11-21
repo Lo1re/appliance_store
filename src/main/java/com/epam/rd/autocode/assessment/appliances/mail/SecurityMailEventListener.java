@@ -44,6 +44,11 @@ public class SecurityMailEventListener {
         enqueue(() -> sender.sendEmailVerification(mail.recipient(), mail.link(), mail.locale()));
     }
 
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void deliverRegistration(RegistrationVerificationMail mail) {
+        enqueue(() -> sender.sendRegistrationVerification(mail.recipient(), mail.link(), mail.locale()));
+    }
+
     private void enqueue(Runnable delivery) {
         try {
             executor.execute(() -> {

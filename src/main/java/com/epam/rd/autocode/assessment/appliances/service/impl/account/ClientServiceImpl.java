@@ -60,6 +60,7 @@ public class ClientServiceImpl implements ClientService {
     @Loggable
     @PersistenceBoundary(PersistenceOperation.ACCOUNT_WRITE)
     public ClientResponse create(ClientRequest request, PasswordRequest password) {
+        requireAvailableCard(request.getCard(), null);
         var client = new Client();
         clientMapper.applyRequest(request, client);
         credentials.assignEmail(client, request.getEmail());
@@ -77,6 +78,7 @@ public class ClientServiceImpl implements ClientService {
     public ClientResponse update(Long id, ClientRequest request) {
         credentials.lockAccount(id, AccountError.CLIENT_NOT_FOUND);
         Client client = requireClient(id);
+        requireAvailableCard(request.getCard(), id);
         clientMapper.applyRequest(request, client);
         credentials.assignEmail(client, request.getEmail());
         audit.record(BusinessAction.CLIENT_UPDATED, client.getId());
@@ -98,6 +100,11 @@ public class ClientServiceImpl implements ClientService {
 
         clientRepository.delete(client);
         audit.record(BusinessAction.CLIENT_DELETED, client.getId());
+    }
+
+    private void requireAvailableCard(String card, Long id) {
+        if (card != null && (id == null ? clientRepository.existsByCard(card) : clientRepository.existsByCardAndIdNot(card, id)))
+            throw new AccountException(AccountError.CARD_DUPLICATE);
     }
 
     private Client requireClient(Long id) {

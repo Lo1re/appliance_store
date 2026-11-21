@@ -6,6 +6,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ClientRepository extends JpaRepository<Client, Long> {
+    boolean existsByCard(String card);
+    boolean existsByCardAndIdNot(String card, Long id);
+
 
     Page<Client> findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
             String name,

@@ -79,7 +79,7 @@ public class ClientController {
             clientService.create(request, credentials);
             return REDIRECT;
         } catch (AccountException exception) {
-            accountFormView.rejectDuplicateEmail(exception, accountErrors);
+            accountFormView.rejectDuplicate(exception, accountErrors);
             return renderForm(null, model);
         }
     }
@@ -105,7 +105,7 @@ public class ClientController {
             clientService.update(id, request);
             return REDIRECT;
         } catch (AccountException exception) {
-            accountFormView.rejectDuplicateEmail(exception, errors);
+            accountFormView.rejectDuplicate(exception, errors);
             return renderForm(id, model);
         }
     }

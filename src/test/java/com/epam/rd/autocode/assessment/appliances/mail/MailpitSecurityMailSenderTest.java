@@ -11,6 +11,18 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class MailpitSecurityMailSenderTest {
+    @Test void registrationEmailContainsConfirmationLink() {
+        var transport = mock(JavaMailSender.class); var messages = new StaticMessageSource();
+        messages.addMessage("mail.registration.subject", Locale.ENGLISH, "Confirm registration");
+        messages.addMessage("mail.registration.body", Locale.ENGLISH, "Confirm: {0}");
+        var sender = new MailpitSecurityMailSender(transport, messages, "store@example.test");
+        sender.sendRegistrationVerification("client@example.test", URI.create("http://localhost:8080/register/verify?token=secret"), Locale.ENGLISH);
+        var captured = org.mockito.ArgumentCaptor.forClass(SimpleMailMessage.class);
+        verify(transport).send(captured.capture());
+        assertThat(captured.getValue().getSubject()).isEqualTo("Confirm registration");
+        assertThat(captured.getValue().getText()).contains("/register/verify?token=secret");
+    }
+
     @Test void sendsAccountAndPasswordNotificationsWithoutCredentials() {
         var transport = mock(JavaMailSender.class); var messages = new StaticMessageSource();
         messages.addMessage("mail.account-created.subject", Locale.ENGLISH, "Account created");

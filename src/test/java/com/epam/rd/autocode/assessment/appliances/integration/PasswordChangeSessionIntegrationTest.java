@@ -23,7 +23,7 @@ class PasswordChangeSessionIntegrationTest {
     @Autowired MockMvc mvc;@Autowired ClientRepository clients;@Autowired PasswordEncoder encoder;
     @Test void successfulChangeEndsTheCurrentAndOtherTrackedSessionsWithoutJwtInfrastructure() throws Exception {
         String email="pw-session-"+UUID.randomUUID()+"@example.com",old="OldReviewPass2026!",next="NewReviewPass2026!";
-        clients.saveAndFlush(new Client(null,"Password session",email,encoder.encode(old),"PW-SESSION"));
+        clients.saveAndFlush(new Client(null,"Password session",email,encoder.encode(old),null));
         var first=(MockHttpSession)mvc.perform(formLogin().user(email).password(old)).andReturn().getRequest().getSession(false);
         var second=(MockHttpSession)mvc.perform(formLogin().user(email).password(old)).andReturn().getRequest().getSession(false);
         var page=mvc.perform(get("/password/change").session(first)).andExpect(status().isOk()).andReturn();

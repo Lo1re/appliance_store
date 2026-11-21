@@ -17,7 +17,7 @@
 <input id="email" th:field="*{email}" type="email" maxlength="254" autocomplete="email" required>
 <p th:errors="*{email}" role="alert"></p></div>
 <div><label for="card" th:text="#{client.field.card}"></label>
-<input id="card" th:field="*{card}" maxlength="32" required>
+<input id="card" th:field="*{card}" maxlength="32">
 <p th:errors="*{card}" role="alert"></p></div>
 <button type="submit" th:text="#{google.profile.continue}">Continue</button>
 </form>

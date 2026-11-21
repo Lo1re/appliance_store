@@ -14,10 +14,12 @@ public class AccountFormView {
         return "account/form";
     }
 
-    public void rejectDuplicateEmail(AccountException exception, BindingResult errors) {
-        if (exception.error() != AccountError.EMAIL_DUPLICATE) {
-            throw exception;
-        }
-        errors.rejectValue("email", exception.error().messageKey());
+    public void rejectDuplicate(AccountException exception, BindingResult errors) {
+        String field = switch (exception.error()) {
+            case EMAIL_DUPLICATE -> "email";
+            case CARD_DUPLICATE -> "card";
+            default -> throw exception;
+        };
+        errors.rejectValue(field, exception.error().messageKey());
     }
 }

@@ -13,6 +13,8 @@ import com.epam.rd.autocode.assessment.appliances.security.oauth.google.identity
 import com.epam.rd.autocode.assessment.appliances.security.oauth.google.identity.GoogleIdentityService;
 import com.epam.rd.autocode.assessment.appliances.security.oauth.google.identity.GoogleLoginException;
 import com.epam.rd.autocode.assessment.appliances.security.oauth.google.identity.VerifiedGoogleIdentity;
+import com.epam.rd.autocode.assessment.appliances.exception.AccountException;
+import com.epam.rd.autocode.assessment.appliances.web.form.AccountFormView;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -41,6 +43,7 @@ public class GoogleOnboardingController {
     private final RefreshTokenService tokens;
     private final JwtCookieLifecycle cookies;
     private final AuthTokenCookies browserCookies;
+    private final AccountFormView forms;
 
     @ModelAttribute public void noCache(HttpServletResponse response) {
         response.setHeader("Cache-Control", "no-store"); response.setHeader("Referrer-Policy", "no-referrer");
@@ -82,6 +85,8 @@ public class GoogleOnboardingController {
         } catch (GoogleLoginException rejected) {
             flows.finish(request, response);
             return rejected.reason() == GoogleLoginException.Reason.LINK_REQUIRED ? "redirect:/login?googleLinkRequired" : "redirect:/login?googleExpired";
+        } catch (AccountException conflict) {
+            forms.rejectDuplicate(conflict, errors); response.setStatus(409); return "oauth/google-profile";
         } catch (DataIntegrityViolationException conflict) {
             errors.reject("google.profile.conflict"); response.setStatus(409); return "oauth/google-profile";
         } catch (DataAccessException | TransactionException unavailable) {

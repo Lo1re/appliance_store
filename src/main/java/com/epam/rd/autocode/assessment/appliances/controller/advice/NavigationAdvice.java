@@ -3,6 +3,7 @@ package com.epam.rd.autocode.assessment.appliances.controller.advice;
 import com.epam.rd.autocode.assessment.appliances.security.authentication.AuthenticationProperties;
 import com.epam.rd.autocode.assessment.appliances.security.password.reset.PasswordResetService;
 import com.epam.rd.autocode.assessment.appliances.web.LanguageNavigation;
+import com.epam.rd.autocode.assessment.appliances.security.registration.RegistrationPreparation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
@@ -16,6 +17,10 @@ public class NavigationAdvice {
     private final LanguageNavigation languages;
     private final AuthenticationProperties authentication;
     private final ObjectProvider<PasswordResetService> passwordReset;
+    private final ObjectProvider<RegistrationPreparation> registration;
+
+    @ModelAttribute("registrationEnabled")
+    public boolean registrationEnabled() { return registration.getIfAvailable() != null; }
 
     @Value("${store.security.google.enabled:false}")
     private boolean googleEnabled;

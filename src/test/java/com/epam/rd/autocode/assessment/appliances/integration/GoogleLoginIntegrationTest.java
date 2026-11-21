@@ -102,10 +102,10 @@ class GoogleLoginIntegrationTest {
     @Test void verifiedNewIdentityRequiresProfileThenGetsShopCookieAndClientRole() throws Exception {
         var session = pending(true);
         mvc.perform(get("/onboarding/google").session(session)).andExpect(status().isOk()).andExpect(view().name("oauth/google-profile"));
-        mvc.perform(post("/onboarding/google").session(session).param("name", "New client").param("email", email).param("card", "card"))
+        mvc.perform(post("/onboarding/google").session(session).param("name", "New client").param("email", email))
                 .andExpect(status().isForbidden());
         var result = mvc.perform(post("/onboarding/google").session(session).with(csrf())
-                .param("name", "New client").param("email", email).param("card", "card").param("role", "EMPLOYEE").param("id", "9"))
+                .param("name", "New client").param("email", email).param("role", "EMPLOYEE").param("id", "9"))
                 .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/")).andReturn();
         var account = users.findByEmailIgnoreCase(email).orElseThrow();
         assertThat(account).isInstanceOf(Client.class);
@@ -121,7 +121,7 @@ class GoogleLoginIntegrationTest {
         var session = pending(true);
         String chosen = "chosen-" + UUID.randomUUID() + "@example.test";
         mvc.perform(post("/onboarding/google").session(session).with(csrf()).param("name", "New client")
-                .param("email", chosen).param("card", "card")).andExpect(status().isOk()).andExpect(model().attribute("verificationSent", true));
+                .param("email", chosen)).andExpect(status().isOk()).andExpect(model().attribute("verificationSent", true));
         assertThat(users.findByEmailIgnoreCase(chosen)).isEmpty();
         var uri = ArgumentCaptor.forClass(URI.class);
         verify(mail, timeout(3000)).sendEmailVerification(eq(chosen), uri.capture(), any(Locale.class));
@@ -130,7 +130,7 @@ class GoogleLoginIntegrationTest {
         mvc.perform(get("/onboarding/google/verify").session(session).param("token", token))
                 .andExpect(redirectedUrl("/onboarding/google?verified"));
         mvc.perform(post("/onboarding/google").session(session).with(csrf()).param("name", "New client")
-                .param("email", chosen).param("card", "card")).andExpect(redirectedUrl("/"));
+                .param("email", chosen)).andExpect(redirectedUrl("/"));
         assertThat(users.findByEmailIgnoreCase(chosen)).isPresent();
     }
 
@@ -150,7 +150,7 @@ class GoogleLoginIntegrationTest {
 
     @Test void googleCreatedAccountCanSetKnownPasswordThroughItsOwnEmail() throws Exception {
         var profile = new com.epam.rd.autocode.assessment.appliances.dto.oauth.GoogleProfileRequest();
-        profile.setName("Google password setup"); profile.setEmail(email); profile.setCard("card");
+        profile.setName("Google password setup"); profile.setEmail(email); profile.setCard(null);
         Long id = identities.createProfile(new VerifiedGoogleIdentity(subject, email, "Name", true), profile);
         verify(mail, timeout(3000)).sendAccountCreated(eq(email), any(Locale.class));
         Cookie access = access(id);
@@ -216,7 +216,7 @@ class GoogleLoginIntegrationTest {
         return (MockHttpSession) request.getSession();
     }
     private Client createClient(String address) {
-        return clients.saveAndFlush(new Client(null, "Existing", address, encoder.encode("ExistingLocal2026!"), "card"));
+        return clients.saveAndFlush(new Client(null, "Existing", address, encoder.encode("ExistingLocal2026!"), null));
     }
     private Cookie access(Long id) { return new Cookie(AuthTokenCookies.NAME, tokens.issue(accounts.forAccount(id)).access().accessToken()); }
     private GoogleLoginSuccessHandler handler() {

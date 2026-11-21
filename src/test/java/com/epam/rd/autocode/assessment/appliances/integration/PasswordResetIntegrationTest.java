@@ -67,7 +67,7 @@ class PasswordResetIntegrationTest {
     @BeforeEach void prepare() {
         reset(mail);
         client = clients.save(new Client(null, "Reset test", "reset-" + UUID.randomUUID() + "@example.test",
-                encoder.encode(OLD), "reset-card"));
+                encoder.encode(OLD), null));
     }
 
     @Test void sendsOnlyAfterCommitAndStoresOnlyHashThenConsumesOnce() {

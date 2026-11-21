@@ -4,7 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
+import com.epam.rd.autocode.assessment.appliances.validation.LoyaltyCardNumber;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,10 +18,11 @@ import lombok.Setter;
 @PrimaryKeyJoinColumn(name = "user_id")
 public class Client extends User {
 
-    @NotBlank
     @Size(max = 32)
-    @Column(nullable = false, length = 32)
+    @Column(length = 32, unique = true)
     private String card;
+
+    public void setCard(String card) { this.card = LoyaltyCardNumber.normalize(card); }
 
     public Client(
             Long id,
@@ -31,6 +32,6 @@ public class Client extends User {
             String card
     ) {
         super(id, name, email, password);
-        this.card = card;
+        setCard(card);
     }
 }

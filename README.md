@@ -673,7 +673,7 @@ Reload Maven, run `clean` then `test` and restart with the existing `local` prof
 
 On `/login`, choose **Sign in with Google**. Spring Security handles authorization-code exchange, Google ID-token validation, state, nonce and PKCE. The authorization request is held in a temporary session with a hard 15-minute lifetime. The application does not retain Google API access/refresh tokens in its authorized-client repository or database and never uses a Google ID token as the shop access JWT.
 
-For a new Google subject, the site asks for name, email and client card. No employee role can be requested. Google `email_verified=true` is accepted only for the same normalized email. An edited, missing or unverified address must be confirmed through Mailpit using a session-bound one-time 256-bit challenge; only its hash is stored server-side, it expires after 10 minutes, and the 15-minute overall onboarding deadline still applies. Open that link in the same browser and click Continue again. No domain account or shop credentials are created before all required data and verification are complete. The password is initialized to a random unknown strong secret stored as BCrypt; the user can establish a known password through the existing recovery flow.
+For a new Google subject, the site asks for name, email and an optional loyalty-card number. No employee role can be requested. Google `email_verified=true` is accepted only for the same normalized email. An edited, missing or unverified address must be confirmed through Mailpit using a session-bound one-time 256-bit challenge; only its hash is stored server-side, it expires after 10 minutes, and the 15-minute overall onboarding deadline still applies. Open that link in the same browser and click Continue again. No domain account or shop credentials are created before all required data and verification are complete. The password is initialized to a random unknown strong secret stored as BCrypt; the user can establish a known password through the existing recovery flow.
 
 Creation of User/Client and `oauth_identity` is atomic. External identity is keyed by Google `sub`, never email; changing the local email does not break an established Google login. A matching local email does **not** auto-link accounts: sign in with the existing password, open **Google account**, and explicitly submit **Link Google account**. Linking requires CSRF and the same unexpired shop JWT throughout the flow. A changed account/cookie, expired intent, or identity already owned by another user is rejected. The schema uniquely constrains provider+subject and user+provider; user deletion cascades to external identity metadata.
 
@@ -712,3 +712,65 @@ Password operations advance the version under the same base-user lock and transa
 On the next protected request from another browser, its old access/refresh cookies are cleared and the browser is sent to login rather than offered renewal with the revoked refresh token. Cookie/header API access gets HTTP 401. A storage outage remains HTTP 503 and does not clear credentials. A page already rendered in another browser stays on screen until it makes a request; no JavaScript push logout is implemented, and requests already authorized before the password change are not retroactively canceled.
 
 Ordinary logout still revokes the relevant refresh chain and clears that browser's cookies; it does not increment the account-wide version or become a sign-out-everywhere operation. The new immediate policy is specifically for password operations. Fresh password/Google logins after the change issue tokens with the new version. Tests cover two browser cookie sets, site/API rejection before token expiry, new-login success, setup/reset revocation and rollback preservation. Run tests and restart to apply V7; the updated Maven/application was not run during implementation.
+
+
+### Client registration
+
+Local database mode enables `store.registration.enabled=true` with Mailpit.
+Open `/register`, enter name, email, optional loyalty-card number, password and
+confirmation. Open the email link from Mailpit in any browser or on another device
+within 30 minutes. GET only displays a confirmation form; its CSRF-protected POST
+creates a CLIENT and redirects to the normal JWT-cookie login. It never accepts
+role, ID, email or password overrides at confirmation. No automatic login occurs.
+
+V9__pending_registration.sql adds pending_registration. It stores profile details,
+a BCrypt password hash, a SHA-256 digest of the random 256-bit token and an absolute
+expiry. No raw password or raw token is stored there. Registration no longer uses
+an HTTP session, and a restart preserves live applications. The confirmation email
+is queued only AFTER_COMMIT; rollback does not send a link to missing data.
+
+Confirmation locks its pending row and creates the client and deletes that row in
+one transaction. Replays/expired/invalid links fail safely; rollback preserves the
+application. Concurrent confirmation of one token has one winner. Further pending
+applications for an already-created email cannot create another account because
+the existing email constraint applies. Expired applications are cleaned hourly;
+expiry is checked on every confirmation regardless of cleanup timing.
+
+Duplicate email/card field errors and request limits remain. Worker creation stays
+restricted to existing employees. Authentication remains JWT-based. Google OAuth
+state/nonce/linking keeps its separate browser-bound flow; this change applies to
+ordinary email/password client registration only.
+
+Regression tests include cross-browser confirmation with real cookie CSRF,
+no registration session, expiry/cleanup, replay, concurrent confirmation,
+transaction rollback and AFTER_COMMIT mail delivery. The assistant has not run
+Maven or applied V9 to the live database. Run a clean build to remove the deleted
+RegistrationSession class, then restart; old session-bound links require a new
+registration request. Database reset is not required.
+
+### Optional unique loyalty cards (V8)
+
+Client card means a loyalty-card number. It is optional in employee management,
+public signup and Google onboarding. Blank input becomes NULL. A supplied number
+is trimmed and unique; comparison preserves case. Editing the same account with
+its unchanged number is allowed. Clearing it releases the number.
+Named database constraints enforce uniqueness under concurrent requests; expected
+email/card conflicts map to localized field errors without SQL/internal details.
+
+V8__optional_unique_client_card.sql drops NOT NULL, normalizes existing blank/trimmed
+values and adds unique/canonical constraints. Existing non-empty duplicate numbers
+are not reassigned or deleted automatically: resolve those assignments before
+applying V8. To find conflicts in the existing PostgreSQL database, run:
+
+```sql
+SELECT trim(card) AS card, count(*) AS accounts
+FROM client
+WHERE nullif(trim(card), '') IS NOT NULL
+GROUP BY trim(card)
+HAVING count(*) > 1;
+```
+
+No database reset or Flyway repair is required. Existing V1-V7 files remain intact.
+New tests cover optional cards, duplicate create/edit, preserving/clearing a card,
+registration field errors, named-constraint translation and actual V8 SQL on H2.
+The assistant has not run Maven, applied V8 or changed the running database.

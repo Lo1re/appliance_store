@@ -46,7 +46,7 @@ class PasswordChangeIntegrationTest {
     @Autowired SessionRegistry sessions; @Autowired PlatformTransactionManager manager;
     private Client client; private Authentication authentication;
     @BeforeEach void prepare() {
-        client = clients.saveAndFlush(new Client(null, "Password review", "password-"+UUID.randomUUID()+"@example.com", encoder.encode(OLD), "PW-REVIEW"));
+        client = clients.saveAndFlush(new Client(null, "Password review", "password-"+UUID.randomUUID()+"@example.com", encoder.encode(OLD), null));
         var principal = new StorePrincipal(client.getId(), client.getEmail(), client.getPassword(), AccountRole.CLIENT);
         authentication = UsernamePasswordAuthenticationToken.authenticated(principal, null, principal.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);

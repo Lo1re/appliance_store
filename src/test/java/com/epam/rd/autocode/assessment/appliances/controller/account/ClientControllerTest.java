@@ -64,6 +64,18 @@ class ClientControllerTest {
     }
 
     @Test
+    void showsDuplicateLoyaltyCardOnCreateAndUpdate() throws Exception {
+        when(service.create(any(ClientRequest.class), any(PasswordRequest.class)))
+                .thenThrow(new AccountException(AccountError.CARD_DUPLICATE));
+        when(service.update(eq(7L), any(ClientRequest.class)))
+                .thenThrow(new AccountException(AccountError.CARD_DUPLICATE));
+        mvc.perform(profile("/clients/add", "New Name").param("password", "GoodPassword2026!"))
+                .andExpect(model().attributeHasFieldErrorCode("account", "card", "client.card.duplicate"));
+        mvc.perform(profile("/clients/7/edit", "New Name"))
+                .andExpect(model().attributeHasFieldErrorCode("account", "card", "client.card.duplicate"));
+    }
+
+    @Test
     void rendersNotFoundAndSafeDatabaseErrors() throws Exception {
         when(service.update(eq(7L), any(ClientRequest.class)))
                 .thenThrow(new AccountException(AccountError.CLIENT_NOT_FOUND));

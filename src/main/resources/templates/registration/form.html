@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="referrer" content="no-referrer"><title th:text="#{registration.title}"></title></head>
+<body><header th:insert="~{menunavy :: navy}"></header><main>
+<h1 th:text="#{registration.title}"></h1><p th:text="#{registration.description}"></p>
+<p th:if="${param.invalid != null}" role="alert" th:text="#{registration.invalid}"></p>
+<p th:if="${retryAfterSeconds != null}" role="alert" th:text="#{password.forgot.retry(${retryAfterSeconds})}"></p>
+<form th:action="@{/register}" th:object="${registrationForm}" method="post">
+<p th:each="error : ${#fields.globalErrors()}" th:text="${error}" role="alert"></p>
+<div><label for="name" th:text="#{account.field.name}"></label><input id="name" th:field="*{name}" autocomplete="name" maxlength="100" required><p th:errors="*{name}" role="alert"></p></div>
+<div><label for="email" th:text="#{account.field.email}"></label><input id="email" th:field="*{email}" type="email" autocomplete="email" maxlength="254" required><p th:errors="*{email}" role="alert"></p></div>
+<div><label for="card" th:text="#{client.field.card}"></label><input id="card" th:field="*{card}" maxlength="32"><p th:errors="*{card}" role="alert"></p></div>
+<div><label for="newPassword" th:text="#{account.field.password}"></label><input id="newPassword" name="newPassword" type="password" autocomplete="new-password" required><p th:errors="*{newPassword}" role="alert"></p></div>
+<div><label for="confirmPassword" th:text="#{password.confirm.label}"></label><input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" required><p th:errors="*{confirmPassword}" role="alert"></p></div>
+<button type="submit" th:text="#{registration.submit}"></button>
+</form></main></body></html>
