@@ -3,7 +3,7 @@ package com.epam.rd.autocode.assessment.appliances.integration;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
 import com.epam.rd.autocode.assessment.appliances.repository.ClientRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.LoginAttemptRepository;
-import com.epam.rd.autocode.assessment.appliances.security.jwt.AccessTokenCookies;
+import com.epam.rd.autocode.assessment.appliances.security.jwt.AuthTokenCookies;
 import com.epam.rd.autocode.assessment.appliances.security.jwt.JwtProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
@@ -82,8 +82,8 @@ class JwtCookieIntegrationTest {
         var logout = mvc.perform(post("/logout").cookie(access, form.getResponse().getCookie("STORE-CSRF"))
                         .param("_csrf", csrf(form))).andExpect(redirectedUrl("/login?logout")).andReturn();
         assertThat(logout.getRequest().getSession(false)).isNull();
-        assertThat(logout.getResponse().getCookie(AccessTokenCookies.NAME).getMaxAge()).isZero();
-        assertThat(logout.getResponse().getCookie(AccessTokenCookies.NAME).getPath()).isEqualTo(access.getPath());
+        assertThat(logout.getResponse().getCookie(AuthTokenCookies.NAME).getMaxAge()).isZero();
+        assertThat(logout.getResponse().getCookie(AuthTokenCookies.NAME).getPath()).isEqualTo(access.getPath());
         mvc.perform(get("/orders")).andExpect(status().is3xxRedirection());
         mvc.perform(get("/api/orders")).andExpect(status().isUnauthorized());
         // Clearing cookies is not server-side revocation of a previously copied JWT.
@@ -102,7 +102,7 @@ class JwtCookieIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON).content(credentials))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.accessToken").doesNotExist())
                 .andExpect(jsonPath("$.expiresAt").exists()).andReturn();
-        Cookie access = login.getResponse().getCookie(AccessTokenCookies.NAME);
+        Cookie access = login.getResponse().getCookie(AuthTokenCookies.NAME);
         assertThat(login.getResponse().getContentAsString()).doesNotContain(access.getValue());
         assertThat(login.getRequest().getSession(false)).isNull();
         // The JSON login issues the same cookie that the regular website accepts.
@@ -123,19 +123,19 @@ class JwtCookieIntegrationTest {
 
     @Test
     void rejectedCookiesPreserveHtmlErrorsAndApiJsonAndCannotBreakTheLoginPage() throws Exception {
-        var invalid = new Cookie(AccessTokenCookies.NAME, "private-invalid-jwt");
+        var invalid = new Cookie(AuthTokenCookies.NAME, "private-invalid-jwt");
         var denied = mvc.perform(get("/orders").cookie(invalid)).andExpect(status().is3xxRedirection()).andReturn();
         assertThat(denied.getResponse().getRedirectedUrl()).endsWith("/login");
-        assertThat(denied.getResponse().getCookie(AccessTokenCookies.NAME).getMaxAge()).isZero();
+        assertThat(denied.getResponse().getCookie(AuthTokenCookies.NAME).getMaxAge()).isZero();
         mvc.perform(get("/login").cookie(invalid)).andExpect(status().isOk());
         mvc.perform(get("/definitely-absent-path")).andExpect(status().isNotFound());
         mvc.perform(get("/api/orders").cookie(invalid)).andExpect(status().isUnauthorized())
                 .andExpect(content().contentTypeCompatibleWith("application/problem+json"))
                 .andExpect(content().string(not(containsString(invalid.getValue()))));
         long id = clients.findAll().get(0).getId();
-        var expired = new Cookie(AccessTokenCookies.NAME, signed(id, List.of("CLIENT"), true));
+        var expired = new Cookie(AuthTokenCookies.NAME, signed(id, List.of("CLIENT"), true));
         mvc.perform(get("/orders").cookie(expired)).andExpect(status().is3xxRedirection());
-        var changedRole = new Cookie(AccessTokenCookies.NAME, signed(id, List.of("EMPLOYEE"), false));
+        var changedRole = new Cookie(AuthTokenCookies.NAME, signed(id, List.of("EMPLOYEE"), false));
         mvc.perform(get("/employees").cookie(changedRole)).andExpect(status().is3xxRedirection());
         mvc.perform(get("/api/orders").cookie(changedRole)).andExpect(status().isUnauthorized());
     }
@@ -143,7 +143,7 @@ class JwtCookieIntegrationTest {
     @Test
     void deletingAccountInvalidatesCookieBeforeAnyUrlAuthorization() throws Exception {
         var client = clients.saveAndFlush(new Client(null, "JWT removal", "jwt-removal@example.com", clients.findAll().get(0).getPassword(), "JWT-REMOVAL"));
-        var access = new Cookie(AccessTokenCookies.NAME, signed(client.getId(), List.of("CLIENT"), false));
+        var access = new Cookie(AuthTokenCookies.NAME, signed(client.getId(), List.of("CLIENT"), false));
         mvc.perform(get("/orders").cookie(access)).andExpect(status().isOk());
         clients.deleteById(client.getId()); clients.flush();
         mvc.perform(get("/orders").cookie(access)).andExpect(status().is3xxRedirection());
@@ -158,7 +158,7 @@ class JwtCookieIntegrationTest {
                         .param("_csrf", csrf(page)).param("username", email).param("password", password))
                 .andExpect(redirectedUrl("/")).andReturn();
         assertThat(response.getRequest().getSession(false)).isNull();
-        var cookie = response.getResponse().getCookie(AccessTokenCookies.NAME); assertThat(cookie).isNotNull(); return cookie;
+        var cookie = response.getResponse().getCookie(AuthTokenCookies.NAME); assertThat(cookie).isNotNull(); return cookie;
     }
 
     private void assertRejectedPassword(String password, String redirect) throws Exception {
@@ -167,7 +167,7 @@ class JwtCookieIntegrationTest {
                         .param("_csrf", csrf(page)).param("username", "mercury@gmail.com").param("password", password))
                 .andExpect(redirectedUrl(redirect)).andReturn();
         assertThat(rejected.getRequest().getSession(false)).isNull();
-        assertThat(rejected.getResponse().getCookie(AccessTokenCookies.NAME)).isNull();
+        assertThat(rejected.getResponse().getCookie(AuthTokenCookies.NAME)).isNull();
     }
 
     private String signed(long id, List<String> roles, boolean expired) {

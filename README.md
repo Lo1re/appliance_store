@@ -330,7 +330,13 @@ Both browser and API cookie chains are stateless with NullSecurityContextReposit
 NullRequestCache. Existing JSESSIONID security contexts do not authenticate them. The
 separate HttpOnly STORE-CSRF cookie and masked hidden form field/header protect unsafe
 requests, including login/logout. SameSite does not replace CSRF. CookieCsrfProtection
-restores unsafe-method checks after Resource Server's automatic bearer exemption.
+restores unsafe-method checks after Resource Server's automatic bearer exemption. JWT chains explicitly
+use NullAuthenticatedSessionStrategy for both session management and CSRF authentication
+hooks. Otherwise Spring Security 6.2 treats every stateless JWT request as a new login and
+can remove the CSRF cookie on background JSON/404 requests. JwtCookieLifecycle alone
+rotates the cookie at actual login/refresh/logout; CsrfFilter still validates every unsafe
+cookie request. RefreshHttpIntegrationTest covers a form, intervening API/DevTools 404
+requests, and logout using the original CSRF token.
 Failed password login redirects with generic localized errors without creating a session.
 
 Use the usual POST /logout. It clears matching access/CSRF cookies. HTML missing login
@@ -339,8 +345,8 @@ foreign/missing client orders remain 404. API errors remain safe localized JSON 
 status/code. Invalid/expired HTML credentials are cleared before redirecting to /login.
 
 The JWT currently expires 15 minutes after issuance, rather than extending on activity.
-Refresh tokens/rotation/reuse detection and server-side token revocation are the next
-block. Logout cookie clearing cannot invalidate a previously copied JWT before expiry.
+Refresh access is now backed by the lifecycle described below. Logout revokes the presented
+refresh credential; a previously copied access JWT may still work until its expiry.
 The 30-minute idle timeout and maximum-two sessions apply only to the session demo below.
 
 ### JSON clients and optional header transport
@@ -380,7 +386,104 @@ target. Then run local with JWT_SECRET_BASE64 and STORE_API_ENABLED=true; open /
 log in, visit /orders and /api/orders without another login, and check cookies in DevTools.
 Test missing CSRF gives 403 and normal logout removes the cookie. Clear old localhost
 cookies once when switching versions. H2 tests and PostgreSQL local launch are unchanged.
-No migration, database operation, build/test run or commit was performed by the assistant.
+An additive V3 migration is prepared below. No database operation, build/test run or commit
+was performed by the assistant.
+
+### Refresh credentials, rotation and browser renewal
+
+Successful JWT login now issues an access/refresh pair. The access lifetime remains 15
+minutes. Refresh is an opaque 256-bit SecureRandom value, valid for 7 days from issuance.
+Only a unique SHA-256 fingerprint is stored in refresh_token, together with owner,
+expiry, revocation and successor id. Raw refresh credentials never enter database/logs.
+
+Both store_access and store_refresh are HttpOnly, SameSite=Lax, host-only and use the
+application-root path. Refresh uses this scope so the SAME ordinary POST /logout can
+receive and revoke it, including when optional JSON API endpoints are disabled. This
+replaces the earlier planned API-only refresh scope. Secure rules and matching deletion
+attributes are shared by AuthTokenCookies. Cookie JSON responses contain expiry metadata
+only. CSRF remains mandatory on browser and cookie-mode API renewal/logout.
+
+When access expires, a protected HTML request can redirect to /auth/renew. It displays a
+normal Thymeleaf form, without JavaScript or token values. Press Continue to POST with
+CSRF, atomically rotate refresh, receive a new pair and return home. The interrupted
+unsafe action is NOT automatically replayed. Failure clears the credential cookies and
+redirects to /login?expired. You can also open /auth/renew explicitly to renew earlier.
+
+POST /api/auth/refresh is available when JSON API is enabled. Cookie-mode clients send
+store_refresh plus a fresh masked CSRF header obtained from GET /api/auth/csrf; no body
+credential should be supplied. Header-mode clients send {"refreshToken":"..."} in JSON.
+Header login/refresh returns accessToken/tokenType/expiresIn/expiresAt plus refreshToken
+and refreshExpiresAt; those values are explicitly redacted from DTO toString. API refresh
+errors use HTTP 401 with code refresh.invalid. Expired access credentials do not block
+login/refresh/logout. Header-mode JSON requests ignore browser cookies and do not clear
+the website's credentials. Use HTTPS for real credential traffic; TLS deployment remains
+a later block.
+
+Rotation serializes on the base users row, then loads the refresh record under that lock.
+This avoids FOR UPDATE against nullable joins in the polymorphic User hierarchy. The old
+credential is revoked and links to its successor in one transaction. Reusing any retained
+revoked credential revokes ALL refresh access for that user. Revocation commits in its own
+transaction BEFORE the generic authentication failure is raised, even if a caller later
+rolls back. Two parallel requests using the same old token cannot retain two successors;
+the losing reuse also revokes the winner's refresh continuation. Do not retry the old
+credential automatically after a timeout. No raw value is logged; success/revocation logs
+are written after commit.
+
+Normal logout revokes the presented refresh record AND its rotation successors, and clears
+both credentials. It does not revoke unrelated browser chains.
+Repeating logout is harmless; unknown credentials do not revoke arbitrary accounts.
+A copied access JWT is still bounded by its existing 15-minute expiry, not a denylist.
+Account deletion cascades its refresh records. Hooks for password change/reset revocation
+must be added in the password-management block in the SAME credential-change transaction;
+that user-facing password-change/reset flow is not claimed implemented here.
+
+Hourly retention cleanup processes at most 100 account owners per pass, acquiring the
+same user-first lock. Expired refresh rows remain for another 8 days for reuse detection;
+active records are not deleted. Configure store.security.refresh.ttl/retention and
+cleanup-interval-ms if needed; retention must be at least the selected TTL.
+
+V3__refresh_token.sql adds the table, FK cascade and indexes. V1/V2 and demo seeds are
+unchanged. Flyway applies V3 automatically on YOUR next application/test startup; no
+database reset or manual schema edits are needed. Existing test migration assertions now
+expect V1, V2, V3 and the demo repeatable script. RefreshTokenIntegrationTest covers hash
+storage, rotation, committed reuse revocation, concurrency, logout isolation, retention
+and cascade. RefreshHttpIntegrationTest checks real browser CSRF/renewal/logout and JSON
+cookie rotation. JwtApiIntegrationTest also covers header refresh/logout. Tests were
+prepared but NOT run by the assistant.
+
+Manual check: Maven clean then test; restart local and sign in. In Chrome DevTools remove
+ONLY store_access, retain store_refresh, and visit /orders. On /auth/renew press Continue;
+both cookies should be newly issued and orders should open again. Normal logout should
+remove both, and the presented refresh_token row should have revoked_at. Do not publish
+or paste credential values from DevTools. No new library installation is needed.
+
+### JWT/refresh audit corrections
+
+Logout follows replaced_by under the same owner lock. If refresh rotated immediately
+before logout read an older cookie, its successor is also revoked. Repeated logout stays
+idempotent and unrelated browser chains remain valid; this differs from the deliberately
+broader all-account revocation policy on detected refresh REUSE.
+
+A successful password re-login in cookie mode retires the previous browser chain in the
+same transaction as issuing its replacement. This also handles switching local accounts;
+both owner rows are locked in ascending id order to avoid cross-account lock cycles.
+An incorrect password never revokes the previous browser's access. Explicit header clients
+manage their own distinct refresh credentials; cookie values never choose their session.
+Refresh transactions explicitly use READ_COMMITTED, so owner discovery before a lock wait
+cannot preserve an old repeatable-read snapshot of a token that has already rotated.
+
+Authentication storage/transaction failures return safe HTTP 503 rather than wrong-password
+redirects, 401 or 403. A temporary account-lookup outage preserves browser cookies. If logout
+cannot persist revocation, it clears the local cookies but returns 503 instead of claiming
+server logout succeeded. This does not claim a copied refresh was revoked during an outage.
+Backend exception causes are sanitized before entering authentication exceptions so framework
+logging cannot print arbitrary SQL/connection messages. Genuine invalid credentials, role
+denials, CSRF failures and missing resources keep their existing distinct behavior.
+
+Added regression coverage for rotated-token logout, password re-login, concurrent account
+switches, preserved cookies on an outage, backend 503 responses and failed server logout.
+The earlier browser-background-CSRF regression remains. Only static checks were performed;
+Maven/build/test/application/database execution remains for the user. No migration changed.
 
 Pagination review: MVC and API now share web.pagination.ListPageFactory/ListPage.
 The duplicate ApiPageFactory was removed; the shared factory accepts transport-neutral

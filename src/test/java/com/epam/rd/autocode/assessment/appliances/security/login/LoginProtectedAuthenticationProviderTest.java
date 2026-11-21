@@ -38,4 +38,12 @@ class LoginProtectedAuthenticationProviderTest {
         assertThatThrownBy(() -> provider.authenticate(input)).isSameAs(failure);
         verify(attempts, never()).failed(anyString());
     }
+    @Test void backendTransactionFailureIsNotABadPasswordAndDoesNotLeakItsMessage() {
+        when(attempts.remainingLock("user@example.com")).thenThrow(new org.springframework.transaction.CannotCreateTransactionException("private backend detail"));
+        assertThatThrownBy(() -> provider.authenticate(input))
+                .isInstanceOf(org.springframework.security.authentication.AuthenticationServiceException.class)
+                .satisfies(failure -> assertThat(failure.getCause()).hasMessageNotContaining("private backend detail"));
+        verifyNoInteractions(delegate);
+    }
+
 }

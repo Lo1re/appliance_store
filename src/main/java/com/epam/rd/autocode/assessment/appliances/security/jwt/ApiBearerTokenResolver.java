@@ -16,14 +16,14 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(name = "store.api.enabled", havingValue = "true")
 public class ApiBearerTokenResolver implements BearerTokenResolver {
     private final ApiTransportProperties properties;
-    private final AccessTokenCookies cookies;
+    private final AuthTokenCookies cookies;
     private final DefaultBearerTokenResolver headers = new DefaultBearerTokenResolver();
 
     @Override public String resolve(HttpServletRequest request) {
-        if (!properties.cookieMode()) return headers.resolve(request);
-        if (request.getHeader(HttpHeaders.AUTHORIZATION) != null) throw invalid();
+        if (properties.cookieMode() && request.getHeader(HttpHeaders.AUTHORIZATION) != null) throw invalid();
         String path = request.getRequestURI().substring(request.getContextPath().length());
-        if (path.equals("/api/auth/login") || path.equals("/api/auth/logout") || path.equals("/api/auth/csrf")) return null;
+        if (path.equals("/api/auth/login") || path.equals("/api/auth/logout") || path.equals("/api/auth/refresh") || path.equals("/api/auth/csrf")) return null;
+        if (!properties.cookieMode()) return headers.resolve(request);
         try { return cookies.read(request); }
         catch (IllegalArgumentException malformed) { throw invalid(); }
     }

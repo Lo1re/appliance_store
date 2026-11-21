@@ -1,6 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.integration;
 
-import com.epam.rd.autocode.assessment.appliances.security.jwt.AccessTokenCookies;
+import com.epam.rd.autocode.assessment.appliances.security.jwt.AuthTokenCookies;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -29,7 +29,7 @@ class JwtInMemoryLoginIntegrationTest {
         var login = passwordLogin("PhobosLocal2026!")
                 .andExpect(redirectedUrl("/")).andReturn();
         assertThat(login.getRequest().getSession(false)).isNull();
-        var cookie = login.getResponse().getCookie(AccessTokenCookies.NAME); assertThat(cookie).isNotNull();
+        var cookie = login.getResponse().getCookie(AuthTokenCookies.NAME); assertThat(cookie).isNotNull();
         mvc.perform(get("/orders").cookie(cookie)).andExpect(status().isOk());
         mvc.perform(get("/employees").cookie(cookie)).andExpect(status().isForbidden());
         mvc.perform(get("/api/orders").cookie(cookie)).andExpect(status().isNotFound());

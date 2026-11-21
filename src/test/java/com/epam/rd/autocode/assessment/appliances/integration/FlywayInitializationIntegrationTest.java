@@ -42,7 +42,7 @@ class FlywayInitializationIntegrationTest {
         assertThat(flyway.info().applied())
                 .extracting(migration -> migration.getScript())
                 .containsExactlyInAnyOrder(
-                        "V1__initial_schema.sql", "V2__login_attempt.sql", "R__demo_data.sql");
+                        "V1__initial_schema.sql", "V2__login_attempt.sql", "V3__refresh_token.sql", "R__demo_data.sql");
         assertThat(jdbc.queryForObject("select count(*) from login_attempt", Long.class)).isZero();
         jdbc.update("update users set name = ? where email = ?", "Changed by user", "mercury@gmail.com");
         assertThat(flyway.migrate().migrationsExecuted).isZero();

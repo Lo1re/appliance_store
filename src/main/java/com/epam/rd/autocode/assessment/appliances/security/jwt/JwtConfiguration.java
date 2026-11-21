@@ -20,7 +20,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 
 @Configuration
 @ConditionalOnJwt
-@EnableConfigurationProperties({JwtProperties.class, ApiTransportProperties.class, AuthCookieProperties.class})
+@EnableConfigurationProperties({JwtProperties.class, ApiTransportProperties.class, AuthCookieProperties.class, RefreshTokenProperties.class})
 public class JwtConfiguration {
     @Bean
     public SecretKey accessTokenKey(JwtProperties properties) {

@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.security.jwt;
 
+import com.epam.rd.autocode.assessment.appliances.logging.SafeFailure;
 import com.epam.rd.autocode.assessment.appliances.security.CurrentActor;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -7,18 +8,24 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.transaction.TransactionException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /** Rechecks account existence and current roles before URL authorization uses JWT claims. */
+@Slf4j
 @RequiredArgsConstructor
 public final class JwtAccountFilter extends OncePerRequestFilter {
     private final CurrentActor actor;
-    private final AccessTokenCookies cookies;
+    private final AuthTokenCookies cookies;
     private final AuthenticationEntryPoint failures;
+    private final boolean clearCookies;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
@@ -26,8 +33,16 @@ public final class JwtAccountFilter extends OncePerRequestFilter {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication instanceof AccessTokenAuthentication) {
             try { actor.requireUser(); }
+            catch (DataAccessException | TransactionException unavailable) {
+                log.error("Account authentication storage unavailable", SafeFailure.snapshot(unavailable));
+                SecurityContextHolder.clearContext();
+                failures.commence(request, response, new AuthenticationServiceException(
+                        "Authentication temporarily unavailable", SafeFailure.snapshot(unavailable)));
+                return; // Keep browser credentials; an outage does not make them invalid.
+            }
             catch (AccessDeniedException stale) {
-                SecurityContextHolder.clearContext(); cookies.clear(request, response);
+                SecurityContextHolder.clearContext();
+                if (clearCookies) cookies.clear(request, response);
                 failures.commence(request, response, new InsufficientAuthenticationException("Account credentials are no longer valid"));
                 return;
             }

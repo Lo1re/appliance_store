@@ -10,13 +10,16 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 /** Exchanges a successful password authentication for the shared browser access cookie. */
 @RequiredArgsConstructor
 public final class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
-    private final AccessTokenIssuer tokens;
+    private final RefreshTokenService tokens;
     private final JwtCookieLifecycle cookies;
+    private final AuthTokenCookies browserCookies;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
             throws IOException {
-        cookies.issue(request, response, tokens.issue(authentication));
+        String previous;
+        try { previous = browserCookies.readRefresh(request); } catch (IllegalArgumentException malformed) { previous = null; }
+        cookies.issue(request, response, tokens.issue(authentication, previous));
         response.setHeader("Cache-Control", "no-store");
         response.sendRedirect(request.getContextPath() + "/");
     }

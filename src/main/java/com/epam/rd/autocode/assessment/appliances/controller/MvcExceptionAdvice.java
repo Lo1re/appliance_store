@@ -1,7 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
 
-import com.epam.rd.autocode.assessment.appliances.web.error.MvcErrorViews;
 import com.epam.rd.autocode.assessment.appliances.logging.SafeFailure;
+import com.epam.rd.autocode.assessment.appliances.web.error.MvcErrorViews;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +11,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.validation.BindException;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -24,7 +25,9 @@ public class MvcExceptionAdvice {
     @ExceptionHandler(Exception.class)
     public ModelAndView handleFailure(Exception exception, HttpServletResponse response) {
         HttpStatusCode status;
-        if (exception instanceof AccessDeniedException) {
+        if (exception instanceof AuthenticationServiceException) {
+            status = HttpStatus.SERVICE_UNAVAILABLE;
+        } else if (exception instanceof AccessDeniedException) {
             status = HttpStatus.FORBIDDEN;
         } else if (exception instanceof TypeMismatchException
                 || exception instanceof BindException

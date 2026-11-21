@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.security.login;
 
+import com.epam.rd.autocode.assessment.appliances.logging.SafeFailure;
 import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
@@ -9,6 +10,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.transaction.TransactionException;
 
 /** Gates password authentication using fresh lock state, never a principal snapshot. */
 @RequiredArgsConstructor
@@ -27,8 +29,8 @@ public class LoginProtectedAuthenticationProvider implements AuthenticationProvi
             Authentication authenticated = passwords.authenticate(authentication);
             requireUnlocked(authentication.getName());
             return authenticated;
-        } catch (DataAccessException failure) {
-            throw new AuthenticationServiceException("Authentication temporarily unavailable", failure);
+        } catch (DataAccessException | TransactionException | AuthenticationServiceException failure) {
+            throw new AuthenticationServiceException("Authentication temporarily unavailable", SafeFailure.snapshot(failure));
         }
     }
 

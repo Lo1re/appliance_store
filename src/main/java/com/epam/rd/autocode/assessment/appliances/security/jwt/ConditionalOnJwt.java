@@ -9,5 +9,5 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 /** JWT infrastructure is shared by the browser and the optional JSON API. */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@ConditionalOnExpression("${store.api.enabled:false} or '${store.security.web-auth:jwt}' == 'jwt'")
+@ConditionalOnExpression("${store.api.enabled:false} or 'jwt'.equalsIgnoreCase('${store.security.web-auth:jwt}')")
 public @interface ConditionalOnJwt { }

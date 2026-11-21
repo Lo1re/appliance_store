@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -24,6 +25,9 @@ public class ApiSecurityFailures implements AuthenticationEntryPoint, AccessDeni
 
     @Override public void commence(HttpServletRequest request, HttpServletResponse response,
                                     AuthenticationException failure) throws IOException {
+        if (failure instanceof AuthenticationServiceException) {
+            write(request, response, HttpStatus.SERVICE_UNAVAILABLE); return;
+        }
         response.setHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer");
         write(request, response, HttpStatus.UNAUTHORIZED);
     }

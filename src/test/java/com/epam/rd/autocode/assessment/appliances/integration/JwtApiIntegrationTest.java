@@ -135,6 +135,26 @@ class JwtApiIntegrationTest {
                 .andExpect(status().isUnauthorized());
     }
 
+
+    @Test
+    void headerRefreshRotatesAndLogoutRevokesWithoutCookieCredentials() throws Exception {
+        var login = mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"mercury@gmail.com\",\"password\":\"MercuryLocal2026!\"}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.refreshToken").isString()).andReturn();
+        String original = json.readTree(login.getResponse().getContentAsString()).path("refreshToken").asText();
+        var rotated = mvc.perform(post("/api/auth/refresh").contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(java.util.Map.of("refreshToken", original))))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.accessToken").isString()).andReturn();
+        String next = json.readTree(rotated.getResponse().getContentAsString()).path("refreshToken").asText();
+        assertThat(next).isNotEqualTo(original);
+        for (int i = 0; i < 2; i++) mvc.perform(post("/api/auth/logout").contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(java.util.Map.of("refreshToken", next))))
+                .andExpect(status().isNoContent());
+        mvc.perform(post("/api/auth/refresh").contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(java.util.Map.of("refreshToken", next))))
+                .andExpect(status().isUnauthorized());
+    }
+
     private String login(String email, String password) throws Exception {
         var response = mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(java.util.Map.of("email", email, "password", password))))

@@ -26,7 +26,7 @@ public class LoginAttemptEvents {
             try { attempts.failed(event.getAuthentication().getName()); }
             catch (RuntimeException failure) {
                 log.error("Login counter persistence failed", SafeFailure.snapshot(failure));
-                throw new AuthenticationServiceException("Authentication temporarily unavailable", failure);
+                throw new AuthenticationServiceException("Authentication temporarily unavailable", SafeFailure.snapshot(failure));
             }
         }
     }
@@ -38,7 +38,7 @@ public class LoginAttemptEvents {
             try { attempts.succeeded(event.getAuthentication().getName()); }
             catch (RuntimeException failure) {
                 log.error("Login counter reset failed", SafeFailure.snapshot(failure));
-                throw new AuthenticationServiceException("Authentication temporarily unavailable", failure);
+                throw new AuthenticationServiceException("Authentication temporarily unavailable", SafeFailure.snapshot(failure));
             }
         }
     }

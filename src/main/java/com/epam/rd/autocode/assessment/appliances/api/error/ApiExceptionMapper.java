@@ -2,6 +2,7 @@ package com.epam.rd.autocode.assessment.appliances.api.error;
 
 import com.epam.rd.autocode.assessment.appliances.exception.BusinessException;
 import com.epam.rd.autocode.assessment.appliances.logging.SafeFailure;
+import com.epam.rd.autocode.assessment.appliances.security.jwt.InvalidRefreshTokenException;
 import com.epam.rd.autocode.assessment.appliances.security.jwt.PasswordLoginLockedException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -56,6 +57,7 @@ public class ApiExceptionMapper {
             } else status = HttpStatus.INTERNAL_SERVER_ERROR;
             code = "http." + status.value(); key = "error." + status.value() + ".message";
         }
+        if (failure instanceof InvalidRefreshTokenException) { code = "refresh.invalid"; key = "refresh.invalid"; }
         if (failure instanceof BadCredentialsException) { code = "login.error"; key = "login.error"; }
         if (status.value() == 401) headers.set(HttpHeaders.WWW_AUTHENTICATE, "Bearer");
         if (failure instanceof PasswordLoginLockedException locked) {

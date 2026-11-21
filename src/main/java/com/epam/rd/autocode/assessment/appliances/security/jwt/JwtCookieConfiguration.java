@@ -8,7 +8,7 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 @ConditionalOnJwt
 public class JwtCookieConfiguration {
     @Bean
-    public CookieCsrfTokenRepository jwtCsrfTokens(AuthCookieProperties properties, AccessTokenCookies cookies) {
+    public CookieCsrfTokenRepository jwtCsrfTokens(AuthCookieProperties properties, AuthTokenCookies cookies) {
         var repository = new CookieCsrfTokenRepository();
         // A distinct name avoids old /api-scoped CSRF cookies from the previous implementation.
         repository.setCookieName("STORE-CSRF");
