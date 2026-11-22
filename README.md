@@ -887,3 +887,70 @@ remaining gaps are outside the completed service/controller scope (for example
 security filters/configuration, error/persistence/logging helpers and validation).
 Do not interpret service/controller 100% as whole-project 100% or a successful
 global verify. Inspect target/site/jacoco/index.html for the remaining work.
+
+
+### Local HTTPS (2026-11-22; supersedes earlier HTTP launch instructions)
+
+The local store now runs at **https://localhost:8443**. Port 8080 is a loopback-only
+read-redirect connector: GET/HEAD receive 308 to the fixed trusted HTTPS origin;
+POST/PUT/PATCH/DELETE over HTTP receive 400 before authentication. Host and forwarded
+headers cannot choose the redirect destination. Do not submit credentials over HTTP.
+TLS 1.2/1.3 are enabled; authentication, refresh, CSRF and OAuth session cookies use
+Secure. CSRF protection remains enabled. No database migration/reset is needed.
+
+One-time certificate setup, from the project root in your own PowerShell terminal:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\setup-local-https.ps1 -TrustCertificate
+```
+
+The execution-policy option applies only to that PowerShell process. The script
+uses JDK keytool, asks for a password (at least 12 characters, not echoed), and creates
+config/certs/localhost.p12 plus its public localhost.cer. SANs cover localhost,
+127.0.0.1 and ::1. The password is passed to keytool using a temporary process
+environment variable, removed in finally, and is never printed or written to Git.
+The files are ignored; the script refuses to overwrite an existing keystore.
+
+`-TrustCertificate` explicitly imports ONLY this self-signed development certificate
+into the current Windows user's Trusted Root store. No administrator-wide trust
+change is made. Omit the switch if you do not want that trust change; HTTPS will
+then require manually trusting the public certificate before browser acceptance.
+The assistant has not generated your personal certificate or changed Windows trust.
+This certificate lasts 365 days and is for local development, not public deployment.
+
+In the application's existing IDE Run configuration, add this environment variable
+yourself, using the password entered in the script:
+
+```text
+SSL_KEY_STORE_PASSWORD=your_chosen_password
+```
+
+Use the existing local profile and project-root working directory. DB_*, JWT and
+Google secrets remain private environment settings. Optional SSL_KEY_STORE can point
+to another PKCS12 file URI; no password fallback or silently disabled TLS is provided.
+
+In Google Auth Platform -> Clients -> your Web application -> Authorized redirect
+URIs, add exactly:
+
+```text
+https://localhost:8443/login/oauth2/code/google
+```
+
+If GOOGLE_REDIRECT_URI is already set in IDE, update it to that HTTPS URL (or remove
+the override and use the new local default). An old HTTP callback now fails startup
+when TLS is enabled. Client ID/secret do not need rotation for this URL change.
+Google server-side login does not require adding a JavaScript origin just for this
+callback. Real Google acceptance still requires the user to update the cloud client
+and perform a browser login; unit tests do not replace Google's live exchange.
+
+Registration/reset links use https://localhost:8443. Google email verification uses
+the HTTPS callback origin. Request fresh email links after restart: old links may
+still contain the former HTTP address. Mailpit itself remains loopback-only HTTP
+at http://127.0.0.1:8025 and SMTP at 127.0.0.1:1025; no external SMTP is enabled.
+Use 127.0.0.1 for its inbox to keep it separate from localhost HTTPS/HSTS policy.
+
+Manual acceptance: verify browser trust, HTTP GET redirect, HTTPS login, Secure/
+HttpOnly/SameSite cookies, logout, signup/reset emails, and Google login/linking.
+The ordinary test profile explicitly disables TLS and redirect and never needs a
+personal SSL password; dedicated HttpsWebIntegrationTest generates a temporary test
+certificate and runs real HTTPS with isolated H2 and no Docker or personal DB.

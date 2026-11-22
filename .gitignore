@@ -36,3 +36,10 @@ build/
 /logs/
 
 /config/auth-inmemory.properties
+
+# Local TLS private keys and generated certificate files
+/config/certs/
+*.p12
+*.pfx
+*.jks
+*.key

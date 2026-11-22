@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.security.jwt.api;
 
+import com.epam.rd.autocode.assessment.appliances.security.config.WebSecurityHeaders;
 import com.epam.rd.autocode.assessment.appliances.api.error.ApiSecurityFailures;
 import com.epam.rd.autocode.assessment.appliances.security.identity.CurrentActor;
 import com.epam.rd.autocode.assessment.appliances.security.jwt.access.AccessTokenAuthenticationConverter;
@@ -28,8 +29,8 @@ public class ApiSecurityConfiguration {
     @Bean @Order(1)
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http, JwtDecoder decoder, ApiSecurityFailures failures,
             ApiTransportProperties transport, ApiBearerTokenResolver tokens, CookieCsrfTokenRepository csrfTokens,
-            CurrentActor actor, AuthTokenCookies cookies) throws Exception {
-        return http.securityMatcher("/api/**")
+            CurrentActor actor, AuthTokenCookies cookies, WebSecurityHeaders headers) throws Exception {
+        return http.headers(headers).securityMatcher("/api/**")
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                         .sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy()))
                 .securityContext(context -> context.securityContextRepository(new NullSecurityContextRepository()))

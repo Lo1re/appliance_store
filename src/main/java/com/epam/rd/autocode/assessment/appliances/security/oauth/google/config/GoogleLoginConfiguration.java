@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.security.oauth.google.config;
 
+import com.epam.rd.autocode.assessment.appliances.security.config.WebSecurityHeaders;
 import com.epam.rd.autocode.assessment.appliances.security.identity.CurrentActor;
 import com.epam.rd.autocode.assessment.appliances.security.jwt.access.AccessTokenAuthenticationConverter;
 import com.epam.rd.autocode.assessment.appliances.security.jwt.access.AccessTokenVersionService;
@@ -55,12 +56,13 @@ public class GoogleLoginConfiguration {
                 || !"database".equals(environment.getProperty("store.security.auth-mode", "database")))
             throw new IllegalArgumentException("Google sign-in requires database authentication and JWT web mode");
         URI redirect = URI.create(properties.getRedirectUri());
-        boolean localHttp = "http".equals(redirect.getScheme()) && ("localhost".equals(redirect.getHost()) || "127.0.0.1".equals(redirect.getHost()))
+        boolean localHttp = !environment.getProperty("server.ssl.enabled", Boolean.class, false)
+                && "http".equals(redirect.getScheme()) && ("localhost".equals(redirect.getHost()) || "127.0.0.1".equals(redirect.getHost()))
                 && environment.acceptsProfiles(Profiles.of("local", "test")) && !environment.acceptsProfiles(Profiles.of("prod"));
         if ((!"https".equals(redirect.getScheme()) && !localHttp) || redirect.getHost() == null
                 || redirect.getUserInfo() != null || redirect.getQuery() != null || redirect.getFragment() != null
                 || !redirect.getPath().endsWith("/login/oauth2/code/google"))
-            throw new IllegalArgumentException("Google callback requires a configured trusted HTTPS URI (loopback HTTP allowed only locally)");
+            throw new IllegalArgumentException("Google callback requires a trusted HTTPS URI (HTTP is allowed only for non-TLS local/test runs)");
         return new InMemoryClientRegistrationRepository(CommonOAuth2Provider.GOOGLE.getBuilder("google")
                 .clientId(properties.getClientId()).clientSecret(properties.getClientSecret())
                 .scope("openid", "profile", "email").redirectUri(properties.getRedirectUri()).build());
@@ -71,13 +73,13 @@ public class GoogleLoginConfiguration {
             Clock clock, CurrentActor actor, MvcSecurityFailures failures, JwtDecoder decoder,
             AuthTokenCookies browserCookies, JwtCookieLifecycle cookies, RefreshTokenService tokens,
             CookieCsrfTokenRepository csrfTokens, GoogleIdentityService identities, GoogleIdentityVerifier verifier,
-            GoogleAccountAuthentication accounts, GoogleFlowSession flows, ResetTokenCodec hashes, AccessTokenVersionService versions) throws Exception {
+            GoogleAccountAuthentication accounts, GoogleFlowSession flows, ResetTokenCodec hashes, AccessTokenVersionService versions, WebSecurityHeaders headers) throws Exception {
         var resolver = new DefaultOAuth2AuthorizationRequestResolver(registrations, "/oauth2/authorization");
         resolver.setAuthorizationRequestCustomizer(OAuth2AuthorizationRequestCustomizers.withPkce());
         var success = new GoogleLoginSuccessHandler(verifier, identities, accounts, flows, tokens, cookies, browserCookies,
                 new GoogleLinkVerifier(browserCookies, decoder, hashes, versions));
         var bearer = new BrowserAccessTokenResolver(browserCookies);
-        return http.securityMatcher("/oauth2/**", "/login/oauth2/**", "/onboarding/google/**", "/account/google/**")
+        return http.headers(headers).securityMatcher("/oauth2/**", "/login/oauth2/**", "/onboarding/google/**", "/account/google/**")
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy()))
                 .securityContext(context -> context.securityContextRepository(new NullSecurityContextRepository()))

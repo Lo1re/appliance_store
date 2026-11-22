@@ -72,9 +72,9 @@ public class SecurityConfig {
     @ConditionalOnProperty(name = "store.security.web-auth", havingValue = "session")
     public SecurityFilterChain securityFilterChain(HttpSecurity http, MvcSecurityFailures failures,
                                                     CurrentActor actor, SessionRegistry sessions,
-                                                    SessionPolicyProperties sessionPolicy, PasswordLoginFailureHandler loginFailures, WebAccessRules accessRules)
+                                                    SessionPolicyProperties sessionPolicy, PasswordLoginFailureHandler loginFailures, WebAccessRules accessRules, WebSecurityHeaders headers)
             throws Exception {
-        return http
+        return http.headers(headers)
                 .addFilterAfter(new ActiveAccountFilter(actor), AnonymousAuthenticationFilter.class)
                 .sessionManagement(session -> {
                     session.sessionFixation(fixation -> fixation.changeSessionId());

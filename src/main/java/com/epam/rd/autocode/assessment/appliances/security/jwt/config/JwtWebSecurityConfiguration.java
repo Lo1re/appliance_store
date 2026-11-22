@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.security.jwt.config;
 
+import com.epam.rd.autocode.assessment.appliances.security.config.WebSecurityHeaders;
 import com.epam.rd.autocode.assessment.appliances.security.authorization.WebAccessRules;
 import com.epam.rd.autocode.assessment.appliances.security.identity.CurrentActor;
 import com.epam.rd.autocode.assessment.appliances.security.jwt.access.AccessTokenAuthenticationConverter;
@@ -37,9 +38,9 @@ public class JwtWebSecurityConfiguration {
     public SecurityFilterChain jwtWebChain(HttpSecurity http, WebAccessRules accessRules, MvcSecurityFailures failures,
             PasswordLoginFailureHandler loginFailures, JwtDecoder decoder, CurrentActor actor,
             RefreshTokenService tokens, AuthTokenCookies accessCookies, JwtCookieLifecycle cookies,
-            CookieCsrfTokenRepository csrfTokens, MvcRouteClassifier routes) throws Exception {
+            CookieCsrfTokenRepository csrfTokens, MvcRouteClassifier routes, WebSecurityHeaders headers) throws Exception {
         var entryPoint = new JwtBrowserFailures(accessCookies, failures, routes);
-        return http
+        return http.headers(headers)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                         .sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy()))
                 .securityContext(context -> context.securityContextRepository(new NullSecurityContextRepository()))
