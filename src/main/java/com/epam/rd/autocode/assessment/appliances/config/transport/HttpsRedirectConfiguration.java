@@ -18,7 +18,9 @@ public class HttpsRedirectConfiguration {
     @Bean
     public WebServerFactoryCustomizer<TomcatServletWebServerFactory> httpRedirectConnector(
             @Value("${store.https.http-port:8080}") int httpPort) {
-        if (httpPort < 0 || httpPort > 65535) throw new IllegalArgumentException("Invalid HTTP redirect port");
+        if (httpPort < 0 || httpPort > 65535) {
+            throw new IllegalArgumentException("Invalid HTTP redirect port");
+        }
         return server -> {
             var connector = new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
             connector.setPort(httpPort);

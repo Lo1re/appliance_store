@@ -8,7 +8,9 @@ public final class AccessTokenVersion {
     private AccessTokenVersion() { }
     public static long read(Jwt jwt) {
         Object value = jwt.getClaims().get(CLAIM);
-        if (value == null) return 0;
+        if (value == null) {
+            return 0;
+        }
         if (!(value instanceof Number) || !value.toString().matches("[0-9]{1,19}"))
             throw new IllegalArgumentException("Invalid access token version");
         return Long.parseLong(value.toString());

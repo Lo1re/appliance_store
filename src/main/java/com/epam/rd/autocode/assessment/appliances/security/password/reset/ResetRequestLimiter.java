@@ -48,7 +48,9 @@ public class ResetRequestLimiter {
         if (origin.count >= maxSource) retryAt = origin.until;
         if (address.count >= maxEmail && address.until.isAfter(retryAt)) retryAt = address.until;
         if (address.nextAllowed.isAfter(retryAt)) retryAt = address.nextAllowed;
-        if (retryAt.isAfter(now)) return waitSeconds(now, retryAt);
+        if (retryAt.isAfter(now)) {
+            return waitSeconds(now, retryAt);
+        }
         // Reserve hourly quota only for requests that pass every gate.
         origin.count++;
         address.count++;

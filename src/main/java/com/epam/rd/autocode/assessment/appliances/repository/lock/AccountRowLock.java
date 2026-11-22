@@ -22,9 +22,13 @@ public class AccountRowLock {
 
     @Transactional(propagation = Propagation.MANDATORY)
     public Optional<User> lock(Long id) {
-        if (users.lockIdentity(id).isEmpty()) return Optional.empty();
+        if (users.lockIdentity(id).isEmpty()) {
+            return Optional.empty();
+        }
         User user = entities.find(User.class, id);
-        if (user == null) return Optional.empty();
+        if (user == null) {
+            return Optional.empty();
+        }
         entities.refresh(user);
         return Optional.of(user);
     }

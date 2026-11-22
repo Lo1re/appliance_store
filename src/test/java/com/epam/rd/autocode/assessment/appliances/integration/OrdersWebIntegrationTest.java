@@ -55,11 +55,11 @@ class OrdersWebIntegrationTest {
                 "EMPLOYEE"
         );
 
-        var claw = products.search("Claw", PageRequest.of(0, 1))
+        var galaxy = products.search("Samsung Galaxy S10", PageRequest.of(0, 1))
                 .getContent()
                 .get(0);
 
-        var bane = products.search("Bane", PageRequest.of(0, 1))
+        var macbook = products.search("Apple MacBook Pro 14", PageRequest.of(0, 1))
                 .getContent()
                 .get(0);
 
@@ -88,12 +88,12 @@ class OrdersWebIntegrationTest {
                                 .with(csrf())
                                 .param(
                                         "items[0].applianceId",
-                                        claw.getId().toString()
+                                        galaxy.getId().toString()
                                 )
                                 .param("items[0].quantity", "2")
                                 .param(
                                         "items[1].applianceId",
-                                        bane.getId().toString()
+                                        macbook.getId().toString()
                                 )
                                 .param("items[1].quantity", "1")
                 )
@@ -110,7 +110,12 @@ class OrdersWebIntegrationTest {
 
         mvc.perform(get(ownPath).session(client))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("4.03")))
+                .andExpect(result -> {
+                    var order = (com.epam.rd.autocode.assessment.appliances.dto.order.OrderResponse)
+                            result.getModelAndView().getModel().get("order");
+                    assertThat(order.total()).isEqualByComparingTo(
+                            galaxy.getPrice().multiply(java.math.BigDecimal.valueOf(2)).add(macbook.getPrice()));
+                })
                 .andExpect(content().string(
                         not(containsString(ownPath + "/approve"))
                 ));
@@ -127,7 +132,7 @@ class OrdersWebIntegrationTest {
                                 .with(csrf())
                                 .param(
                                         "items[0].applianceId",
-                                        claw.getId().toString()
+                                        galaxy.getId().toString()
                                 )
                                 .param("items[0].quantity", "3")
                 )
@@ -197,7 +202,7 @@ class OrdersWebIntegrationTest {
                     .andExpect(model().attribute("errorMessageKey", "order.not-editable"));
 
             mvc.perform(post(ownPath + "/edit").session(session).with(csrf())
-                            .param("items[0].applianceId", claw.getId().toString())
+                            .param("items[0].applianceId", galaxy.getId().toString())
                             .param("items[0].quantity", "99"))
                     .andExpect(status().isConflict())
                     .andExpect(view().name("error/409"))
@@ -218,7 +223,7 @@ class OrdersWebIntegrationTest {
         assertThat(orders.findDetailedById(ownId).orElseThrow().getOrderRowSet())
                 .singleElement().satisfies(row -> {
                     assertThat(row.getNumber()).isEqualTo(3L);
-                    assertThat(row.getAmount()).isEqualByComparingTo("3.03");
+                    assertThat(row.getAmount()).isEqualByComparingTo(galaxy.getPrice().multiply(java.math.BigDecimal.valueOf(3)));
                 });
 
         mvc.perform(get(ownPath).session(client).param("lang", "uk"))
@@ -237,7 +242,7 @@ class OrdersWebIntegrationTest {
                                 .param("clientId", Long.toString(venusId))
                                 .param(
                                         "items[0].applianceId",
-                                        claw.getId().toString()
+                                        galaxy.getId().toString()
                                 )
                                 .param("items[0].quantity", "1")
                 )
@@ -268,7 +273,7 @@ class OrdersWebIntegrationTest {
                                 .with(csrf())
                                 .param(
                                         "items[0].applianceId",
-                                        claw.getId().toString()
+                                        galaxy.getId().toString()
                                 )
                                 .param("items[0].quantity", "99")
                 )
@@ -292,7 +297,7 @@ class OrdersWebIntegrationTest {
 
         String pendingPath = mvc.perform(
                         post("/orders/add").session(client).with(csrf())
-                                .param("items[0].applianceId", claw.getId().toString())
+                                .param("items[0].applianceId", galaxy.getId().toString())
                                 .param("items[0].quantity", "1")
                 )
                 .andExpect(status().is3xxRedirection())
@@ -324,7 +329,7 @@ class OrdersWebIntegrationTest {
         );
 
         String applianceId = products.search(
-                        "Claw",
+                        "Samsung Galaxy S10",
                         PageRequest.of(0, 1)
                 )
                 .getContent()

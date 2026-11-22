@@ -8,7 +8,7 @@ import com.epam.rd.autocode.assessment.appliances.exception.OrderException;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
 import com.epam.rd.autocode.assessment.appliances.web.OrderCapabilities;
 import com.epam.rd.autocode.assessment.appliances.web.form.OrderFormAssembler;
-import com.epam.rd.autocode.assessment.appliances.web.form.OrderFormData;
+import com.epam.rd.autocode.assessment.appliances.web.form.OrderFormView;
 import com.epam.rd.autocode.assessment.appliances.web.pagination.ListPage;
 import com.epam.rd.autocode.assessment.appliances.web.pagination.ListPageFactory;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,7 +34,6 @@ public class OrdersController {
 
     private static final String LIST = "order/orders";
     private static final String DETAILS = "order/details";
-    private static final String FORM = "order/form";
     private static final String REDIRECT = "redirect:/orders";
     private static final Set<String> SORT_FIELDS = Set.of("id", "approved");
 
@@ -71,12 +70,12 @@ public class OrdersController {
 
     @GetMapping("/add")
     public String createForm(Model model) {
-        return renderForm(orderFormAssembler.create(), model);
+        return OrderFormView.render(orderFormAssembler.create(), model);
     }
 
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
-        return renderForm(orderFormAssembler.edit(id), model);
+        return OrderFormView.render(orderFormAssembler.edit(id), model);
     }
 
     @PostMapping({"/add", "/{id}/edit"})
@@ -89,7 +88,7 @@ public class OrdersController {
             RedirectAttributes redirect
     ) {
         if (errors.hasErrors()) {
-            return renderForm(orderFormAssembler.redisplay(
+            return OrderFormView.render(orderFormAssembler.redisplay(
                     id, clientId, request), model);
         }
 
@@ -105,7 +104,7 @@ public class OrdersController {
                         errors.reject(exception.error().messageKey());
                 default -> throw exception;
             }
-            return renderForm(orderFormAssembler.redisplay(
+            return OrderFormView.render(orderFormAssembler.redisplay(
                     id, clientId, request), model);
         }
     }
@@ -123,16 +122,4 @@ public class OrdersController {
         return REDIRECT + "/{orderId}";
     }
 
-    private String renderForm(OrderFormData form, Model model) {
-        model.addAttribute("orderForm", form.request());
-        model.addAttribute("editing", form.editing());
-        model.addAttribute("formAction", form.editing()
-                ? "/orders/" + form.orderId() + "/edit" : "/orders/add");
-        model.addAttribute("cancelPath", form.editing() ? "/orders/" + form.orderId() : "/orders");
-        model.addAttribute("selectClient", form.selectClient());
-        model.addAttribute("selectedClientId", form.selectedClientId());
-        model.addAttribute("products", form.products());
-        model.addAttribute("clients", form.clients());
-        return FORM;
-    }
 }

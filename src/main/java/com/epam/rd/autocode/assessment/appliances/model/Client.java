@@ -1,10 +1,10 @@
 package com.epam.rd.autocode.assessment.appliances.model;
 
+import com.epam.rd.autocode.assessment.appliances.validation.LoyaltyCardNumber;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
-import com.epam.rd.autocode.assessment.appliances.validation.LoyaltyCardNumber;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

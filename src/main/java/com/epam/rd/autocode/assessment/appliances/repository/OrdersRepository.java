@@ -42,7 +42,6 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
             "orderRowSet.appliance.manufacturer"})
     Optional<Orders> findDetailedByIdAndClient_Id(Long id, Long clientId);
 
-
     boolean existsByClient_Id(Long clientId);
 
     boolean existsByEmployee_Id(Long employeeId);

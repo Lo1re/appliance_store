@@ -18,8 +18,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -60,7 +60,9 @@ public class GoogleLoginSuccessHandler implements AuthenticationSuccessHandler {
                 new JwtLoginSuccessHandler(tokens, cookies, browserCookies).onAuthenticationSuccess(request, response, local);
                 log.info("Google sign-in completed (accountId={})", account.orElseThrow());
             } else {
-                if (identity.emailVerified() && identities.emailTaken(identity.email())) throw new GoogleLoginException(GoogleLoginException.Reason.LINK_REQUIRED);
+                if (identity.emailVerified() && identities.emailTaken(identity.email())) {
+                    throw new GoogleLoginException(GoogleLoginException.Reason.LINK_REQUIRED);
+                }
                 flows.pending(request, identity);
                 response.sendRedirect(request.getContextPath() + "/onboarding/google");
             }

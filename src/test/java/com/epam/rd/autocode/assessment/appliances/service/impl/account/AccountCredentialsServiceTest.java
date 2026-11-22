@@ -12,7 +12,7 @@ import static org.mockito.Mockito.*;
 class AccountCredentialsServiceTest {
     private final UserRepository users = mock(UserRepository.class);
     private final PasswordEncoder encoder = mock(PasswordEncoder.class);
-    private final AccountCredentialsService credentials = new AccountCredentialsService(users, encoder, mock(com.epam.rd.autocode.assessment.appliances.repository.lock.AccountRowLock.class));
+    private final AccountCredentialsService credentials = new AccountCredentialsService(users, encoder);
 
     @Test
     void normalizesEmailBeforeCheckingAndAssigningIt() {

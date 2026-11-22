@@ -6,6 +6,7 @@ import com.epam.rd.autocode.assessment.appliances.repository.lock.AccountRowLock
 import com.epam.rd.autocode.assessment.appliances.repository.password.PasswordResetRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.projection.CredentialSnapshot;
 import com.epam.rd.autocode.assessment.appliances.security.password.PasswordCredentialStatusService;
+import com.epam.rd.autocode.assessment.appliances.security.password.PasswordReplacementEffects;
 import com.epam.rd.autocode.assessment.appliances.security.jwt.access.AccessTokenVersionService;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
 import java.time.Clock;
@@ -20,7 +21,7 @@ import static org.mockito.ArgumentMatchers.*;
 class PasswordResetServiceBranchTest {
     @Mock UserRepository users;@Mock AccountRowLock accounts;@Mock PasswordResetRepository tokens;@Mock ResetRequestLimiter limits;@Mock PasswordEncoder encoder;@Mock RefreshTokenRepository refresh;@Mock LoginAttemptRepository attempts;@Mock ApplicationEventPublisher events;@Mock PasswordCredentialStatusService state;@Mock AccessTokenVersionService versions;
     PasswordResetService service;AutoCloseable mocks;final ResetTokenCodec codec=new ResetTokenCodec();final Client client=new Client(1L,"Client","user@example.test","hash",null);
-    @BeforeEach void setup(){mocks=MockitoAnnotations.openMocks(this);service=new PasswordResetService(users,accounts,tokens,codec,limits,encoder,refresh,attempts,events,Clock.systemUTC(),state,versions,new SecurityMailLinkFactory("http://localhost:8080"));}
+    @BeforeEach void setup(){mocks=MockitoAnnotations.openMocks(this);service=new PasswordResetService(users,accounts,tokens,codec,limits,encoder,events,Clock.systemUTC(),new SecurityMailLinkFactory("http://localhost:8080"),mock(PasswordReplacementEffects.class));}
     @AfterEach void close() throws Exception {mocks.close();}
     @Test void accountDisappearingDuringRequestDoesNotSendMail() {when(users.findByEmailIgnoreCase(client.getEmail())).thenReturn(Optional.of(client));assertThat(service.request(client.getEmail(),"source",Locale.ENGLISH)).isZero();verifyNoInteractions(events);}
     @Test void absentOrChangedCredentialSnapshotDoesNotSendMail() {

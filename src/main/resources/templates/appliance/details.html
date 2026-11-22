@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+    <head>
+        <meta charset="UTF-8">
+        <title th:text="${appliance.name}">
+        </title>
+        <th:block th:replace="~{fragments/assets :: assets}">
+        </th:block>
+    <script th:src="@{/js/product-gallery.js}" defer></script>
+</head>
+    <body>
+        <header th:insert="~{menunavy :: navy}">
+        </header>
+        <main id="main-content">
+            <a th:href="@{/appliances}" th:text="#{appliance.header.list}">
+            </a>
+            <section class="product-detail">
+                <div class="product-detail-art">
+                    <img th:src="@{${@productImages.pathFor(appliance)}}" th:alt="${appliance.name}" id="product-main-image" width="400" height="300">
+                    <div class="product-thumbnails" th:if="${@productImages.photosFor(appliance).size() > 1}">
+                        <button type="button" class="photo-thumbnail" th:each="photo, position : ${@productImages.photosFor(appliance)}"
+                                th:data-photo="@{${photo}}" aria-controls="product-main-image"
+                                th:aria-label="#{ui.photo.view(${position.count})}" th:aria-pressed="${position.first}">
+                            <img th:src="@{${photo}}" alt="" width="64" height="64" loading="lazy">
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <span class="eyebrow" th:text="${appliance.manufacturerName}">
+                    </span>
+                    <h1 th:text="${appliance.name}">
+                    </h1>
+                    <p class="product-model" th:text="${appliance.model}">
+                    </p>
+                    <p class="product-description" th:text="${appliance.description}">
+                    </p>
+                    <p class="product-price" th:text="|${#numbers.formatDecimal(appliance.price, 1, 'WHITESPACE', 2, 'COMMA')} ₴|">
+                    </p>
+                    <a class="button" th:href="@{/orders/add}" th:text="#{ui.product.order}">
+                    </a>
+                    <a class="button button-secondary" th:if="${canManage}" th:href="@{/appliances/{id}/edit(id=${appliance.id})}" th:text="#{form.edit}">
+                    </a>
+                </div>
+            </section>
+            <h2 th:text="#{ui.product.specifications}">
+            </h2>
+            <dl>
+                <dt th:text="#{appliance.field.manufacturer}">
+                </dt>
+                <dd th:text="${appliance.manufacturerName}">
+                </dd>
+                <dt th:text="#{appliance.field.model}">
+                </dt>
+                <dd th:text="${appliance.model}">
+                </dd>
+                <dt th:text="#{appliance.field.category}">
+                </dt>
+                <dd th:text="${#messages.msg('appliance.category.' + appliance.category)}">
+                </dd>
+                <dt th:text="#{appliance.field.powerType}">
+                </dt>
+                <dd th:text="${#messages.msg('appliance.powerType.' + appliance.powerType)}">
+                </dd>
+                <dt th:text="#{appliance.field.power}">
+                </dt>
+                <dd th:text="${appliance.power}">
+                </dd>
+                <dt th:text="#{appliance.field.characteristic}">
+                </dt>
+                <dd class="product-description" th:text="${appliance.characteristic}">
+                </dd>
+            </dl>
+        </main>
+        <footer th:replace="~{footer :: footer}">
+        </footer>
+    </body>
+</html>

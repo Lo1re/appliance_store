@@ -14,7 +14,9 @@ public class AccessTokenVersionService {
     private final AccountSecurityStateRepository states;
     public long current(Long id) { return states.findById(id).map(AccountSecurityState::getCredentialVersion).orElse(0L); }
     public void requireCurrent(Long id, long tokenVersion) {
-        if (tokenVersion != current(id)) throw new AccessDeniedException("Account credentials have changed");
+        if (tokenVersion != current(id)) {
+            throw new AccessDeniedException("Account credentials have changed");
+        }
     }
     /** Caller holds the base user row lock used by issuance and password changes. */
     @Transactional(propagation = Propagation.MANDATORY)

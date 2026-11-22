@@ -1,7 +1,27 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="#{registration.confirm.title}"></title></head>
-<body><header th:insert="~{menunavy :: navy}"></header><main><h1 th:text="#{registration.confirm.title}"></h1>
-<p th:text="#{registration.confirm.description}"></p>
-<form th:action="@{/register/complete}" method="post"><input type="hidden" name="token" th:value="${registrationToken}"><button type="submit" th:text="#{registration.confirm.submit}"></button></form>
-</main></body></html>
+    <head>
+        <meta charset="UTF-8">
+        <title th:text="#{registration.confirm.title}">
+        </title>
+        <th:block th:replace="~{fragments/assets :: assets}">
+        </th:block>
+    </head>
+    <body>
+        <header th:insert="~{menunavy :: navy}">
+        </header>
+        <main id="main-content" class="auth-page">
+            <h1 th:text="#{registration.confirm.title}">
+            </h1>
+            <p th:text="#{registration.confirm.description}">
+            </p>
+            <form th:action="@{/register/complete}" method="post">
+                <input type="hidden" name="token" th:value="${registrationToken}">
+                <button type="submit" th:text="#{registration.confirm.submit}">
+                </button>
+            </form>
+        </main>
+        <footer th:replace="~{footer :: footer}">
+        </footer>
+    </body>
+</html>

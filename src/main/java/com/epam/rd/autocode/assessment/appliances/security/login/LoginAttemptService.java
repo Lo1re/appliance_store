@@ -29,7 +29,9 @@ public class LoginAttemptService {
 
     public Duration remainingLock(String username) {
         var key = key(username);
-        if (key.isEmpty()) return Duration.ZERO;
+        if (key.isEmpty()) {
+            return Duration.ZERO;
+        }
         var now = clock.instant();
         return attempts.findById(key.get()).filter(attempt -> policy.locked(attempt, now))
                 .map(attempt -> Duration.between(now, attempt.getLockedUntil())).orElse(Duration.ZERO);
@@ -47,7 +49,9 @@ public class LoginAttemptService {
                 return;
             } catch (DataIntegrityViolationException concurrentInsert) {
                 // The failed transaction has rolled back before checking the competing insert.
-                if (retry == 2 || !attempts.existsById(key.get())) throw concurrentInsert;
+                if (retry == 2 || !attempts.existsById(key.get())) {
+                    throw concurrentInsert;
+                }
             }
         }
     }
@@ -64,7 +68,9 @@ public class LoginAttemptService {
     }
 
     private Optional<String> key(String username) {
-        if (username == null || username.isBlank()) return Optional.empty();
+        if (username == null || username.isBlank()) {
+            return Optional.empty();
+        }
         String email = EmailAddress.normalize(username);
         return email.length() > 254 ? Optional.empty() : Optional.of(email);
     }

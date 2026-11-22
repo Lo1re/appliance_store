@@ -28,7 +28,9 @@ public class ApiExceptionResolver implements HandlerExceptionResolver {
     public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response,
                                           Object handler, Exception failure) {
         String root = request.getContextPath() + "/api";
-        if (!request.getRequestURI().equals(root) && !request.getRequestURI().startsWith(root + "/")) return null;
+        if (!request.getRequestURI().equals(root) && !request.getRequestURI().startsWith(root + "/")) {
+            return null;
+        }
         var error = errors.handle(failure, request);
         response.setStatus(error.getStatusCode().value());
         error.getHeaders().forEach((name, values) -> values.forEach(value -> response.addHeader(name, value)));

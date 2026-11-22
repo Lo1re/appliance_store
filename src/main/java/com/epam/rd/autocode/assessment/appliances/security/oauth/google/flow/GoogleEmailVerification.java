@@ -26,9 +26,13 @@ public class GoogleEmailVerification {
 
     public long send(HttpServletRequest request, String email, Locale locale) {
         flows.requirePending(request);
-        if (mail.getIfAvailable() == null) throw new AuthenticationServiceException("Email verification unavailable");
+        if (mail.getIfAvailable() == null) {
+            throw new AuthenticationServiceException("Email verification unavailable");
+        }
         long retry = limits.acquire("google-verify:" + email, "google-verify:" + request.getRemoteAddr());
-        if (retry > 0) return retry;
+        if (retry > 0) {
+            return retry;
+        }
         String token = tokens.generate();
         flows.challenge(request, email, tokens.hash(token));
         String base = properties.getRedirectUri().substring(0, properties.getRedirectUri().length() - "/login/oauth2/code/google".length());

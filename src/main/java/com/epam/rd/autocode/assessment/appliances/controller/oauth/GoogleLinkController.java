@@ -33,7 +33,9 @@ public class GoogleLinkController {
     public String begin(HttpServletRequest request, RedirectAttributes redirects) {
         Long id = actor.requireUser().getId();
         String access = cookies.read(request);
-        if (access == null) throw new AccessDeniedException("Access denied");
+        if (access == null) {
+            throw new AccessDeniedException("Access denied");
+        }
         flows.beginLink(request, id, hashes.hash(access));
         return "redirect:/oauth2/authorization/google";
     }

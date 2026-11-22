@@ -1,93 +1,140 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
-<head>
-    <meta charset="UTF-8">
-    <script th:src="@{/js/lookup-search.js}" defer></script>
-    <title th:text="${editing} ? #{order.btn.edit} : #{order.btn.new}">Order</title>
-    <script th:src="@{/js/order-form.js}" defer></script>
-</head>
-<body>
-<header th:insert="~{menunavy :: navy}"></header>
-<main>
-    <h1 th:text="${editing} ? #{order.btn.edit} : #{order.btn.new}">Order</h1>
-
-    <form th:action="@{${formAction}}" th:object="${orderForm}" method="post">
-        <ul th:if="${#fields.hasGlobalErrors()}" role="alert">
-            <li th:each="error : ${#fields.globalErrors()}" th:text="${error}"></li>
-        </ul>
-
-        <div th:if="${selectClient}">
-            <label for="clientId" th:text="#{order.field.client}">Client</label>
-            <label for="client-search" th:text="#{lookup.search}">Search</label>
-            <input id="client-search" type="search" maxlength="100" data-lookup="clients"
-                   th:data-url="@{/lookups/clients}" th:data-failed="#{lookup.failed}" th:data-hint="#{lookup.hint}">
-            <span data-lookup-status="clients" role="status" aria-live="polite"></span>
-            <select data-options="clients" id="clientId" name="clientId" required>
-                <option value="" th:text="#{form.choose}">Choose an option</option>
-                <option th:each="client : ${clients}"
+    <head>
+        <meta charset="UTF-8">
+        <script th:src="@{/js/lookup-search.js(v='20261122-3')}" defer>
+        </script>
+        <title th:text="${editing} ? #{order.btn.edit} : #{order.btn.new}">
+            Order
+        </title>
+        <script th:src="@{/js/order-form.js(v='20261122-3')}" defer>
+        </script>
+        <th:block th:replace="~{fragments/assets :: assets}">
+        </th:block>
+    </head>
+    <body>
+        <header th:insert="~{menunavy :: navy}">
+        </header>
+        <main id="main-content">
+            <h1 th:text="${editing} ? #{order.btn.edit} : #{order.btn.new}">
+                Order
+            </h1>
+            <form class="order-editor" th:action="@{${formAction}}" th:object="${orderForm}" method="post">
+                <ul th:if="${#fields.hasGlobalErrors()}" role="alert">
+                    <li th:each="error : ${#fields.globalErrors()}" th:text="${error}">
+                    </li>
+                </ul>
+                <section class="order-step" th:if="${selectClient}">
+                    <h2 th:text="#{ui.order.client}"></h2>
+                    <label for="client-search" th:text="#{order.field.client}"></label>
+                    <input id="client-search" type="search" maxlength="100" data-lookup="clients"
+                    th:data-url="@{/lookups/clients}" th:data-failed="#{lookup.failed}" th:data-hint="#{lookup.hint}" th:data-empty="#{lookup.none}" th:data-required="#{lookup.choose}" th:placeholder="#{lookup.client.placeholder}">
+                    <span data-lookup-status="clients" role="status" aria-live="polite">
+                    </span>
+                    <select data-options="clients" id="clientId" name="clientId" required>
+                        <option value="" th:text="#{form.choose}">
+                            Choose an option
+                        </option>
+                        <option th:each="client : ${clients}"
                         th:value="${client.id}"
                         th:selected="${client.id == selectedClientId}"
-                        th:text="${client.label}"></option>
-            </select>
-        </div>
-
-        <p th:errors="*{items}" role="alert"></p>
-
-        <label for="product-search" th:text="#{lookup.search-products}">Search products</label>
-        <input id="product-search" type="search" maxlength="100" data-lookup="products"
-               th:data-url="@{/lookups/products}" th:data-failed="#{lookup.failed}" th:data-hint="#{lookup.hint}">
-        <span data-lookup-status="products" role="status" aria-live="polite"></span>
-        <div id="order-items">
-            <fieldset th:each="item, row : *{items}" data-order-row>
-                <legend th:text="#{order.field.item}">Item</legend>
-                <label>
-                    <span th:text="#{appliance.field.name}">Product</span>
-                    <select th:field="*{items[__${row.index}__].applianceId}"
-                            data-field="applianceId" data-options="products" required>
-                        <option value="" th:text="#{form.choose}">Choose an option</option>
-                        <option th:each="product : ${products}" th:value="${product.id}"
-                                th:text="${product.label}"></option>
+                        th:text="${client.label}">
+                        </option>
                     </select>
-                </label>
-                <p th:errors="*{items[__${row.index}__].applianceId}" role="alert"></p>
-
-                <label>
-                    <span th:text="#{order.field.quantity}">Quantity</span>
-                    <input type="number" th:field="*{items[__${row.index}__].quantity}"
-                           data-field="quantity" min="1" max="10000" required>
-                </label>
-                <p th:errors="*{items[__${row.index}__].quantity}" role="alert"></p>
-
-                <button type="button" data-remove-row
-                        th:text="#{order.btn.remove-item}">Remove item</button>
-            </fieldset>
-        </div>
-
-        <button id="add-order-item" type="button"
-                th:text="#{order.btn.add-item}">Add item</button>
-        <button type="submit" th:text="#{form.save}">Save</button>
-        <a th:href="@{${cancelPath}}" th:text="#{form.cancel}">Cancel</a>
-    </form>
-
-    <template id="order-item-template">
-        <fieldset data-order-row>
-            <legend th:text="#{order.field.item}">Item</legend>
-            <label>
-                <span th:text="#{appliance.field.name}">Product</span>
-                <select data-field="applianceId" data-options="products" required>
-                    <option value="" th:text="#{form.choose}">Choose an option</option>
-                    <option th:each="product : ${products}" th:value="${product.id}"
-                            th:text="${product.label}"></option>
-                </select>
-            </label>
-            <label>
-                <span th:text="#{order.field.quantity}">Quantity</span>
-                <input type="number" data-field="quantity" min="1" max="10000" required>
-            </label>
-            <button type="button" data-remove-row
-                    th:text="#{order.btn.remove-item}">Remove item</button>
-        </fieldset>
-    </template>
-</main>
-</body>
+                </section>
+                <p th:errors="*{items}" role="alert">
+                </p>
+                <h2 th:text="#{ui.order.products}"></h2>
+                <p class="form-help" th:text="#{ui.order.search.help}"></p>
+                <section id="product-picker" class="product-picker" hidden
+                    th:data-url="@{/lookups/products}" th:data-add="#{order.btn.add-item}"
+                    th:data-loading="#{picker.loading}" th:data-empty="#{picker.empty}"
+                    th:data-failed="#{lookup.failed}" th:data-chosen="#{picker.chosen}" th:data-limit="#{lookup.hint}" th:data-required="#{picker.required}" th:data-max="#{picker.max}">
+                    <label for="product-search" th:text="#{lookup.search-products}">Search products</label>
+                    <input id="product-search" type="search" maxlength="100" autocomplete="off"
+                        th:placeholder="#{picker.placeholder}" aria-controls="product-suggestions" aria-expanded="false">
+                    <p data-picker-status role="status" aria-live="polite"></p>
+                    <div data-picker-results id="product-suggestions" class="product-suggestions" hidden></div>
+                </section>
+                <h2 th:text="#{ui.order.selected}"></h2>
+                <p id="order-empty" class="form-help" th:text="#{ui.order.empty}"></p>
+                <div id="order-items">
+                    <fieldset th:each="item, row : *{items}" data-order-row>
+                        <legend th:text="#{order.field.item}">
+                            Item
+                        </legend>
+                        <label>
+                            <span th:text="#{appliance.field.name}">
+                                Product
+                            </span>
+                            <select th:field="*{items[__${row.index}__].applianceId}"
+                            data-field="applianceId" data-options="products" required>
+                                <option value="" th:text="#{form.choose}">
+                                    Choose an option
+                                </option>
+                                <option th:each="product : ${products}" th:value="${product.id}"
+                                th:text="${product.label}">
+                                </option>
+                            </select>
+                        </label>
+                        <p th:errors="*{items[__${row.index}__].applianceId}" role="alert">
+                        </p>
+                        <label>
+                            <span th:text="#{order.field.quantity}">
+                                Quantity
+                            </span>
+                            <input type="number" th:field="*{items[__${row.index}__].quantity}"
+                            data-field="quantity" min="1" max="10000" required>
+                        </label>
+                        <p th:errors="*{items[__${row.index}__].quantity}" role="alert">
+                        </p>
+                        <button class="button-secondary" type="button" data-remove-row
+                        th:text="#{order.btn.remove-item}">
+                            Remove item
+                        </button>
+                    </fieldset>
+                </div>
+                <div class="editor-actions">
+                <button type="submit" th:text="#{ui.order.save}">
+                    Save
+                </button>
+                <a th:href="@{${cancelPath}}" th:text="#{form.cancel}">
+                    Cancel
+                </a>
+                </div>
+            </form>
+            <template id="order-item-template">
+                <fieldset data-order-row>
+                    <legend th:text="#{order.field.item}">
+                        Item
+                    </legend>
+                    <label>
+                        <span th:text="#{appliance.field.name}">
+                            Product
+                        </span>
+                        <select data-field="applianceId" data-options="products" required>
+                            <option value="" th:text="#{form.choose}">
+                                Choose an option
+                            </option>
+                            <option th:each="product : ${products}" th:value="${product.id}"
+                            th:text="${product.label}">
+                            </option>
+                        </select>
+                    </label>
+                    <label>
+                        <span th:text="#{order.field.quantity}">
+                            Quantity
+                        </span>
+                        <input type="number" data-field="quantity" min="1" max="10000" required>
+                    </label>
+                    <button class="button-secondary" type="button" data-remove-row
+                    th:text="#{order.btn.remove-item}">
+                        Remove item
+                    </button>
+                </fieldset>
+            </template>
+        </main>
+        <footer th:replace="~{footer :: footer}">
+        </footer>
+    </body>
 </html>

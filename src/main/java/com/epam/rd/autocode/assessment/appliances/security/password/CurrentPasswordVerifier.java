@@ -35,6 +35,8 @@ public class CurrentPasswordVerifier {
         }
     }
     private void requireUnlocked(String email) {
-        if (!attempts.remainingLock(email).isZero()) throw new LockedException("Password verification temporarily unavailable");
+        if (!attempts.remainingLock(email).isZero()) {
+            throw new LockedException("Password verification temporarily unavailable");
+        }
     }
 }

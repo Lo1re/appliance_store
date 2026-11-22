@@ -11,7 +11,7 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:foundation-ui;DB_CLOSE_DELAY=-1")
+@SpringBootTest(properties = {"spring.datasource.url=jdbc:h2:mem:foundation-ui;DB_CLOSE_DELAY=-1", "store.security.hsts.enabled=true"})
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class FoundationUiIntegrationTest {
@@ -33,5 +33,10 @@ class FoundationUiIntegrationTest {
         mvc.perform(get("/login").param("expired", "").param("lang", "uk"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Ваш сеанс завершено. Увійдіть повторно.")));
+    }
+    @Test
+    void secureResponsesApplyTheConfiguredProductionHstsPolicy() throws Exception {
+        mvc.perform(get("/").secure(true)).andExpect(status().isOk())
+                .andExpect(header().string("Strict-Transport-Security", "max-age=31536000 ; includeSubDomains"));
     }
 }

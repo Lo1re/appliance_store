@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><body>
+            <section th:fragment="cards(items, manageable)" class="product-grid" th:aria-label="#{appliance.header.list}">
+                <article class="product-card" th:each="appliance : ${items}">
+                    <a class="product-visual" th:href="@{/appliances/{id}(id=${appliance.id})}" th:aria-label="${appliance.name}">
+                        <img th:src="@{${@productImages.pathFor(appliance)}}" th:alt="${appliance.name}" width="175" height="155" loading="lazy">
+                    </a>
+                    <div class="product-content">
+                        <p class="product-brand" th:text="${appliance.manufacturerName}">
+                        </p>
+                        <a class="product-name" th:href="@{/appliances/{id}(id=${appliance.id})}" th:text="${appliance.name}">
+                        </a>
+                        <p class="product-model" th:text="${appliance.model}">
+                        </p>
+                        <p class="product-price" th:text="|${#numbers.formatDecimal(appliance.price, 1, 'WHITESPACE', 2, 'COMMA')} ₴|">
+                        </p>
+                        <div class="product-actions">
+                            <a class="button button-secondary" th:href="@{/appliances/{id}(id=${appliance.id})}" th:text="#{ui.product.details}">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="product-admin" th:if="${manageable}">
+                        <a th:href="@{/appliances/{id}/edit(id=${appliance.id})}" th:text="#{form.edit}">
+                        </a>
+                        <form th:data-confirm="#{ui.delete.confirm}" th:action="@{/appliances/{id}/delete(id=${appliance.id})}" method="post">
+                            <button class="button-danger" type="submit" th:text="#{form.delete}">
+                            </button>
+                        </form>
+                    </div>
+                </article>
+            </section>
+</body></html>

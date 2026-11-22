@@ -36,7 +36,9 @@ public final class StorePrincipal implements UserDetails, CredentialsContainer, 
 
     @Override
     public boolean equals(Object other) {
-        if (this == other) return true;
+        if (this == other) {
+            return true;
+        }
         return accountId != null && other instanceof AccountPrincipal principal
                 && accountId.equals(principal.getAccountId());
     }

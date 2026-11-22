@@ -5,6 +5,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
+import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.springframework.stereotype.Component;
 
 /** One URL authorization policy, independent of how credentials reach the application. */
@@ -39,6 +40,8 @@ public class WebAccessRules implements Customizer<AuthorizeHttpRequestsConfigure
                         "/appliances",
                         "/manufacturers"
                 ).hasAnyRole("CLIENT", "EMPLOYEE")
+                .requestMatchers(new RegexRequestMatcher("/appliances/[0-9]+(?:\\?.*)?", "GET"))
+                .hasAnyRole("CLIENT", "EMPLOYEE")
                 .requestMatchers(
                         "/appliances/**",
                         "/manufacturers/**"

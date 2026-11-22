@@ -1,8 +1,8 @@
 package com.epam.rd.autocode.assessment.appliances.dto.client;
 
 import com.epam.rd.autocode.assessment.appliances.dto.user.UserProfileRequest;
-import jakarta.validation.constraints.Size;
 import com.epam.rd.autocode.assessment.appliances.validation.LoyaltyCardNumber;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 @Getter

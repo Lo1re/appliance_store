@@ -20,6 +20,7 @@ import static org.mockito.Mockito.when;
 class ClientServiceImplTest {
     @Mock private BusinessAudit audit;
     @Mock private AccountCredentialsService credentials;
+    @Mock private AccountMutationLocks mutationLocks;
     @Mock private ClientRepository repository;
     @Mock private OrdersRepository dependencies;
     @InjectMocks private ClientServiceImpl service;

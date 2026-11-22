@@ -36,11 +36,15 @@ public class RegistrationConfirmation {
         return new RegistrationDetails(registration.getName(), registration.getEmail(), registration.getCard(), registration.getPasswordHash());
     }
     private String digest(String token) {
-        if (!tokens.valid(token)) throw new InvalidRegistrationException();
+        if (!tokens.valid(token)) {
+            throw new InvalidRegistrationException();
+        }
         return tokens.hash(token);
     }
     private PendingRegistration requireLive(PendingRegistration registration) {
-        if (!registration.getExpiresAt().isAfter(clock.instant())) throw new InvalidRegistrationException();
+        if (!registration.getExpiresAt().isAfter(clock.instant())) {
+            throw new InvalidRegistrationException();
+        }
         return registration;
     }
 }

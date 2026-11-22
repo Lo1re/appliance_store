@@ -23,7 +23,9 @@ public class RegistrationSubmission {
     @Transactional
     public long submit(@NotNull @Valid ClientRegistrationRequest form, String source, Locale locale) {
         var result = preparation.prepare(form, source);
-        if (result.retryAfter() > 0) return result.retryAfter();
+        if (result.retryAfter() > 0) {
+            return result.retryAfter();
+        }
         var challenge = result.challenge();
         var details = challenge.details();
         pending.saveAndFlush(new PendingRegistration(challenge.tokenHash(), details.name(), details.email(), details.card(), details.passwordHash(), challenge.expiresAt()));

@@ -36,7 +36,9 @@ public class DatabaseUserDetailsService implements UserDetailsService {
                         new UsernameNotFoundException("Account not found")
                 );
 
-        if (passwordState.explicitlyMissing(user.getId())) throw new UsernameNotFoundException("Account not found");
+        if (passwordState.explicitlyMissing(user.getId())) {
+            throw new UsernameNotFoundException("Account not found");
+        }
 
         AccountRole role = AccountRole.from(user)
                 .orElseThrow(() ->

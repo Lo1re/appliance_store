@@ -65,7 +65,7 @@ class ApplianceControllerTest {
     void opensCreateAndEditWithManufacturerOptions() throws Exception {
         when(lookups.manufacturers(eq(""), any())).thenReturn(java.util.List.of());
         var product = new ApplianceResponse();
-        product.setName("Claw");
+        product.setName("Samsung Galaxy S10");
         product.setManufacturerId(1L);
         product.setCategory(Category.BIG);
         product.setPowerType(PowerType.AC220);
@@ -118,6 +118,22 @@ class ApplianceControllerTest {
         mvc.perform(post("/appliances/8/delete"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(view().name("error/catalog"));
+    }
+
+    @Test
+    void productDetailsExposeTheDtoAndRoleBasedManagementActions() throws Exception {
+        var product = new ApplianceResponse();
+        product.setId(7L);
+        product.setName("Laptop");
+        when(service.findById(7L)).thenReturn(product);
+        mvc.perform(get("/appliances/7").param("lang", "uk"))
+                .andExpect(view().name("appliance/details"))
+                .andExpect(model().attribute("appliance", product))
+                .andExpect(model().attribute("canManage", false));
+        mvc.perform(get("/appliances/7").with(request -> {
+            request.addUserRole("EMPLOYEE");
+            return request;
+        })).andExpect(model().attribute("canManage", true));
     }
 
     private MockHttpServletRequestBuilder product(String path) {

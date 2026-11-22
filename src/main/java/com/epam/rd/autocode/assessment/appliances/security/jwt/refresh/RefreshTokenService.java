@@ -65,7 +65,9 @@ public class RefreshTokenService {
             var role = AccountRole.from(user).orElseThrow(InvalidRefreshTokenException::new);
             var supported = authentication.getAuthorities().stream().map(authority -> authority.getAuthority())
                     .filter(authority -> authority.equals(AccountRole.CLIENT.authority()) || authority.equals(AccountRole.EMPLOYEE.authority())).toList();
-            if (supported.size() != 1 || !supported.get(0).equals(role.authority())) throw new InvalidRefreshTokenException();
+            if (supported.size() != 1 || !supported.get(0).equals(role.authority())) {
+                throw new InvalidRefreshTokenException();
+            }
             if (prior != null) revokeChain(tokens.findByTokenHash(prior).orElse(null), clock.instant());
             var created = create(user, clock.instant());
             return created.pair();
@@ -80,17 +82,25 @@ public class RefreshTokenService {
         catch (InvalidRefreshTokenException invalid) { log.warn("Refresh credential rejected"); throw invalid; }
         Rotation result = inTransaction(status -> {
             Long owner = tokens.findOwnerByHash(hash).orElse(null);
-            if (owner == null || users.lockIdentity(owner).isEmpty()) return null;
+            if (owner == null || users.lockIdentity(owner).isEmpty()) {
+                return null;
+            }
             var token = tokens.findByTokenHash(hash).orElse(null);
-            if (token == null) return null;
+            if (token == null) {
+                return null;
+            }
             Instant now = clock.instant();
             if (token.getRevokedAt() != null) {
                 int count = tokens.revokeAll(owner, now);
                 return new Rotation(null, owner, count); // Return, commit, then report the authentication failure.
             }
-            if (token.expiredAt(now)) return null;
+            if (token.expiredAt(now)) {
+                return null;
+            }
             var user = users.findById(owner).orElse(null);
-            if (user == null || AccountRole.from(user).isEmpty()) return null;
+            if (user == null || AccountRole.from(user).isEmpty()) {
+                return null;
+            }
             var next = create(user, now);
             token.replace(now, next.id());
             return new Rotation(next.pair(), owner, 0);
@@ -109,7 +119,9 @@ public class RefreshTokenService {
         try { hash = codec.hash(raw); } catch (InvalidRefreshTokenException invalid) { return; }
         Long revokedOwner = inTransaction(status -> {
             Long owner = tokens.findOwnerByHash(hash).orElse(null);
-            if (owner == null || users.lockIdentity(owner).isEmpty()) return null;
+            if (owner == null || users.lockIdentity(owner).isEmpty()) {
+                return null;
+            }
             revokeChain(tokens.findByTokenHash(hash).orElse(null), clock.instant());
             return owner;
         });

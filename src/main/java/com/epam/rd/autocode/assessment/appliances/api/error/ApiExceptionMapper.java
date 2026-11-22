@@ -4,6 +4,7 @@ import com.epam.rd.autocode.assessment.appliances.exception.BusinessException;
 import com.epam.rd.autocode.assessment.appliances.logging.SafeFailure;
 import com.epam.rd.autocode.assessment.appliances.security.jwt.api.PasswordLoginLockedException;
 import com.epam.rd.autocode.assessment.appliances.security.jwt.refresh.InvalidRefreshTokenException;
+import com.epam.rd.autocode.assessment.appliances.web.error.BusinessErrorStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.util.LinkedHashMap;
@@ -39,11 +40,7 @@ public class ApiExceptionMapper {
         String code; String key;
         var headers = new HttpHeaders();
         if (failure instanceof BusinessException business) {
-            status = switch (business.error().kind()) {
-                case NOT_FOUND -> HttpStatus.NOT_FOUND;
-                case VALIDATION -> HttpStatus.BAD_REQUEST;
-                case CONFLICT, BUSINESS_RULE -> HttpStatus.CONFLICT;
-            };
+            status = BusinessErrorStatus.of(business);
             code = business.error().messageKey(); key = code;
         } else {
             if (failure instanceof LockedException) status = HttpStatus.TOO_MANY_REQUESTS;

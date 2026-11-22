@@ -1,11 +1,18 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<body>
-
-    <footer th:fragment="footer" class="footer fixed-bottom text-center">
-        <div>
-            <span class="text-center">© 2024 EPAM Test project</span>
-        </div>
-    </footer>
-</body>
+    <body>
+        <footer th:fragment="footer" class="store-footer">
+            <div>
+                <strong th:text="#{shop.name}">
+                    Appliance Store
+                </strong>
+                <p th:text="#{ui.footer.description}">
+                    Make room for everyday comfort.
+                </p>
+            </div>
+            <a th:href="@{/}" th:text="#{nav.home}">
+                Home
+            </a>
+        </footer>
+    </body>
 </html>

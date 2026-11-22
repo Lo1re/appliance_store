@@ -1,59 +1,75 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="#{nav.login}">Sign in</title>
-</head>
-<body>
-<header th:insert="~{menunavy :: navy}"></header>
-<main>
-
-
-    <h1 th:text="#{nav.login}">Sign in</h1>
-    <p th:if="${param.registered != null}" role="status" th:text="#{registration.completed}"></p>
-
-    <p th:if="${param.error != null}" role="alert" th:text="#{login.error}">
-        Incorrect username or password.
-    </p>
-
-    <p th:if="${param.logout != null}" role="status" th:text="#{login.logged-out}">
-        You have signed out.
-    </p>
-
-    <p th:if="${param.expired != null}" role="status" th:text="#{login.session-expired}">
-        Your session has ended. Sign in again.
-    </p>
-
-    <p th:if="${param.locked != null}" role="alert" th:text="#{login.locked}">
-        Password sign-in is temporarily unavailable. Try again later.
-    </p>
-
-    <p th:if="${param.passwordChanged != null}" role="status" th:text="#{password.change.completed}">Password changed. Sign in again.</p>
-
-    <p th:if="${param.googleError != null}" role="alert" th:text="#{google.login.error}"></p>
-    <p th:if="${param.googleExpired != null}" role="alert" th:text="#{google.flow.expired}"></p>
-    <p th:if="${param.googleLinkRequired != null}" role="alert" th:text="#{google.link.required}"></p>
-    <a th:if="${googleLoginEnabled}" th:href="@{/oauth2/authorization/google}" th:text="#{google.login}">Sign in with Google</a>
-
-    <form th:action="@{/login}" method="post">
-        <div>
-            <label for="username" th:text="#{login.username}">Email</label>
-            <input id="username"
-                   name="username"
-                   type="email"
-                   autocomplete="username"
-                   required>
-        </div>
-        <div>
-            <label for="password" th:text="#{account.field.password}">Password</label>
-            <input id="password" name="password" type="password"
-                   autocomplete="current-password" required>
-        </div>
-
-        <button type="submit" th:text="#{nav.login}">Sign in</button>
-    </form>
-    <a th:if="${passwordResetEnabled}" th:href="@{/password/forgot}" th:text="#{password.forgot.title}">Forgot password?</a>
-</main>
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <title th:text="#{nav.login}">
+            Sign in
+        </title>
+        <th:block th:replace="~{fragments/assets :: assets}">
+        </th:block>
+    </head>
+    <body>
+        <header th:insert="~{menunavy :: navy}">
+        </header>
+        <main id="main-content" class="auth-page">
+            <h1 th:text="#{nav.login}">
+                Sign in
+            </h1>
+            <p th:if="${param.registered != null}" role="status" th:text="#{registration.completed}">
+            </p>
+            <p th:if="${param.error != null}" role="alert" th:text="#{login.error}">
+                Incorrect username or password.
+            </p>
+            <p th:if="${param.logout != null}" role="status" th:text="#{login.logged-out}">
+                You have signed out.
+            </p>
+            <p th:if="${param.expired != null}" role="status" th:text="#{login.session-expired}">
+                Your session has ended. Sign in again.
+            </p>
+            <p th:if="${param.locked != null}" role="alert" th:text="#{login.locked}">
+                Password sign-in is temporarily unavailable. Try again later.
+            </p>
+            <p th:if="${param.passwordChanged != null}" role="status" th:text="#{password.change.completed}">
+                Password changed. Sign in again.
+            </p>
+            <p th:if="${param.googleError != null}" role="alert" th:text="#{google.login.error}">
+            </p>
+            <p th:if="${param.googleExpired != null}" role="alert" th:text="#{google.flow.expired}">
+            </p>
+            <p th:if="${param.googleLinkRequired != null}" role="alert" th:text="#{google.link.required}">
+            </p>
+            <a class="google-login" th:if="${googleLoginEnabled}" th:href="@{/oauth2/authorization/google}" th:text="#{google.login}">
+                Sign in with Google
+            </a>
+            <form th:action="@{/login}" method="post">
+                <div>
+                    <label for="username" th:text="#{login.username}">
+                        Email
+                    </label>
+                    <input id="username"
+                    name="username"
+                    type="email"
+                    autocomplete="username"
+                    required>
+                </div>
+                <div>
+                    <label for="password" th:text="#{account.field.password}">
+                        Password
+                    </label>
+                    <input th:data-show="#{ui.password.show}" th:data-hide="#{ui.password.hide}" id="password" name="password" type="password"
+                    autocomplete="current-password" required>
+                </div>
+                <button type="submit" th:text="#{nav.login}">
+                    Sign in
+                </button>
+            </form>
+            <a th:if="${passwordResetEnabled}" th:href="@{/password/forgot}" th:text="#{password.forgot.title}">
+                Forgot password?
+            </a>
+            <a th:if="${registrationEnabled}" th:href="@{/register}" th:text="#{registration.title}">
+            </a>
+        </main>
+        <footer th:replace="~{footer :: footer}">
+        </footer>
+    </body>
 </html>

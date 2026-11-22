@@ -64,7 +64,9 @@ public class LookupService {
     }
 
     private List<Long> ids(Collection<Long> values) {
-        if (values == null) return List.of();
+        if (values == null) {
+            return List.of();
+        }
         return values.stream().filter(id -> id != null && id > 0).distinct().toList();
     }
 

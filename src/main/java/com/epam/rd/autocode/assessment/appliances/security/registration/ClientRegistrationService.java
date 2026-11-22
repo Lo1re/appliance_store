@@ -6,11 +6,12 @@ import com.epam.rd.autocode.assessment.appliances.logging.BusinessAction;
 import com.epam.rd.autocode.assessment.appliances.logging.BusinessAudit;
 import com.epam.rd.autocode.assessment.appliances.mail.SecurityNotificationMail;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
+import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceBoundary;
+import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceOperation;
 import com.epam.rd.autocode.assessment.appliances.repository.ClientRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
 import com.epam.rd.autocode.assessment.appliances.security.password.PasswordCredentialStatusService;
-import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceBoundary;
-import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceOperation;
+import com.epam.rd.autocode.assessment.appliances.service.policy.ClientCardPolicy;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -31,8 +32,10 @@ public class ClientRegistrationService {
     @Transactional
     @PersistenceBoundary(PersistenceOperation.ACCOUNT_WRITE)
     public Long register(@NotNull @Valid RegistrationDetails details) {
-        if (users.existsByEmailIgnoreCase(details.email())) throw new AccountException(AccountError.EMAIL_DUPLICATE);
-        if (details.card() != null && clients.existsByCard(details.card())) throw new AccountException(AccountError.CARD_DUPLICATE);
+        if (users.existsByEmailIgnoreCase(details.email())) {
+            throw new AccountException(AccountError.EMAIL_DUPLICATE);
+        }
+        new ClientCardPolicy(clients).requireAvailable(details.card(), null);
         Client client = clients.saveAndFlush(new Client(null, details.name(), details.email(), details.passwordHash(), details.card()));
         passwords.rememberExistingPassword(client.getId());
         audit.record(BusinessAction.CLIENT_CREATED, client.getId());

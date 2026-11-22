@@ -1,6 +1,5 @@
 package com.epam.rd.autocode.assessment.appliances.web.form;
 
-import com.epam.rd.autocode.assessment.appliances.exception.AccountError;
 import com.epam.rd.autocode.assessment.appliances.exception.AccountException;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;

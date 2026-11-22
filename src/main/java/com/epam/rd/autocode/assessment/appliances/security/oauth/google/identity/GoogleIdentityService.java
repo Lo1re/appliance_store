@@ -6,16 +6,15 @@ import com.epam.rd.autocode.assessment.appliances.logging.BusinessAudit;
 import com.epam.rd.autocode.assessment.appliances.mail.SecurityNotificationMail;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
 import com.epam.rd.autocode.assessment.appliances.model.oauth.OAuthIdentity;
+import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceBoundary;
+import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceOperation;
 import com.epam.rd.autocode.assessment.appliances.repository.ClientRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.lock.AccountRowLock;
 import com.epam.rd.autocode.assessment.appliances.repository.oauth.OAuthIdentityRepository;
 import com.epam.rd.autocode.assessment.appliances.security.password.PasswordCredentialStatusService;
 import com.epam.rd.autocode.assessment.appliances.security.password.reset.ResetTokenCodec;
-import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceBoundary;
-import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceOperation;
-import com.epam.rd.autocode.assessment.appliances.exception.AccountError;
-import com.epam.rd.autocode.assessment.appliances.exception.AccountException;
+import com.epam.rd.autocode.assessment.appliances.service.policy.ClientCardPolicy;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.util.Optional;
@@ -52,9 +51,13 @@ public class GoogleIdentityService {
     public Long createProfile(@NotNull VerifiedGoogleIdentity identity, @Valid @NotNull GoogleProfileRequest profile) {
         if (!identity.emailVerified() || !identity.email().equals(profile.getEmail()))
             throw new GoogleLoginException(GoogleLoginException.Reason.INVALID_IDENTITY);
-        if (findAccount(identity.subject()).isPresent()) throw new GoogleLoginException(GoogleLoginException.Reason.LINK_CONFLICT);
-        if (emailTaken(identity.email())) throw new GoogleLoginException(GoogleLoginException.Reason.LINK_REQUIRED);
-        if (profile.getCard() != null && clients.existsByCard(profile.getCard())) throw new AccountException(AccountError.CARD_DUPLICATE);
+        if (findAccount(identity.subject()).isPresent()) {
+            throw new GoogleLoginException(GoogleLoginException.Reason.LINK_CONFLICT);
+        }
+        if (emailTaken(identity.email())) {
+            throw new GoogleLoginException(GoogleLoginException.Reason.LINK_REQUIRED);
+        }
+        new ClientCardPolicy(clients).requireAvailable(profile.getCard(), null);
         // No known default password for externally created users; verified reset can establish one later.
         var client = clients.saveAndFlush(new Client(null, profile.getName(), identity.email(),
                 encoder.encode(secrets.generate() + "!aA1"), profile.getCard()));
@@ -70,7 +73,9 @@ public class GoogleIdentityService {
         accounts.lock(accountId).orElseThrow(() -> new GoogleLoginException(GoogleLoginException.Reason.FLOW_EXPIRED));
         var existing = identities.findByProviderAndSubject("GOOGLE", identity.subject());
         if (existing.isPresent() && existing.orElseThrow().getUserId().equals(accountId)) return;
-        if (existing.isPresent() || linked(accountId)) throw new GoogleLoginException(GoogleLoginException.Reason.LINK_CONFLICT);
+        if (existing.isPresent() || linked(accountId)) {
+            throw new GoogleLoginException(GoogleLoginException.Reason.LINK_CONFLICT);
+        }
         identities.saveAndFlush(new OAuthIdentity(identity.subject(), accountId));
         passwords.rememberExistingPassword(accountId);
         audit.record(BusinessAction.GOOGLE_LINKED, accountId);

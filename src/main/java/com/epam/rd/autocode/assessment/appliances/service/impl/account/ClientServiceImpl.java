@@ -16,6 +16,7 @@ import com.epam.rd.autocode.assessment.appliances.repository.ClientRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.OrdersRepository;
 import com.epam.rd.autocode.assessment.appliances.security.session.RevokesAccountSessions;
 import com.epam.rd.autocode.assessment.appliances.service.ClientService;
+import com.epam.rd.autocode.assessment.appliances.service.policy.ClientCardPolicy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +36,7 @@ public class ClientServiceImpl implements ClientService {
     private final OrdersRepository ordersRepository;
     private final ClientMapper clientMapper;
     private final AccountCredentialsService credentials;
+    private final AccountMutationLocks mutationLocks;
 
     private final BusinessAudit audit;
 
@@ -60,7 +62,7 @@ public class ClientServiceImpl implements ClientService {
     @Loggable
     @PersistenceBoundary(PersistenceOperation.ACCOUNT_WRITE)
     public ClientResponse create(ClientRequest request, PasswordRequest password) {
-        requireAvailableCard(request.getCard(), null);
+        new ClientCardPolicy(clientRepository).requireAvailable(request.getCard(), null);
         var client = new Client();
         clientMapper.applyRequest(request, client);
         credentials.assignEmail(client, request.getEmail());
@@ -76,9 +78,9 @@ public class ClientServiceImpl implements ClientService {
     @Loggable
     @PersistenceBoundary(PersistenceOperation.ACCOUNT_WRITE)
     public ClientResponse update(Long id, ClientRequest request) {
-        credentials.lockAccount(id, AccountError.CLIENT_NOT_FOUND);
+        mutationLocks.lockAccount(id, AccountError.CLIENT_NOT_FOUND);
         Client client = requireClient(id);
-        requireAvailableCard(request.getCard(), id);
+        new ClientCardPolicy(clientRepository).requireAvailable(request.getCard(), id);
         clientMapper.applyRequest(request, client);
         credentials.assignEmail(client, request.getEmail());
         audit.record(BusinessAction.CLIENT_UPDATED, client.getId());
@@ -91,7 +93,7 @@ public class ClientServiceImpl implements ClientService {
     @PersistenceBoundary(PersistenceOperation.CLIENT_DELETE)
     @RevokesAccountSessions
     public void delete(Long id) {
-        credentials.lockAccount(id, AccountError.CLIENT_NOT_FOUND);
+        mutationLocks.lockAccount(id, AccountError.CLIENT_NOT_FOUND);
         Client client = requireClient(id);
 
         if (ordersRepository.existsByClient_Id(id)) {
@@ -100,11 +102,6 @@ public class ClientServiceImpl implements ClientService {
 
         clientRepository.delete(client);
         audit.record(BusinessAction.CLIENT_DELETED, client.getId());
-    }
-
-    private void requireAvailableCard(String card, Long id) {
-        if (card != null && (id == null ? clientRepository.existsByCard(card) : clientRepository.existsByCardAndIdNot(card, id)))
-            throw new AccountException(AccountError.CARD_DUPLICATE);
     }
 
     private Client requireClient(Long id) {

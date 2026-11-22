@@ -40,7 +40,9 @@ public class ApiAuthenticationController {
 
     @GetMapping("/csrf")
     public ResponseEntity<ApiCsrfTokenResponse> csrf(CsrfToken csrf) {
-        if (!transport.cookieMode() || csrf == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        if (!transport.cookieMode() || csrf == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
         return ResponseEntity.ok().header("Cache-Control", "no-store")
                 .body(new ApiCsrfTokenResponse(csrf.getHeaderName(), csrf.getParameterName(), csrf.getToken()));
     }
@@ -70,8 +72,12 @@ public class ApiAuthenticationController {
         return ResponseEntity.noContent().header("Cache-Control", "no-store").build();
     }
     private String presented(RefreshTokenRequest body, HttpServletRequest request) {
-        if (!transport.cookieMode()) return body == null ? null : body.refreshToken();
-        if (body != null) throw new InvalidRefreshTokenException();
+        if (!transport.cookieMode()) {
+            return body == null ? null : body.refreshToken();
+        }
+        if (body != null) {
+            throw new InvalidRefreshTokenException();
+        }
         try { return browserCookies.readRefresh(request); }
         catch (IllegalArgumentException malformed) { throw new InvalidRefreshTokenException(); }
     }

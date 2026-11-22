@@ -52,6 +52,13 @@ public class ApplianceController {
         return LIST;
     }
 
+    @GetMapping("/{id:[0-9]+}")
+    public String details(@PathVariable Long id, HttpServletRequest request, Model model) {
+        model.addAttribute("appliance", applianceService.findById(id));
+        model.addAttribute("canManage", request.isUserInRole("EMPLOYEE"));
+        return "appliance/details";
+    }
+
     @GetMapping({"/add", "/{id}/edit"})
     public String form(
             @PathVariable(name = "id", required = false) Long id,

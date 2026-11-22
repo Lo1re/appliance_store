@@ -21,7 +21,7 @@ class OrdersRepositoryTest {
     @Test
     void detailedOrderFetchesRowsWhereasPagedOrderFetchesOnlyItsSummary() {
         var client = (Client) users.findByEmailIgnoreCase("mercury@gmail.com").orElseThrow();
-        var appliance = appliances.search("Claw", PageRequest.of(0, 1)).getContent().get(0);
+        var appliance = appliances.search("Samsung Galaxy S10", PageRequest.of(0, 1)).getContent().get(0);
         var order = new Orders();
         order.setClient(client);
         order.getOrderRowSet().add(new OrderRow(null, appliance, 1L, appliance.getPrice()));
@@ -38,7 +38,7 @@ class OrdersRepositoryTest {
         var details = orders.findDetailedById(id).orElseThrow();
         assertThat(util.isLoaded(details, "orderRowSet")).isTrue();
         assertThat(details.getOrderRowSet()).singleElement().satisfies(row -> {
-            assertThat(row.getAppliance().getName()).isEqualTo("Claw");
+            assertThat(row.getAppliance().getName()).isEqualTo("Samsung Galaxy S10");
             assertThat(util.isLoaded(row.getAppliance(), "manufacturer")).isTrue();
         });
     }

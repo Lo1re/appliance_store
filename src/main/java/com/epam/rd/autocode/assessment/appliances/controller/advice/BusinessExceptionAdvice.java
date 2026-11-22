@@ -2,6 +2,7 @@ package com.epam.rd.autocode.assessment.appliances.controller.advice;
 
 import com.epam.rd.autocode.assessment.appliances.exception.BusinessException;
 import com.epam.rd.autocode.assessment.appliances.logging.SafeFailure;
+import com.epam.rd.autocode.assessment.appliances.web.error.BusinessErrorStatus;
 import com.epam.rd.autocode.assessment.appliances.web.error.MvcErrorViews;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -19,11 +20,7 @@ import org.springframework.web.servlet.ModelAndView;
 public class BusinessExceptionAdvice {
     @ExceptionHandler(BusinessException.class)
     public ModelAndView handleBusinessError(BusinessException exception, HandlerMethod handler) {
-        HttpStatus status = switch (exception.error().kind()) {
-            case NOT_FOUND -> HttpStatus.NOT_FOUND;
-            case VALIDATION -> HttpStatus.BAD_REQUEST;
-            case CONFLICT, BUSINESS_RULE -> HttpStatus.CONFLICT;
-        };
+        HttpStatus status = BusinessErrorStatus.of(exception);
         return MvcErrorViews.render(status)
                 .addObject("errorMessageKey", exception.error().messageKey())
                 .addObject("returnPath", section(handler).path());

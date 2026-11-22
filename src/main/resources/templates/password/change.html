@@ -1,39 +1,86 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title th:text="${showPasswordChangeForm} ? #{password.change.title} : #{password.setup.title}"></title></head>
-<body><header th:insert="~{menunavy :: navy}"></header>
-<main><h1 th:text="${showPasswordChangeForm} ? #{password.change.title} : #{password.setup.title}"></h1>
-<p th:if="${showPasswordChangeForm}" th:text="#{password.change.description}"></p>
-<p th:if="${showPasswordChangeForm and googleLinked}" th:text="#{password.google.password-hint}"></p>
-<section th:unless="${showPasswordChangeForm}">
-    <p th:if="${passwordStateUnknown}" th:text="#{password.setup.unknown}"></p>
-    <p th:unless="${passwordStateUnknown}" th:text="#{password.setup.first}"></p>
-    <th:block th:if="${passwordResetEnabled}">
-        <p th:text="#{password.setup.destination(${passwordAccountEmail})}"></p>
-        <p th:if="${param.setupSent != null}" role="status" th:text="#{password.setup.sent}"></p>
-        <p th:if="${retryAfterSeconds != null}" role="alert" th:text="#{password.forgot.retry(${retryAfterSeconds})}"></p>
-        <form th:action="@{/password/setup}" method="post">
-            <button type="submit" th:text="#{password.setup.submit}"></button>
-        </form>
-    </th:block>
-    <p th:unless="${passwordResetEnabled}" th:text="#{password.setup.unavailable}"></p>
-    <a th:if="${passwordStateUnknown}" th:href="@{/password/change(mode='change')}" th:text="#{password.setup.existing}"></a>
-</section>
-    <form th:if="${showPasswordChangeForm}" th:action="@{/password/change}" th:object="${passwordForm}" method="post">
-        <ul th:if="${#fields.hasGlobalErrors()}" role="alert">
-            <li th:each="error : ${#fields.globalErrors()}" th:text="${error}"></li>
-        </ul>
-        <div><label for="currentPassword" th:text="#{password.current.label}">Current password</label>
-            <input id="currentPassword" name="currentPassword" type="password" autocomplete="current-password" required>
-            <p th:errors="*{currentPassword}" role="alert"></p></div>
-        <div><label for="newPassword" th:text="#{password.new.label}">New password</label>
-            <input id="newPassword" name="newPassword" type="password" autocomplete="new-password" required>
-            <p th:errors="*{newPassword}" role="alert"></p></div>
-        <div><label for="confirmPassword" th:text="#{password.confirm.label}">Confirm password</label>
-            <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" required>
-            <p th:errors="*{confirmPassword}" role="alert"></p></div>
-        <button type="submit" th:text="#{password.change.submit}">Change password</button>
-        <a th:href="@{/}" th:text="#{form.cancel}">Cancel</a>
-    </form>
-</main></body></html>
+    <head>
+        <meta charset="UTF-8">
+        <title th:text="${showPasswordChangeForm} ? #{password.change.title} : #{password.setup.title}">
+        </title>
+        <th:block th:replace="~{fragments/assets :: assets}">
+        </th:block>
+    </head>
+    <body>
+        <header th:insert="~{menunavy :: navy}">
+        </header>
+        <main id="main-content" class="auth-page">
+            <h1 th:text="${showPasswordChangeForm} ? #{password.change.title} : #{password.setup.title}">
+            </h1>
+            <p th:if="${showPasswordChangeForm}" th:text="#{password.change.description}">
+            </p>
+            <p th:if="${showPasswordChangeForm and googleLinked}" th:text="#{password.google.password-hint}">
+            </p>
+            <section th:unless="${showPasswordChangeForm}">
+                <p th:if="${passwordStateUnknown}" th:text="#{password.setup.unknown}">
+                </p>
+                <p th:unless="${passwordStateUnknown}" th:text="#{password.setup.first}">
+                </p>
+                <th:block th:if="${passwordResetEnabled}">
+                    <p th:text="#{password.setup.destination(${passwordAccountEmail})}">
+                    </p>
+                    <p th:if="${param.setupSent != null}" role="status" th:text="#{password.setup.sent}">
+                    </p>
+                    <p th:data-retry-seconds="${retryAfterSeconds}" th:data-retry-template="#{ui.retry.template}" th:data-retry-ready="#{ui.retry.ready}" th:if="${retryAfterSeconds != null}" role="alert" th:text="#{password.forgot.retry(${retryAfterSeconds})}">
+                    </p>
+                    <form th:action="@{/password/setup}" method="post">
+                        <button type="submit" th:text="#{password.setup.submit}">
+                        </button>
+                    </form>
+                </th:block>
+                <p th:unless="${passwordResetEnabled}" th:text="#{password.setup.unavailable}">
+                </p>
+                <a th:if="${passwordStateUnknown}" th:href="@{/password/change(mode='change')}" th:text="#{password.setup.existing}">
+                </a>
+            </section>
+            <form th:if="${showPasswordChangeForm}" th:action="@{/password/change}" th:object="${passwordForm}" method="post">
+                <ul th:if="${#fields.hasGlobalErrors()}" role="alert">
+                    <li th:each="error : ${#fields.globalErrors()}" th:text="${error}">
+                    </li>
+                </ul>
+                <div>
+                    <label for="currentPassword" th:text="#{password.current.label}">
+                        Current password
+                    </label>
+                    <input th:data-show="#{ui.password.show}" th:data-hide="#{ui.password.hide}" id="currentPassword" name="currentPassword" type="password" autocomplete="current-password" required>
+                    <p th:errors="*{currentPassword}" role="alert">
+                    </p>
+                </div>
+                <div>
+                    <label for="newPassword" th:text="#{password.new.label}">
+                        New password
+                    </label>
+                    <input th:data-show="#{ui.password.show}" th:data-hide="#{ui.password.hide}" id="newPassword" name="newPassword" type="password" autocomplete="new-password" required data-password-rules aria-describedby="password-requirements">
+                    <div id="password-requirements">
+                        <th:block th:replace="~{fragments/password-rules :: rules}">
+                        </th:block>
+                    </div>
+                    <p th:errors="*{newPassword}" role="alert">
+                    </p>
+                </div>
+                <div>
+                    <label for="confirmPassword" th:text="#{password.confirm.label}">
+                        Confirm password
+                    </label>
+                    <input th:data-show="#{ui.password.show}" th:data-hide="#{ui.password.hide}" id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" required>
+                    <p th:errors="*{confirmPassword}" role="alert">
+                    </p>
+                </div>
+                <button type="submit" th:text="#{password.change.submit}">
+                    Change password
+                </button>
+                <a th:href="@{/}" th:text="#{form.cancel}">
+                    Cancel
+                </a>
+            </form>
+        </main>
+        <footer th:replace="~{footer :: footer}">
+        </footer>
+    </body>
+</html>

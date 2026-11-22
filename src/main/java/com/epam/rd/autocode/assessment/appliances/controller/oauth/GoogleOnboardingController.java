@@ -1,6 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.controller.oauth;
 
 import com.epam.rd.autocode.assessment.appliances.dto.oauth.GoogleProfileRequest;
+import com.epam.rd.autocode.assessment.appliances.exception.AccountException;
 import com.epam.rd.autocode.assessment.appliances.logging.SafeFailure;
 import com.epam.rd.autocode.assessment.appliances.security.jwt.cookie.AuthTokenCookies;
 import com.epam.rd.autocode.assessment.appliances.security.jwt.cookie.JwtCookieLifecycle;
@@ -13,7 +14,6 @@ import com.epam.rd.autocode.assessment.appliances.security.oauth.google.identity
 import com.epam.rd.autocode.assessment.appliances.security.oauth.google.identity.GoogleIdentityService;
 import com.epam.rd.autocode.assessment.appliances.security.oauth.google.identity.GoogleLoginException;
 import com.epam.rd.autocode.assessment.appliances.security.oauth.google.identity.VerifiedGoogleIdentity;
-import com.epam.rd.autocode.assessment.appliances.exception.AccountException;
 import com.epam.rd.autocode.assessment.appliances.web.form.AccountFormView;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

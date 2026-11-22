@@ -40,6 +40,7 @@ class JwtCookieIntegrationTest {
     @Autowired ObjectMapper json;
     @Autowired LoginAttemptRepository attempts;
     @Autowired ClientRepository clients;
+    @Autowired com.epam.rd.autocode.assessment.appliances.repository.ApplianceRepository appliances;
     @Autowired JwtEncoder encoder;
     @Autowired JwtProperties properties;
     @BeforeEach void prepare() { attempts.deleteAll(); }
@@ -150,9 +151,27 @@ class JwtCookieIntegrationTest {
         mvc.perform(get("/api/orders").cookie(access)).andExpect(status().isUnauthorized());
     }
 
+    @Test
+    void clientCanReadLocalizedProductDetailsAndLocalAssetsButCannotManageCatalog() throws Exception {
+        var access = login("mercury@gmail.com", "MercuryLocal2026!");
+        var product = appliances.findAll().get(0);
+        mvc.perform(get("/appliances/" + product.getId()).param("lang", "uk").cookie(access))
+                .andExpect(status().isOk())
+                .andExpect(view().name("appliance/details"))
+                .andExpect(content().string(containsString("product-detail")))
+                .andExpect(content().string(not(containsString(access.getValue()))));
+        mvc.perform(get("/appliances/add").cookie(access)).andExpect(status().isForbidden());
+        mvc.perform(get("/appliances/" + product.getId() + "/edit").cookie(access))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/images/catalog/apple-macbook-pro-14/1.webp")).andExpect(status().isOk());
+        mvc.perform(get("/images/catalog/apple-iphone-13-pro/1.webp")).andExpect(status().isOk());
+        mvc.perform(get("/css/store-components.css")).andExpect(status().isOk());
+    }
+
     private Cookie login(String email, String password) throws Exception {
         var page = mvc.perform(get("/login")).andExpect(status().isOk())
-                .andExpect(content().string(not(containsString("<script")))).andReturn();
+                .andExpect(content().string(not(containsString("localStorage"))))
+                .andExpect(content().string(not(containsString("document.cookie")))).andReturn();
         assertThat(page.getRequest().getSession(false)).isNull();
         var response = mvc.perform(post("/login").cookie(page.getResponse().getCookie("STORE-CSRF"))
                         .param("_csrf", csrf(page)).param("username", email).param("password", password))

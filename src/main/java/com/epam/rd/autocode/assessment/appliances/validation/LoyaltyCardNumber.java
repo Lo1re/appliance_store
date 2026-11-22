@@ -4,7 +4,9 @@ package com.epam.rd.autocode.assessment.appliances.validation;
 public final class LoyaltyCardNumber {
     private LoyaltyCardNumber() { }
     public static String normalize(String value) {
-        if (value == null || value.isBlank()) return null;
+        if (value == null || value.isBlank()) {
+            return null;
+        }
         return value.strip();
     }
 }

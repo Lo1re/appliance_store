@@ -19,7 +19,7 @@ class OrderRowRepositoryTest {
 
     @Test
     void tracksWhetherAnApplianceAppearsInAnOrder() {
-        var appliance = appliances.search("Claw", PageRequest.of(0, 1)).getContent().get(0);
+        var appliance = appliances.search("Samsung Galaxy S10", PageRequest.of(0, 1)).getContent().get(0);
         var client = (Client) users.findByEmailIgnoreCase("mercury@gmail.com").orElseThrow();
         assertThat(rows.existsByAppliance_Id(appliance.getId())).isFalse();
 

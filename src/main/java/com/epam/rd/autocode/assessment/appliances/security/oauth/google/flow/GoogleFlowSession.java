@@ -80,8 +80,12 @@ public class GoogleFlowSession {
     }
     public Optional<LinkIntent> link(HttpServletRequest request) {
         var session = request.getSession(false);
-        if (session == null || session.getAttribute(LINK) == null) return Optional.empty();
-        if (session.getAttribute(LINK) instanceof LinkIntent intent && intent.until().isAfter(clock.instant())) return Optional.of(intent);
+        if (session == null || session.getAttribute(LINK) == null) {
+            return Optional.empty();
+        }
+        if (session.getAttribute(LINK) instanceof LinkIntent intent && intent.until().isAfter(clock.instant())) {
+            return Optional.of(intent);
+        }
         throw expired();
     }
     public void finish(HttpServletRequest request, HttpServletResponse response) {

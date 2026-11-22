@@ -66,7 +66,9 @@ public class PasswordChangeController {
             Locale locale, RedirectAttributes redirects) {
         response.setHeader("Cache-Control", "no-store");
         var reset = recovery.getIfAvailable();
-        if (reset == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        if (reset == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
         try {
             long retry = reset.request(actor.requireUser().getEmail(), request.getRemoteAddr(), locale);
             if (retry > 0) {
@@ -89,7 +91,9 @@ public class PasswordChangeController {
         try {
             passwords.change(form);
         } catch (PasswordChangeException rejected) {
-            if (rejected.error() == PasswordChangeError.NOT_SET) return "redirect:/password/change";
+            if (rejected.error() == PasswordChangeError.NOT_SET) {
+                return "redirect:/password/change";
+            }
             String field = rejected.error() == PasswordChangeError.CURRENT_INVALID ? "currentPassword" : "newPassword";
             errors.rejectValue(field, rejected.error().messageKey()); response.setStatus(400); return PAGE;
         } catch (LockedException locked) {

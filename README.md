@@ -954,3 +954,133 @@ HttpOnly/SameSite cookies, logout, signup/reset emails, and Google login/linking
 The ordinary test profile explicitly disables TLS and redirect and never needs a
 personal SSL password; dedicated HttpsWebIntegrationTest generates a temporary test
 certificate and runs real HTTPS with isolated H2 and no Docker or personal DB.
+
+
+## Store UI and refactoring — 22 November 2026
+
+All current browser flows use a shared responsive Thymeleaf interface: home, catalog,
+product specifications, manufacturers, orders and their editor/approval, client and employee
+management, local/Google sign-in, registration verification, password setup/change/reset,
+renewal and HTTP errors. The layout uses local CSS, JavaScript and SVG illustrations;
+there is no runtime CDN dependency or cloud photo integration. Illustrations are placeholders,
+not photographs of the listed products. Product prices retain the existing application format.
+
+The numeric `GET /appliances/{id}` product-details route is available to CLIENT and EMPLOYEE.
+Add/edit/delete routes remain employee-only. The new view reads through ApplianceService;
+it does not expose entities or credential data. Existing POST actions and Thymeleaf CSRF
+handling remain in place. No migrations or data changes were needed.
+
+Presentation is divided into shared assets/navigation/footer/password-rule fragments,
+layout/component/page CSS and focused scripts for navigation, submission feedback,
+password visibility/guidance, cooldown display, lookups and order rows. The countdown uses
+the server-provided remaining interval; the server remains authoritative. Successful form
+controls are not disabled before submission; duplicate POST submissions are guarded in the UI.
+
+Refactoring extracts ClientCardPolicy for the same optional-card uniqueness rule in account
+management, ordinary registration and Google onboarding. It retains the existing repository
+and transaction boundaries and database constraint for concurrent writes. Constructors and
+existing unit-test fixtures remain compatible. OrderFormView owns Thymeleaf model metadata;
+OrdersController handles HTTP flow and OrderFormAssembler prepares domain-backed form data.
+Controller/service source imports were audited for persistence and servlet/UI dependencies.
+
+Validation in this block: Java compilation succeeded with `-Dmaven.test.skip=true compile`;
+all seven JavaScript files passed `node --check`; a source audit checked 40 templates for
+balanced markup/duplicate attributes, shared fragment paths and UK/EN interface keys.
+Tests, containers, coverage and application/browser acceptance were NOT run, as requested.
+The older coverage result is not a new coverage result for these changes. Restart the local
+application and reload without the browser cache to see the interface. Final regression,
+browser acceptance and updated coverage remain the next verification step.
+
+
+## Backend refactoring and regression — 22 November 2026
+
+The source inventory covers 275 Java compilation units. Structural checks found no controller
+imports of repositories/JDBC/EntityManager, no servlet/UI dependencies in service classes,
+no web dependencies in entity models, no sensitive automatic Lombok toString declarations,
+and no cycles in the concrete final-field dependency graph. These are structural checks,
+not proof that every class has exactly one responsibility or that deployment is risk-free.
+
+AccountMutationLocks now owns account mutation locks, separated from AccountCredentialsService.
+OpaqueTokens shares 256-bit generation, canonical Base64URL validation and SHA-256 fingerprinting;
+ResetTokenCodec and RefreshTokenCodec retain their distinct public validation/error contracts.
+BusinessErrorStatus defines the shared domain-error-to-HTTP mapping for MVC/API adapters.
+PasswordReplacementEffects completes password replacement under MANDATORY transaction propagation:
+credential state, access-version revocation, refresh/reset revocation, login-attempt clearing and
+password-change events are performed in the caller's account-locked transaction. Existing
+after-commit local mail delivery remains in place. Source cleanup removed unused/duplicate imports
+and expanded simple one-line guards; no migrations or personal database changes were performed.
+
+Product images are stored locally in src/main/resources/static/images/products. Seven original SVG
+illustrations cover laptops, phones, washers, refrigerators, microwaves, coffee makers and vacuums.
+ProductIllustrations selects only fixed bundled paths from display text, with category fallbacks;
+it never turns a product name into an arbitrary file path or URL. These are illustrations, not
+photographs of specific models. Cloud image storage is not part of the current agreed solution.
+
+The user explicitly authorized test execution after the earlier no-tests block. The final full
+`verify -Pcontainer-tests` run executed 551 Surefire tests and 8 PostgreSQL Failsafe tests:
+zero failures, errors or skips. Docker Desktop was started after the first container attempt found
+no engine. Temporary test containers were cleaned up; local Mailpit remains healthy.
+Tests cover real HTTPS transport, authentication/cookies/CSRF, password lifecycle/rollback,
+registration, concurrency, product details with language parameters, role restrictions and local
+static assets. Decorative JavaScript is allowed in login/renew pages; their MockMvc flows still
+authenticate without executing JavaScript and do not use localStorage/document.cookie.
+
+The 60 classes in the service/controller/registration coverage scope have zero missed LINE,
+BRANCH and METHOD counters. The overall verify is still RED solely at the unchanged global
+JaCoCo gate: 107 missed lines and 216 missed branches across the whole application. No threshold
+or exclusion was weakened. Thus all executed functional tests pass, but the full build must not
+be advertised as green or the project as fully production-ready. No real Google login or manual
+browser visual acceptance was performed in this block. No commits/staging or .idea access.
+
+
+## Coverage completion — 22 November 2026
+
+A fresh `clean verify -Pcontainer-tests` completed with BUILD SUCCESS: 618 Surefire tests
+and 8 PostgreSQL Failsafe tests, zero failures/errors/skips. The fresh JaCoCo XML contains
+zero missed lines and zero missed branches (2912 covered lines,
+1296 covered branches). The existing global and per-class coverage gates pass.
+No JaCoCo thresholds, exclusions or build profiles were relaxed. The pre-existing model exclusion
+remains the original scope; the result is 100% LINE/BRANCH within that unchanged report scope.
+
+Focused tests exercise invalid JWT/OAuth configuration, cookie ambiguity and size/context rules,
+malformed/expired claims and identities, OAuth state/link/verification lifetimes, counter/cleanup
+storage failures, rate-limit expiry and bounded capacity, database constraint translation,
+safe logging/redaction, mapper null/association contracts, API fallback/write failures,
+password confirmation and production HSTS response headers. Provider interactions are mocked;
+this does not claim a fresh real Google browser login or production deployment acceptance.
+
+Two implementation simplifications preserve behavior: JWT subject validation requires a strictly
+positive long whose canonical decimal form equals the supplied subject; an equivalence regression
+compares it against the previous regex+numeric rule over boundary cases and 2,000 deterministic
+generated inputs. Mail notification selection uses an exhaustive switch expression and still runs
+inside the background delivery task. Opaque-token byte-length validation remains intact, with
+decoder/digest failure injection used to verify fail-closed behavior. Entity fields, associations,
+constructors and the database schema were not changed in this coverage block.
+
+No commits/staging, .idea access or external SMTP delivery. Temporary PostgreSQL containers are
+managed by Testcontainers. Local image storage and Mailpit remain the agreed project choices.
+
+
+## Electronics demo catalog — 22 November 2026
+
+The demo repeatable Flyway seed now provides 20 electronics products with descriptions,
+illustrative UAH prices and 53 locally stored product photographs (about 2.5 MB).
+Source URLs and SHA256 checksums are recorded in `docs/catalog-image-sources.json`.
+Photographs come from DummyJSON demo products; prices/configurations are demonstration
+data, not current retail offers. No runtime cloud image dependency is required.
+
+The seed upgrades only completely untouched legacy placeholders while preserving IDs,
+order references and historical order-row amounts. Owner-edited fields are preserved.
+Repeated execution does not duplicate manufacturer/model catalog entries. No schema
+migration or account credential change was introduced in this catalog block.
+
+The home page and catalog share product cards; product details offer a local photo gallery.
+Unknown models receive a neutral fallback. Obsolete appliance SVG placeholders were removed.
+
+Fresh `clean verify -Pcontainer-tests`: BUILD SUCCESS, 634 Surefire + 8 PostgreSQL Failsafe
+tests, zero failures/errors/skips. JaCoCo reports 2924 covered lines and 1294 covered branches,
+with zero missed counters and unchanged coverage gates/exclusions.
+Home/catalog/gallery were visually checked in an isolated temporary H2 application, then stopped.
+The user's normal PostgreSQL application was unavailable during this verification; its demo
+catalog update is applied by Flyway on the next normal application Run.
+No commits, staging, .idea access or external SMTP delivery.

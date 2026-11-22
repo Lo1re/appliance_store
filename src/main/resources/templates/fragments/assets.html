@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <th:block th:fragment="assets">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <meta name="color-scheme" content="light">
+            <link rel="icon" type="image/svg+xml" th:href="@{/images/store-icon.svg}">
+            <link rel="stylesheet" th:href="@{/css/main.css(v='20261122-3')}">
+            <script th:src="@{/js/navigation.js}" defer>
+            </script>
+            <script th:src="@{/js/form-feedback.js}" defer>
+            </script>
+            <script th:src="@{/js/password-visibility.js}" defer>
+            </script>
+            <script th:src="@{/js/password-rules.js}" defer>
+            </script>
+            <script th:src="@{/js/retry-countdown.js}" defer>
+            </script>
+        </th:block>
+    </head>
+</html>

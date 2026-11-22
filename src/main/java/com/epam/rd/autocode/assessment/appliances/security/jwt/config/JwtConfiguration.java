@@ -31,7 +31,9 @@ public class JwtConfiguration {
         byte[] key;
         try { key = Base64.getDecoder().decode(properties.getSecretBase64()); }
         catch (RuntimeException invalid) { throw new IllegalArgumentException("Configure a Base64 JWT key of at least 32 random bytes"); }
-        if (key.length < 32) throw new IllegalArgumentException("JWT signing key requires at least 32 random bytes");
+        if (key.length < 32) {
+            throw new IllegalArgumentException("JWT signing key requires at least 32 random bytes");
+        }
         if (properties.getIssuer() == null || properties.getIssuer().isBlank()
                 || properties.getAudience() == null || properties.getAudience().isBlank()
                 || properties.getTtl() == null || properties.getTtl().compareTo(Duration.ofSeconds(1)) < 0

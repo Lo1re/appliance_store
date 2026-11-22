@@ -1,7 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.security.jwt.config;
 
-import com.epam.rd.autocode.assessment.appliances.security.config.WebSecurityHeaders;
 import com.epam.rd.autocode.assessment.appliances.security.authorization.WebAccessRules;
+import com.epam.rd.autocode.assessment.appliances.security.config.WebSecurityHeaders;
 import com.epam.rd.autocode.assessment.appliances.security.identity.CurrentActor;
 import com.epam.rd.autocode.assessment.appliances.security.jwt.access.AccessTokenAuthenticationConverter;
 import com.epam.rd.autocode.assessment.appliances.security.jwt.cookie.AuthTokenCookies;

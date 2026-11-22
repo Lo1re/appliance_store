@@ -27,13 +27,17 @@ public class InMemoryAccountUserDetailsService implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) {
-        if (username == null || username.isBlank()) throw missing();
+        if (username == null || username.isBlank()) {
+            throw missing();
+        }
         String email = EmailAddress.normalize(username);
         UserDetails configured = credentials.loadUserByUsername(email);
         var account = users.findByEmailIgnoreCase(email).orElseThrow(this::missing);
         AccountRole role = AccountRole.from(account).orElseThrow(this::missing);
         AccountRole expected = expectedRoles.get(email);
-        if (expected != null && expected != role) throw missing();
+        if (expected != null && expected != role) {
+            throw missing();
+        }
         return new StorePrincipal(account.getId(), account.getEmail(), configured.getPassword(), role);
     }
 

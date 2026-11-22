@@ -21,7 +21,9 @@ public class ListPageFactory {
     public ListPage create(int page, Integer requestedSize, String requestedSort,
                            Set<String> allowedSorts, String defaultSort) {
         int size = requestedSize == null ? defaultPageSize : requestedSize;
-        if (size < 1 || size > 100) throw new IllegalArgumentException("Page size must be between 1 and 100");
+        if (size < 1 || size > 100) {
+            throw new IllegalArgumentException("Page size must be between 1 and 100");
+        }
         String sort = requestedSort != null && allowedSorts.contains(requestedSort) ? requestedSort : defaultSort;
         Sort ordering = Sort.by(sort);
         if (!"id".equals(sort)) ordering = ordering.and(Sort.by("id"));

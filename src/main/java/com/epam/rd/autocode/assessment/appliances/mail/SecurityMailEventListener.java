@@ -32,10 +32,11 @@ public class SecurityMailEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void deliverNotification(SecurityNotificationMail mail) {
         enqueue(() -> {
-            switch (mail.kind()) {
-                case ACCOUNT_CREATED -> sender.sendAccountCreated(mail.recipient(), mail.locale());
-                case PASSWORD_CHANGED -> sender.sendPasswordChanged(mail.recipient(), mail.locale());
-            }
+            Runnable delivery = switch (mail.kind()) {
+                case ACCOUNT_CREATED -> () -> sender.sendAccountCreated(mail.recipient(), mail.locale());
+                case PASSWORD_CHANGED -> () -> sender.sendPasswordChanged(mail.recipient(), mail.locale());
+            };
+            delivery.run();
         });
     }
 

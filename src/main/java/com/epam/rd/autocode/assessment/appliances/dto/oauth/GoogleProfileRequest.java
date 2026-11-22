@@ -1,10 +1,10 @@
 package com.epam.rd.autocode.assessment.appliances.dto.oauth;
 
 import com.epam.rd.autocode.assessment.appliances.validation.EmailAddress;
+import com.epam.rd.autocode.assessment.appliances.validation.LoyaltyCardNumber;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import com.epam.rd.autocode.assessment.appliances.validation.LoyaltyCardNumber;
 import lombok.Getter;
 
 @Getter

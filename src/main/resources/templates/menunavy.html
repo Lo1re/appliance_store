@@ -1,37 +1,100 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<body>
-<div th:fragment="navy">
-<nav
-     th:aria-label="#{nav.main}"
-     class="d-flex flex-wrap align-items-center gap-3 border-bottom p-3">
-
-    <a th:href="@{/}" th:text="#{shop.name}" class="fw-bold">Appliance Store</a>
-
-    <th:block th:if="${navigation.signedIn()}">
-        <a th:href="@{/appliances}" th:text="#{appliance.header.list}">Products</a>
-        <a th:href="@{/manufacturers}" th:text="#{manufacturer.header.list}">Manufacturers</a>
-        <a th:href="@{/orders}" th:text="#{order.header.list}">Orders</a>
-
-        <th:block th:if="${navigation.employee()}">
-            <a th:href="@{/clients}" th:text="#{client.header.list}">Clients</a>
-            <a th:href="@{/employees}" th:text="#{employee.header.list}">Employees</a>
-        </th:block>
-
-        <a th:if="${passwordChangeEnabled}" th:href="@{/password/change}" th:text="#{password.settings.title}">Change password</a>
-
-        <a th:if="${googleLoginEnabled}" th:href="@{/account/google}" th:text="#{google.account.title}">Google account</a>
-
-        <form th:action="@{/logout}" method="post" class="m-0">
-            <button type="submit" th:text="#{nav.logout}">Sign out</button>
-        </form>
-    </th:block>
-
-    <a th:unless="${navigation.signedIn()}"
-       th:href="@{/login}" th:text="#{nav.login}">Sign in</a>
-    <a th:if="${registrationEnabled and !navigation.signedIn()}" th:href="@{/register}" th:text="#{registration.title}">Create client account</a>
-</nav>
-<nav th:replace="~{fragments/language :: links}"></nav>
-</div>
-</body>
+    <body>
+        <div th:fragment="navy" class="store-header">
+            <a class="skip-link" href="#main-content" th:text="#{ui.skip}">
+                Skip to content
+            </a>
+            <div class="header-top">
+                <span th:text="#{ui.tagline}">
+                    Everything for your home
+                </span>
+                <nav th:replace="~{fragments/language :: links}">
+                </nav>
+            </div>
+            <div class="header-main">
+                <a class="brand" th:href="@{/}">
+                    <span class="brand-mark" aria-hidden="true">
+                        a
+                        <span>
+                            •
+                        </span>
+                    </span>
+                    <span th:text="#{shop.name}">
+                        Appliance Store
+                    </span>
+                </a>
+                <form th:if="${navigation.signedIn()}" class="header-search" th:action="@{/appliances}" method="get" role="search">
+                    <label class="sr-only" for="header-search" th:text="#{list.search}">
+                        Search
+                    </label>
+                    <input id="header-search" name="search" type="search" maxlength="100" th:placeholder="#{ui.search.placeholder}">
+                    <button type="submit" th:text="#{list.search}">
+                        Search
+                    </button>
+                </form>
+                <div class="header-account">
+                    <a th:unless="${navigation.signedIn()}" class="header-signin" th:href="@{/login}" th:text="#{nav.login}">
+                        Sign in
+                    </a>
+                    <a th:if="${registrationEnabled and !navigation.signedIn()}" class="header-register" th:href="@{/register}" th:text="#{registration.title}">
+                        Register
+                    </a>
+                    <details th:if="${navigation.signedIn()}" class="account-menu">
+                        <summary th:text="#{ui.account}">
+                            My account
+                        </summary>
+                        <div class="account-panel">
+                            <span class="account-role" th:text="${navigation.employee()} ? #{ui.role.employee} : #{ui.role.client}">
+                            </span>
+                            <a th:href="@{/orders}" th:text="#{order.header.list}">
+                                Orders
+                            </a>
+                            <a th:if="${passwordChangeEnabled}" th:href="@{/password/change}" th:text="#{password.settings.title}">
+                            </a>
+                            <a th:if="${googleLoginEnabled}" th:href="@{/account/google}" th:text="#{google.account.title}">
+                            </a>
+                            <form th:action="@{/logout}" method="post">
+                                <button class="button-quiet" type="submit" th:text="#{nav.logout}">
+                                    Sign out
+                                </button>
+                            </form>
+                        </div>
+                    </details>
+                </div>
+            </div>
+            <nav class="store-nav" th:aria-label="#{nav.main}">
+                <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="store-nav-links" th:text="#{ui.menu}">
+                    Menu
+                </button>
+                <div id="store-nav-links" class="nav-links">
+                    <a th:href="@{/}" th:text="#{nav.home}">
+                        Home
+                    </a>
+                    <th:block th:if="${navigation.signedIn()}">
+                        <a th:href="@{/appliances}" th:text="#{appliance.header.list}">
+                            Products
+                        </a>
+                        <a th:href="@{/manufacturers}" th:text="#{manufacturer.header.list}">
+                            Manufacturers
+                        </a>
+                        <a th:href="@{/orders}" th:text="#{order.header.list}">
+                            Orders
+                        </a>
+                        <th:block th:if="${navigation.employee()}">
+                            <a th:href="@{/clients}" th:text="#{client.header.list}">
+                                Clients
+                            </a>
+                            <a th:href="@{/employees}" th:text="#{employee.header.list}">
+                                Employees
+                            </a>
+                        </th:block>
+                    </th:block>
+                </div>
+                <span class="nav-caption" th:text="#{ui.nav.caption}">
+                    Choose. Order. Enjoy.
+                </span>
+            </nav>
+        </div>
+    </body>
 </html>

@@ -16,7 +16,9 @@ public class LoginAttemptPolicy {
     }
 
     public LoginAttempt failed(String email, LoginAttempt current, Instant now) {
-        if (current != null && locked(current, now)) return current;
+        if (current != null && locked(current, now)) {
+            return current;
+        }
         if (current == null) {
             current = new LoginAttempt(email, 0, now, null);
         } else if (current.getLockedUntil() != null

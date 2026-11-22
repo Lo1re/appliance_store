@@ -1,19 +1,48 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="referrer" content="no-referrer"><title th:text="#{password.reset.title}"></title></head>
-<body><header th:insert="~{menunavy :: navy}"></header><main>
-<h1 th:text="#{password.reset.title}">Reset password</h1>
-<form th:action="@{/password/reset}" th:object="${resetForm}" method="post">
-<p th:each="error : ${#fields.globalErrors()}" th:text="${error}" role="alert"></p>
-<input name="token" type="hidden" th:value="*{token}">
-<p th:errors="*{token}" role="alert"></p>
-<label for="newPassword" th:text="#{password.new.label}">New password</label>
-<input id="newPassword" name="newPassword" type="password" autocomplete="new-password" required>
-<p th:errors="*{newPassword}" role="alert"></p>
-<label for="confirmPassword" th:text="#{password.confirm.label}">Confirm password</label>
-<input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" required>
-<p th:errors="*{confirmPassword}" role="alert"></p>
-<button type="submit" th:text="#{password.reset.submit}">Save password</button>
-</form>
-</main></body></html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="referrer" content="no-referrer">
+        <title th:text="#{password.reset.title}">
+        </title>
+        <th:block th:replace="~{fragments/assets :: assets}">
+        </th:block>
+    </head>
+    <body>
+        <header th:insert="~{menunavy :: navy}">
+        </header>
+        <main id="main-content" class="auth-page">
+            <h1 th:text="#{password.reset.title}">
+                Reset password
+            </h1>
+            <form th:action="@{/password/reset}" th:object="${resetForm}" method="post">
+                <p th:each="error : ${#fields.globalErrors()}" th:text="${error}" role="alert">
+                </p>
+                <input name="token" type="hidden" th:value="*{token}">
+                <p th:errors="*{token}" role="alert">
+                </p>
+                <label for="newPassword" th:text="#{password.new.label}">
+                    New password
+                </label>
+                <input th:data-show="#{ui.password.show}" th:data-hide="#{ui.password.hide}" id="newPassword" name="newPassword" type="password" autocomplete="new-password" required data-password-rules aria-describedby="password-requirements">
+                <div id="password-requirements">
+                    <th:block th:replace="~{fragments/password-rules :: rules}">
+                    </th:block>
+                </div>
+                <p th:errors="*{newPassword}" role="alert">
+                </p>
+                <label for="confirmPassword" th:text="#{password.confirm.label}">
+                    Confirm password
+                </label>
+                <input th:data-show="#{ui.password.show}" th:data-hide="#{ui.password.hide}" id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" required>
+                <p th:errors="*{confirmPassword}" role="alert">
+                </p>
+                <button type="submit" th:text="#{password.reset.submit}">
+                    Save password
+                </button>
+            </form>
+        </main>
+        <footer th:replace="~{footer :: footer}">
+        </footer>
+    </body>
+</html>

@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 class EmployeeServiceImplTest {
     @Mock private BusinessAudit audit;
     @Mock private AccountCredentialsService credentials;
+    @Mock private AccountMutationLocks mutationLocks;
     @Mock private EmployeeRepository repository;
     @Mock private OrdersRepository dependencies;
     @Mock private CurrentActor currentActor;

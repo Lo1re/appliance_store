@@ -47,7 +47,7 @@ class OrderReferencesIntegrationTest {
     void protectsEntitiesReferencedByAnOrder() {
         Client client = (Client) users.findByEmailIgnoreCase("venus@gmail.com").orElseThrow();
         Employee employee = (Employee) users.findByEmailIgnoreCase("phobos@gmail.com").orElseThrow();
-        Appliance appliance = applianceRepository.search("Claw", PAGE).getContent().get(0);
+        Appliance appliance = applianceRepository.search("Samsung Galaxy S10", PAGE).getContent().get(0);
 
         Orders order = new Orders();
         order.setClient(client);

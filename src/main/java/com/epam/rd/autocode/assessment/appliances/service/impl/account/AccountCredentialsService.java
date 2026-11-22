@@ -4,7 +4,6 @@ import com.epam.rd.autocode.assessment.appliances.exception.AccountError;
 import com.epam.rd.autocode.assessment.appliances.exception.AccountException;
 import com.epam.rd.autocode.assessment.appliances.model.User;
 import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
-import com.epam.rd.autocode.assessment.appliances.repository.lock.AccountRowLock;
 import com.epam.rd.autocode.assessment.appliances.validation.EmailAddress;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,15 +14,6 @@ import org.springframework.stereotype.Component;
 public class AccountCredentialsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AccountRowLock accounts;
-
-    void lockEmployeeAccounts() {
-        accounts.lockEmployeeAccounts();
-    }
-
-    void lockAccount(Long id, AccountError missing) {
-        accounts.lock(id).orElseThrow(() -> new AccountException(missing));
-    }
 
     void assignEmail(User user, String email) {
         String normalized = EmailAddress.normalize(email);

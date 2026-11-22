@@ -1,66 +1,101 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}"
-      th:with="summary=${order.summary()}">
-<head>
-    <meta charset="UTF-8">
-    <title th:text="#{order.header.details}">Order details</title>
-</head>
-<body>
-<header th:insert="~{menunavy :: navy}"></header>
-<main>
-    <a th:href="@{/orders}" th:text="#{order.header.list}">Orders</a>
-    <h1 th:text="|#{order.header.details} #${summary.id()}|">Order details</h1>
-
-    <dl>
-        <dt th:text="#{order.field.client}">Client</dt>
-        <dd th:text="${summary.clientName()}"></dd>
-        <dt th:text="#{order.field.employee}">Employee</dt>
-        <dd th:text="${summary.employeeName() != null ? summary.employeeName() : '—'}"></dd>
-        <dt th:text="#{order.field.status}">Status</dt>
-        <dd th:text="${summary.approved()} ? #{order.status.approved} : #{order.status.pending}">
-            Pending
-        </dd>
-    </dl>
-
-    <table>
-        <thead>
-        <tr>
-            <th scope="col" th:text="#{appliance.field.name}">Product</th>
-            <th scope="col" th:text="#{order.field.quantity}">Quantity</th>
-            <th scope="col" th:text="#{order.field.amount}">Amount</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="item : ${order.items()}">
-            <td th:text="${item.applianceName()}"></td>
-            <td th:text="${item.quantity()}"></td>
-            <td th:text="${#numbers.formatDecimal(item.amount(), 1, 2)}"></td>
-        </tr>
-        </tbody>
-        <tfoot>
-        <tr>
-            <th scope="row" colspan="2" th:text="#{order.field.total}">Total</th>
-            <td th:text="${#numbers.formatDecimal(order.total(), 1, 2)}"></td>
-        </tr>
-        </tfoot>
-    </table>
-
-    <p th:if="${summary.approved()}" th:text="#{order.not-editable}">
-        Approved orders cannot be edited or deleted.
-    </p>
-
-    <a th:if="${canEdit}" th:href="@{/orders/{id}/edit(id=${summary.id()})}"
-       th:text="#{form.edit}">Edit</a>
-
-    <form th:if="${canApprove}"
-          th:action="@{/orders/{id}/approve(id=${summary.id()})}" method="post">
-        <button type="submit" th:text="#{order.btn.approve}">Approve</button>
-    </form>
-
-    <form th:if="${canDelete}"
-          th:action="@{/orders/{id}/delete(id=${summary.id()})}" method="post">
-        <button type="submit" th:text="#{form.delete}">Delete</button>
-    </form>
-</main>
-</body>
+th:with="summary=${order.summary()}">
+    <head>
+        <meta charset="UTF-8">
+        <title th:text="#{order.header.details}">
+            Order details
+        </title>
+        <th:block th:replace="~{fragments/assets :: assets}">
+        </th:block>
+    </head>
+    <body>
+        <header th:insert="~{menunavy :: navy}">
+        </header>
+        <main id="main-content">
+            <a th:href="@{/orders}" th:text="#{order.header.list}">
+                Orders
+            </a>
+            <h1 th:text="|#{order.header.details} #${summary.id()}|">
+                Order details
+            </h1>
+            <dl>
+                <dt th:text="#{order.field.client}">
+                    Client
+                </dt>
+                <dd th:text="${summary.clientName()}">
+                </dd>
+                <dt th:text="#{order.field.employee}">
+                    Employee
+                </dt>
+                <dd th:text="${summary.employeeName() != null ? summary.employeeName() : '—'}">
+                </dd>
+                <dt th:text="#{order.field.status}">
+                    Status
+                </dt>
+                <dd th:text="${summary.approved()} ? #{order.status.approved} : #{order.status.pending}">
+                    Pending
+                </dd>
+            </dl>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col" th:text="#{appliance.field.name}">
+                                Product
+                            </th>
+                            <th scope="col" th:text="#{order.field.quantity}">
+                                Quantity
+                            </th>
+                            <th scope="col" th:text="#{order.field.amount}">
+                                Amount
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item : ${order.items()}">
+                            <td th:text="${item.applianceName()}">
+                            </td>
+                            <td th:text="${item.quantity()}">
+                            </td>
+                            <td th:text="${#numbers.formatDecimal(item.amount(), 1, 2)}">
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th scope="row" colspan="2" th:text="#{order.field.total}">
+                                Total
+                            </th>
+                            <td th:text="${#numbers.formatDecimal(order.total(), 1, 2)}">
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <p th:if="${summary.approved()}" th:text="#{order.not-editable}">
+                Approved orders cannot be edited or deleted.
+            </p>
+            <div class="order-actions" th:if="${canEdit or canApprove or canDelete}">
+            <a class="button button-secondary" th:if="${canEdit}" th:href="@{/orders/{id}/edit(id=${summary.id()})}"
+            th:text="#{form.edit}">
+                Edit
+            </a>
+            <form th:if="${canApprove}"
+            th:action="@{/orders/{id}/approve(id=${summary.id()})}" method="post">
+                <button type="submit" th:text="#{order.btn.approve}">
+                    Approve
+                </button>
+            </form>
+            <form th:data-confirm="#{ui.delete.confirm}" th:if="${canDelete}"
+            th:action="@{/orders/{id}/delete(id=${summary.id()})}" method="post">
+                <button class="button-danger" type="submit" th:text="#{form.delete}">
+                    Delete
+                </button>
+            </form>
+            </div>
+        </main>
+        <footer th:replace="~{footer :: footer}">
+        </footer>
+    </body>
 </html>

@@ -40,7 +40,8 @@ class RefreshHttpIntegrationTest {
         mvc.perform(get("/orders").cookie(refresh)).andExpect(redirectedUrl("/auth/renew"));
         var page = mvc.perform(get("/auth/renew").cookie(refresh)).andExpect(status().isOk())
                 .andExpect(content().string(not(containsString(refresh.getValue()))))
-                .andExpect(content().string(not(containsString("<script")))).andReturn();
+                .andExpect(content().string(not(containsString("localStorage"))))
+                .andExpect(content().string(not(containsString("document.cookie")))).andReturn();
         assertThat(page.getRequest().getSession(false)).isNull();
         mvc.perform(post("/auth/renew").cookie(refresh)).andExpect(status().isForbidden());
         var csrf = (CsrfToken) page.getRequest().getAttribute(CsrfToken.class.getName());

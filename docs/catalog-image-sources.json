@@ -1,0 +1,325 @@
+{
+  "dataset": "DummyJSON product-demo assets",
+  "downloaded": "2026-11-22",
+  "notes": "Local demo copies. Product names/trademarks belong to their owners. Prices and selected configurations in the shop are illustrative demo data, not a current retailer feed. No ratings, fake reviews, stock or warranties are imported.",
+  "assets": [
+    {
+      "file": "/images/catalog/samsung-galaxy-s10/1.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/samsung-galaxy-s10/1.webp",
+      "product_source": "https://dummyjson.com/products/133",
+      "sha256": "d5905e4af98cec3cdcf531a2bdd94f21d8e6996e01ac04ff4df5fc9a512bac04"
+    },
+    {
+      "file": "/images/catalog/samsung-galaxy-s10/2.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/samsung-galaxy-s10/2.webp",
+      "product_source": "https://dummyjson.com/products/133",
+      "sha256": "6687e3c195187afa9f879fd2ba4136bde86dd500451ba79b9a53e0f2fa16850b"
+    },
+    {
+      "file": "/images/catalog/samsung-galaxy-s10/3.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/samsung-galaxy-s10/3.webp",
+      "product_source": "https://dummyjson.com/products/133",
+      "sha256": "2b8779509a5a874627eff3997e788ea87d2d35c91aeb8e46261fec536a64f4d9"
+    },
+    {
+      "file": "/images/catalog/apple-macbook-pro-14/1.webp",
+      "source": "https://cdn.dummyjson.com/product-images/laptops/apple-macbook-pro-14-inch-space-grey/1.webp",
+      "product_source": "https://dummyjson.com/products/78",
+      "sha256": "7aebd15251918e8bb96829c80ddce7f487c22e55fa6751b632ea596084c1d0e6"
+    },
+    {
+      "file": "/images/catalog/apple-macbook-pro-14/2.webp",
+      "source": "https://cdn.dummyjson.com/product-images/laptops/apple-macbook-pro-14-inch-space-grey/2.webp",
+      "product_source": "https://dummyjson.com/products/78",
+      "sha256": "8b5441c442d156fd10dd19b33e185806b783ff1053c7b44ac3292934bc72597d"
+    },
+    {
+      "file": "/images/catalog/apple-macbook-pro-14/3.webp",
+      "source": "https://cdn.dummyjson.com/product-images/laptops/apple-macbook-pro-14-inch-space-grey/3.webp",
+      "product_source": "https://dummyjson.com/products/78",
+      "sha256": "91185c877ab6efa333a3f043bbe49e1601971a21a2dfd259b826e74d3386c4cc"
+    },
+    {
+      "file": "/images/catalog/dell-xps-13-9300/1.webp",
+      "source": "https://cdn.dummyjson.com/product-images/laptops/new-dell-xps-13-9300-laptop/1.webp",
+      "product_source": "https://dummyjson.com/products/82",
+      "sha256": "d23fac25d3d26f41e34957c97014a64d8fdbaadae3ee71ac56d7f65e3c9a1389"
+    },
+    {
+      "file": "/images/catalog/dell-xps-13-9300/2.webp",
+      "source": "https://cdn.dummyjson.com/product-images/laptops/new-dell-xps-13-9300-laptop/2.webp",
+      "product_source": "https://dummyjson.com/products/82",
+      "sha256": "7ac1af7229952193c830fa5033ccd99fee9d648c7a1846f8ce579a39a38d0e67"
+    },
+    {
+      "file": "/images/catalog/dell-xps-13-9300/3.webp",
+      "source": "https://cdn.dummyjson.com/product-images/laptops/new-dell-xps-13-9300-laptop/3.webp",
+      "product_source": "https://dummyjson.com/products/82",
+      "sha256": "8e423238191e222cd99d6999c898503e6e64f1242887cfbf44f1b1b59ac00ab0"
+    },
+    {
+      "file": "/images/catalog/apple-iphone-13-pro/1.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/iphone-13-pro/1.webp",
+      "product_source": "https://dummyjson.com/products/123",
+      "sha256": "da3d27e6b9f4f6eac0381c898c6ab4afdb30a8c479e425bd32a91a1c5188a4ee"
+    },
+    {
+      "file": "/images/catalog/apple-iphone-13-pro/2.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/iphone-13-pro/2.webp",
+      "product_source": "https://dummyjson.com/products/123",
+      "sha256": "f1f47bc5ac6f8b182d89a25bb6509b31aeb887906e797033f50b3126dc90c19a"
+    },
+    {
+      "file": "/images/catalog/apple-iphone-13-pro/3.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/iphone-13-pro/3.webp",
+      "product_source": "https://dummyjson.com/products/123",
+      "sha256": "b4f747709d435d0c360c6adce232a9690307d8859958e6a936850e1756868000"
+    },
+    {
+      "file": "/images/catalog/lenovo-yoga-920/1.webp",
+      "source": "https://cdn.dummyjson.com/product-images/laptops/lenovo-yoga-920/1.webp",
+      "product_source": "https://dummyjson.com/products/81",
+      "sha256": "379d57cb6c5e0dbdcf212be0748c03d87de2636328679db1cec2fc35fddb7925"
+    },
+    {
+      "file": "/images/catalog/lenovo-yoga-920/2.webp",
+      "source": "https://cdn.dummyjson.com/product-images/laptops/lenovo-yoga-920/2.webp",
+      "product_source": "https://dummyjson.com/products/81",
+      "sha256": "a08d2ecafff4153b3ccda675984f198247db4cea09a3829557b5d68cf52ad6da"
+    },
+    {
+      "file": "/images/catalog/lenovo-yoga-920/3.webp",
+      "source": "https://cdn.dummyjson.com/product-images/laptops/lenovo-yoga-920/3.webp",
+      "product_source": "https://dummyjson.com/products/81",
+      "sha256": "ed038d839b49884bb12afedd3e40eda9a9e6df1d08355c90f92008230d3be219"
+    },
+    {
+      "file": "/images/catalog/asus-zenbook-pro-duo/1.webp",
+      "source": "https://cdn.dummyjson.com/product-images/laptops/asus-zenbook-pro-dual-screen-laptop/1.webp",
+      "product_source": "https://dummyjson.com/products/79",
+      "sha256": "ec75d836338eb7c1352e94feb18a33d3c8f398061f5704bda0a38f5c86cb68e7"
+    },
+    {
+      "file": "/images/catalog/asus-zenbook-pro-duo/2.webp",
+      "source": "https://cdn.dummyjson.com/product-images/laptops/asus-zenbook-pro-dual-screen-laptop/2.webp",
+      "product_source": "https://dummyjson.com/products/79",
+      "sha256": "8632f625d45ffe48d02beb103b7a312614e3f6cd8e10182b73a77fd70b8c6dcc"
+    },
+    {
+      "file": "/images/catalog/asus-zenbook-pro-duo/3.webp",
+      "source": "https://cdn.dummyjson.com/product-images/laptops/asus-zenbook-pro-dual-screen-laptop/3.webp",
+      "product_source": "https://dummyjson.com/products/79",
+      "sha256": "d263e294b7c9aac690081ea2f0809e2553cd06e54957f6b21d7a5f69027c77a5"
+    },
+    {
+      "file": "/images/catalog/huawei-matebook-x-pro/1.webp",
+      "source": "https://cdn.dummyjson.com/product-images/laptops/huawei-matebook-x-pro/1.webp",
+      "product_source": "https://dummyjson.com/products/80",
+      "sha256": "37317442e9df6035e93821ff5892aa8c3e6e87c3785c0971b89af4ce9618fcd3"
+    },
+    {
+      "file": "/images/catalog/huawei-matebook-x-pro/2.webp",
+      "source": "https://cdn.dummyjson.com/product-images/laptops/huawei-matebook-x-pro/2.webp",
+      "product_source": "https://dummyjson.com/products/80",
+      "sha256": "a452b0ca4fd637812cb35b8bc2650955739e342b1275a6d45162948b91f092a5"
+    },
+    {
+      "file": "/images/catalog/huawei-matebook-x-pro/3.webp",
+      "source": "https://cdn.dummyjson.com/product-images/laptops/huawei-matebook-x-pro/3.webp",
+      "product_source": "https://dummyjson.com/products/80",
+      "sha256": "36151e0645e1bf923c1fc2533acb53337ea151060bd1f71df1fb81a065f4e856"
+    },
+    {
+      "file": "/images/catalog/oppo-a57/1.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/oppo-a57/1.webp",
+      "product_source": "https://dummyjson.com/products/125",
+      "sha256": "cc8dbd73fa778a0a21cb0689a49f7f9df69b0beaf50dfecf7e6738069641d603"
+    },
+    {
+      "file": "/images/catalog/oppo-a57/2.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/oppo-a57/2.webp",
+      "product_source": "https://dummyjson.com/products/125",
+      "sha256": "3287330263200133209cd707c084c0e332865d66371a876e4ad7485fb659b2b0"
+    },
+    {
+      "file": "/images/catalog/oppo-a57/3.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/oppo-a57/3.webp",
+      "product_source": "https://dummyjson.com/products/125",
+      "sha256": "99856b6b7d2fb62d911a9edd5a212cb3dfed409b43ea95adf04db19d79b0b87d"
+    },
+    {
+      "file": "/images/catalog/oppo-f19-pro-plus/1.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/oppo-f19-pro-plus/1.webp",
+      "product_source": "https://dummyjson.com/products/126",
+      "sha256": "a7abd7ae79b007d3d56e7348f8a3b8a0335510baa0ffb14f977b9a15ac418165"
+    },
+    {
+      "file": "/images/catalog/oppo-f19-pro-plus/2.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/oppo-f19-pro-plus/2.webp",
+      "product_source": "https://dummyjson.com/products/126",
+      "sha256": "3d389cf3bc9ae68b266defd439525f85360892d16e6c7e94c3567987215dfe05"
+    },
+    {
+      "file": "/images/catalog/oppo-f19-pro-plus/3.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/oppo-f19-pro-plus/3.webp",
+      "product_source": "https://dummyjson.com/products/126",
+      "sha256": "352c3b250d2af97d7170c9bdcb9f841630cf1bfbad2cac4fe6aa3c6390cd061c"
+    },
+    {
+      "file": "/images/catalog/realme-c35/1.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/realme-c35/1.webp",
+      "product_source": "https://dummyjson.com/products/128",
+      "sha256": "142015163930cafda5cbbe0637eead65bcd5f5a03b315745dde12f0933360f50"
+    },
+    {
+      "file": "/images/catalog/realme-c35/2.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/realme-c35/2.webp",
+      "product_source": "https://dummyjson.com/products/128",
+      "sha256": "bedbcfdaa2dd5677d01e30e1fa5adc616141b1e6d685abf43e4e8eb5d50e6d24"
+    },
+    {
+      "file": "/images/catalog/realme-c35/3.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/realme-c35/3.webp",
+      "product_source": "https://dummyjson.com/products/128",
+      "sha256": "9ccc3a72eeb42e52ded0d729b395328d3bad8f0bcfeaa1d2cfc7692220c1023b"
+    },
+    {
+      "file": "/images/catalog/realme-x/1.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/realme-x/1.webp",
+      "product_source": "https://dummyjson.com/products/129",
+      "sha256": "2d0a48c7cf63be867dad29871ab652149e7e615ed552df63f6fae1fe3acd0101"
+    },
+    {
+      "file": "/images/catalog/realme-x/2.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/realme-x/2.webp",
+      "product_source": "https://dummyjson.com/products/129",
+      "sha256": "d2c4d070ecc3ef8326271a88a8ec813469575c00fa0f85971af9d774edb172d7"
+    },
+    {
+      "file": "/images/catalog/realme-x/3.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/realme-x/3.webp",
+      "product_source": "https://dummyjson.com/products/129",
+      "sha256": "96fe0d2befcf57e4f9f50d3561b33229ed0ca267ce879c36287867ec67cbd135"
+    },
+    {
+      "file": "/images/catalog/realme-xt/1.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/realme-xt/1.webp",
+      "product_source": "https://dummyjson.com/products/130",
+      "sha256": "ca1c5f7587a928d6a1b86c51ca10d0f7e0f3fd176d4a0f5b9d2c984d51340fe2"
+    },
+    {
+      "file": "/images/catalog/realme-xt/2.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/realme-xt/2.webp",
+      "product_source": "https://dummyjson.com/products/130",
+      "sha256": "a22bb8ceeed861cdd3af8d1ddc89885e054a8bed464283179a447a03c1b3d421"
+    },
+    {
+      "file": "/images/catalog/realme-xt/3.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/realme-xt/3.webp",
+      "product_source": "https://dummyjson.com/products/130",
+      "sha256": "2a6252e54827a5b637091bbf89e913547ab62ce70e267d657a246e3931ad4a6a"
+    },
+    {
+      "file": "/images/catalog/samsung-galaxy-s8/1.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/samsung-galaxy-s8/1.webp",
+      "product_source": "https://dummyjson.com/products/132",
+      "sha256": "ce3f777d7da50ee80f3093dfaf8faadc98da784ea08102aad2c8ad51d3b604d0"
+    },
+    {
+      "file": "/images/catalog/samsung-galaxy-s8/2.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/samsung-galaxy-s8/2.webp",
+      "product_source": "https://dummyjson.com/products/132",
+      "sha256": "37dcaf2fbafb1e4c4367cb71e42f37ca759fd5269fa40d98efe5ea9335261516"
+    },
+    {
+      "file": "/images/catalog/samsung-galaxy-s8/3.webp",
+      "source": "https://cdn.dummyjson.com/product-images/smartphones/samsung-galaxy-s8/3.webp",
+      "product_source": "https://dummyjson.com/products/132",
+      "sha256": "543b664fa6fb3d685398b5798062005ae212127f83d8a3643fe95e5e7572c45f"
+    },
+    {
+      "file": "/images/catalog/apple-ipad-mini-2021/1.webp",
+      "source": "https://cdn.dummyjson.com/product-images/tablets/ipad-mini-2021-starlight/1.webp",
+      "product_source": "https://dummyjson.com/products/159",
+      "sha256": "8d925f751c46358a5c82af8484c230ba4768346a4deb88e73e248dc7de32686c"
+    },
+    {
+      "file": "/images/catalog/apple-ipad-mini-2021/2.webp",
+      "source": "https://cdn.dummyjson.com/product-images/tablets/ipad-mini-2021-starlight/2.webp",
+      "product_source": "https://dummyjson.com/products/159",
+      "sha256": "9b84283b9b8a15ba27b165169aba8e01119621e608ef4f3370ad97a79afe09e5"
+    },
+    {
+      "file": "/images/catalog/apple-ipad-mini-2021/3.webp",
+      "source": "https://cdn.dummyjson.com/product-images/tablets/ipad-mini-2021-starlight/3.webp",
+      "product_source": "https://dummyjson.com/products/159",
+      "sha256": "7d75fe1b54779189870b6382b089f5eaa691d6a65d9f46b5b494425f9d60b541"
+    },
+    {
+      "file": "/images/catalog/samsung-galaxy-tab-s8-plus/1.webp",
+      "source": "https://cdn.dummyjson.com/product-images/tablets/samsung-galaxy-tab-s8-plus-grey/1.webp",
+      "product_source": "https://dummyjson.com/products/160",
+      "sha256": "421c88a9ecd23668097f285c40ba5c4c2669b4d194a119fc0dddc179b09cbcdc"
+    },
+    {
+      "file": "/images/catalog/samsung-galaxy-tab-s8-plus/2.webp",
+      "source": "https://cdn.dummyjson.com/product-images/tablets/samsung-galaxy-tab-s8-plus-grey/2.webp",
+      "product_source": "https://dummyjson.com/products/160",
+      "sha256": "f36d93ad9b2cb03a53d11d3286f4723fd719a9d889edb17f41fa0c8a9b74b0cb"
+    },
+    {
+      "file": "/images/catalog/samsung-galaxy-tab-s8-plus/3.webp",
+      "source": "https://cdn.dummyjson.com/product-images/tablets/samsung-galaxy-tab-s8-plus-grey/3.webp",
+      "product_source": "https://dummyjson.com/products/160",
+      "sha256": "89db781d237d7534f9e5a82afda3336276e5bf8af43629c78258db7fea745d51"
+    },
+    {
+      "file": "/images/catalog/amazon-echo-plus/1.webp",
+      "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/amazon-echo-plus/1.webp",
+      "product_source": "https://dummyjson.com/products/99",
+      "sha256": "5b416ffd85f8e138696934e50b4c563e51de2c6d9c3665ac36c9804ada4d0603"
+    },
+    {
+      "file": "/images/catalog/amazon-echo-plus/2.webp",
+      "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/amazon-echo-plus/2.webp",
+      "product_source": "https://dummyjson.com/products/99",
+      "sha256": "9c85de989f509e66c162f7b7019c1722e4b9c932380d93e5911130a67e7f8445"
+    },
+    {
+      "file": "/images/catalog/apple-airpods/1.webp",
+      "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-airpods/1.webp",
+      "product_source": "https://dummyjson.com/products/100",
+      "sha256": "60001ba208a6e259af2437623715b22adb43f1e51204320349325b11cf53afeb"
+    },
+    {
+      "file": "/images/catalog/apple-airpods/2.webp",
+      "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-airpods/2.webp",
+      "product_source": "https://dummyjson.com/products/100",
+      "sha256": "58ab4d821905f9a441e61d479050cc09ed3de6de1f35366666fc911436a589fa"
+    },
+    {
+      "file": "/images/catalog/apple-airpods/3.webp",
+      "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-airpods/3.webp",
+      "product_source": "https://dummyjson.com/products/100",
+      "sha256": "7ffbff4005807bc3fa4be4c2309662cdeb800600a128b267fd268bad5015114a"
+    },
+    {
+      "file": "/images/catalog/apple-airpods-max-silver/1.webp",
+      "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-airpods-max-silver/1.webp",
+      "product_source": "https://dummyjson.com/products/101",
+      "sha256": "2a0219919fd758a1d466c18d138549aca34f000bb6850875d7d7956fea22b0da"
+    },
+    {
+      "file": "/images/catalog/apple-homepod-mini/1.webp",
+      "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-homepod-mini-cosmic-grey/1.webp",
+      "product_source": "https://dummyjson.com/products/103",
+      "sha256": "b48350d460c018282701f89d6f5a478b25c7e0599a38d7c272e69ba0547a62a7"
+    },
+    {
+      "file": "/images/catalog/beats-flex-wireless/1.webp",
+      "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/beats-flex-wireless-earphones/1.webp",
+      "product_source": "https://dummyjson.com/products/107",
+      "sha256": "f5c4e7da4732cf58bfe2927dd55f96c4dd8611871f4753fb835ab6cd030f07cd"
+    }
+  ]
+}

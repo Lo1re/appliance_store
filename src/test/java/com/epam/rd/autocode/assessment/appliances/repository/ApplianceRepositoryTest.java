@@ -24,7 +24,7 @@ class ApplianceRepositoryTest {
         assertThat(result.getContent()).extracting(a -> a.getName()).isSorted();
 
         var matches = appliances.search("sAmSuNg", page);
-        assertThat(matches.getContent()).extracting(a -> a.getName()).contains("Claw");
+        assertThat(matches.getContent()).extracting(a -> a.getName()).contains("Samsung Galaxy S10");
         var util = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
         assertThat(matches.getContent()).allSatisfy(a -> assertThat(util.isLoaded(a, "manufacturer")).isTrue());
     }

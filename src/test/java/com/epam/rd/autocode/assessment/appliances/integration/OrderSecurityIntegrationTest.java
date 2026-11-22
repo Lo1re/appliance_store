@@ -131,10 +131,9 @@ class OrderSecurityIntegrationTest {
                 .orElseThrow()
                 .getId();
 
-        Long applianceId = appliances.search("Claw", PAGE)
-                .getContent()
-                .get(0)
-                .getId();
+        var catalogProduct = appliances.search("Samsung Galaxy S10", PAGE).getContent().get(0);
+        Long applianceId = catalogProduct.getId();
+        BigDecimal unitPrice = catalogProduct.getPrice();
 
         OrderRequest twoItems = request(item(applianceId, 2L));
 
@@ -151,7 +150,7 @@ class OrderSecurityIntegrationTest {
                 .isEqualTo(principal(client).getAccountId());
         assertThat(own.summary().approved()).isFalse();
         assertThat(service.findById(ownId).total())
-                .isEqualByComparingTo("2.02");
+                .isEqualByComparingTo(unitPrice.multiply(BigDecimal.valueOf(2)));
 
         assertThat(service.findAll(null, PAGE))
                 .extracting(summary -> summary.id())
@@ -191,10 +190,10 @@ class OrderSecurityIntegrationTest {
         assertThat(rows.findById(newRowId))
                 .get()
                 .extracting(OrderRow::getAmount)
-                .isEqualTo(new BigDecimal("3.03"));
+                .isEqualTo(unitPrice.multiply(BigDecimal.valueOf(3)));
 
         assertThat(service.findById(ownId).total())
-                .isEqualByComparingTo("3.03");
+                .isEqualByComparingTo(unitPrice.multiply(BigDecimal.valueOf(3)));
 
         use(employee);
 
@@ -203,7 +202,7 @@ class OrderSecurityIntegrationTest {
                 .contains(ownId, otherId);
 
         assertThat(service.findById(otherId).total())
-                .isEqualByComparingTo("2.02");
+                .isEqualByComparingTo(unitPrice.multiply(BigDecimal.valueOf(2)));
 
         var approved = service.approve(ownId);
 
@@ -238,7 +237,7 @@ class OrderSecurityIntegrationTest {
         assertThat(unchanged.summary().approved()).isTrue();
         assertThat(unchanged.summary().employeeId())
                 .isEqualTo(principal(employee).getAccountId());
-        assertThat(unchanged.total()).isEqualByComparingTo("3.03");
+        assertThat(unchanged.total()).isEqualByComparingTo(unitPrice.multiply(BigDecimal.valueOf(3)));
         assertThat(unchanged.items()).singleElement().satisfies(row -> {
             assertThat(row.id()).isEqualTo(newRowId);
             assertThat(row.quantity()).isEqualTo(3L);
@@ -264,7 +263,7 @@ class OrderSecurityIntegrationTest {
                 "EMPLOYEE"
         );
 
-        Long applianceId = appliances.search("Claw", PAGE)
+        Long applianceId = appliances.search("Samsung Galaxy S10", PAGE)
                 .getContent()
                 .get(0)
                 .getId();

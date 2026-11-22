@@ -1,17 +1,42 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="referrer" content="no-referrer"><title th:text="#{password.forgot.title}"></title></head>
-<body><header th:insert="~{menunavy :: navy}"></header><main>
-<h1 th:text="#{password.forgot.title}">Forgot password?</h1>
-<p th:if="${retryAfterSeconds != null}" role="alert" th:text="#{password.forgot.retry(${retryAfterSeconds})}"></p>
-<p th:if="${param.sent != null}" role="status" th:text="#{password.forgot.sent}"></p>
-<p th:if="${param.sent != null}" th:text="#{password.forgot.wait}"></p>
-<form th:if="${param.sent == null}" th:action="@{/password/forgot}" th:object="${forgotForm}" method="post">
-<label for="email" th:text="#{account.field.email}">Email</label>
-<input id="email" name="email" th:value="*{email}" type="email" autocomplete="email" maxlength="254" required>
-<p th:errors="*{email}" role="alert"></p>
-<button type="submit" th:text="#{password.forgot.submit}">Send reset link</button>
-</form>
-<a th:if="${param.sent != null}" th:href="@{/password/forgot}" th:text="#{password.forgot.again}">Request again</a>
-</main></body></html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="referrer" content="no-referrer">
+        <title th:text="#{password.forgot.title}">
+        </title>
+        <th:block th:replace="~{fragments/assets :: assets}">
+        </th:block>
+    </head>
+    <body>
+        <header th:insert="~{menunavy :: navy}">
+        </header>
+        <main id="main-content" class="auth-page">
+            <h1 th:text="#{password.forgot.title}">
+                Forgot password?
+            </h1>
+            <p th:data-retry-seconds="${retryAfterSeconds}" th:data-retry-template="#{ui.retry.template}" th:data-retry-ready="#{ui.retry.ready}" th:if="${retryAfterSeconds != null}" role="alert" th:text="#{password.forgot.retry(${retryAfterSeconds})}">
+            </p>
+            <p th:if="${param.sent != null}" role="status" th:text="#{password.forgot.sent}">
+            </p>
+            <p th:if="${param.sent != null}" th:text="#{password.forgot.wait}">
+            </p>
+            <form th:if="${param.sent == null}" th:action="@{/password/forgot}" th:object="${forgotForm}" method="post">
+                <label for="email" th:text="#{account.field.email}">
+                    Email
+                </label>
+                <input id="email" name="email" th:value="*{email}" type="email" autocomplete="email" maxlength="254" required>
+                <p th:errors="*{email}" role="alert">
+                </p>
+                <button type="submit" th:text="#{password.forgot.submit}">
+                    Send reset link
+                </button>
+            </form>
+            <a th:if="${param.sent != null}" th:href="@{/password/forgot}" th:text="#{password.forgot.again}">
+                Request again
+            </a>
+        </main>
+        <footer th:replace="~{footer :: footer}">
+        </footer>
+    </body>
+</html>

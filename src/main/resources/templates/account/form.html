@@ -1,49 +1,75 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}"
-      th:with="titleKey=${section + (editing ? '.btn.edit' : '.btn.new')}">
-<head>
-    <meta charset="UTF-8">
-    <title th:text="${#messages.msg(titleKey)}">Account</title>
-</head>
-<body>
-<header th:insert="~{menunavy :: navy}"></header>
-<main>
-    <h1 th:text="${#messages.msg(titleKey)}">Account</h1>
-
-    <form th:action="@{${formAction}}" th:object="${account}" method="post">
-        <div>
-            <label for="name" th:text="#{account.field.name}">Name</label>
-            <input type="text" th:field="*{name}" maxlength="100" autocomplete="name">
-            <p th:errors="*{name}" role="alert"></p>
-        </div>
-
-        <div>
-            <label for="email" th:text="#{account.field.email}">Email</label>
-            <input type="email" th:field="*{email}" maxlength="254" autocomplete="email">
-            <p th:errors="*{email}" role="alert"></p>
-        </div>
-
-        <div th:if="${section == 'client'}">
-            <label for="card" th:text="#{client.field.card}">Client card</label>
-            <input type="text" th:field="*{card}" maxlength="32">
-            <p th:errors="*{card}" role="alert"></p>
-        </div>
-
-        <div th:if="${section == 'employee'}">
-            <label for="department" th:text="#{employee.field.department}">Department</label>
-            <input type="text" th:field="*{department}" maxlength="100">
-            <p th:errors="*{department}" role="alert"></p>
-        </div>
-
-        <div th:unless="${editing}">
-            <label for="password" th:text="#{account.field.password}">Password</label>
-            <input id="password" name="password" type="password" autocomplete="new-password">
-            <p th:errors="${credentials.password}" role="alert"></p>
-        </div>
-
-        <button type="submit" th:text="#{form.save}">Save</button>
-        <a th:href="@{${basePath}}" th:text="#{form.cancel}">Cancel</a>
-    </form>
-</main>
-</body>
+th:with="titleKey=${section + (editing ? '.btn.edit' : '.btn.new')}">
+    <head>
+        <meta charset="UTF-8">
+        <title th:text="${#messages.msg(titleKey)}">
+            Account
+        </title>
+        <th:block th:replace="~{fragments/assets :: assets}">
+        </th:block>
+    </head>
+    <body>
+        <header th:insert="~{menunavy :: navy}">
+        </header>
+        <main id="main-content">
+            <h1 th:text="${#messages.msg(titleKey)}">
+                Account
+            </h1>
+            <form th:action="@{${formAction}}" th:object="${account}" method="post">
+                <div>
+                    <label for="name" th:text="#{account.field.name}">
+                        Name
+                    </label>
+                    <input type="text" th:errorclass="field-error" th:field="*{name}" maxlength="100" autocomplete="name">
+                    <p th:errors="*{name}" role="alert">
+                    </p>
+                </div>
+                <div>
+                    <label for="email" th:text="#{account.field.email}">
+                        Email
+                    </label>
+                    <input type="email" th:errorclass="field-error" th:field="*{email}" maxlength="254" autocomplete="email">
+                    <p th:errors="*{email}" role="alert">
+                    </p>
+                </div>
+                <div th:if="${section == 'client'}">
+                    <label for="card" th:text="#{client.field.card}">
+                        Client card
+                    </label>
+                    <input type="text" th:errorclass="field-error" th:field="*{card}" maxlength="32">
+                    <p th:errors="*{card}" role="alert">
+                    </p>
+                </div>
+                <div th:if="${section == 'employee'}">
+                    <label for="department" th:text="#{employee.field.department}">
+                        Department
+                    </label>
+                    <input type="text" th:errorclass="field-error" th:field="*{department}" maxlength="100">
+                    <p th:errors="*{department}" role="alert">
+                    </p>
+                </div>
+                <div th:unless="${editing}">
+                    <label for="password" th:text="#{account.field.password}">
+                        Password
+                    </label>
+                    <input th:data-show="#{ui.password.show}" th:data-hide="#{ui.password.hide}" id="password" name="password" type="password" autocomplete="new-password" data-password-rules aria-describedby="password-requirements">
+                    <div id="password-requirements">
+                        <th:block th:replace="~{fragments/password-rules :: rules}">
+                        </th:block>
+                    </div>
+                    <p th:errors="${credentials.password}" role="alert">
+                    </p>
+                </div>
+                <button type="submit" th:text="#{form.save}">
+                    Save
+                </button>
+                <a th:href="@{${basePath}}" th:text="#{form.cancel}">
+                    Cancel
+                </a>
+            </form>
+        </main>
+        <footer th:replace="~{footer :: footer}">
+        </footer>
+    </body>
 </html>

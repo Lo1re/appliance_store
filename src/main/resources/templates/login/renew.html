@@ -1,13 +1,33 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="#{login.renew.title}">Continue sign-in</title></head>
-<body>
-<header th:insert="~{menunavy :: navy}"></header>
-<main><h1 th:text="#{login.renew.title}">Continue sign-in</h1>
-    <p th:text="#{login.renew.description}">Continue securely or sign in again.</p>
-    <form th:action="@{/auth/renew}" method="post">
-        <button type="submit" th:text="#{login.renew.submit}">Continue</button>
-    </form>
-    <a th:href="@{/login}" th:text="#{nav.login}">Sign in</a>
-</main></body></html>
+    <head>
+        <meta charset="UTF-8">
+        <title th:text="#{login.renew.title}">
+            Continue sign-in
+        </title>
+        <th:block th:replace="~{fragments/assets :: assets}">
+        </th:block>
+    </head>
+    <body>
+        <header th:insert="~{menunavy :: navy}">
+        </header>
+        <main id="main-content" class="auth-page">
+            <h1 th:text="#{login.renew.title}">
+                Continue sign-in
+            </h1>
+            <p th:text="#{login.renew.description}">
+                Continue securely or sign in again.
+            </p>
+            <form th:action="@{/auth/renew}" method="post">
+                <button type="submit" th:text="#{login.renew.submit}">
+                    Continue
+                </button>
+            </form>
+            <a th:href="@{/login}" th:text="#{nav.login}">
+                Sign in
+            </a>
+        </main>
+        <footer th:replace="~{footer :: footer}">
+        </footer>
+    </body>
+</html>

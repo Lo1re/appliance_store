@@ -2,8 +2,8 @@ package com.epam.rd.autocode.assessment.appliances.controller.advice;
 
 import com.epam.rd.autocode.assessment.appliances.security.authentication.AuthenticationProperties;
 import com.epam.rd.autocode.assessment.appliances.security.password.reset.PasswordResetService;
-import com.epam.rd.autocode.assessment.appliances.web.LanguageNavigation;
 import com.epam.rd.autocode.assessment.appliances.security.registration.RegistrationPreparation;
+import com.epam.rd.autocode.assessment.appliances.web.LanguageNavigation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
@@ -33,7 +33,6 @@ public class NavigationAdvice {
 
     @ModelAttribute("passwordChangeEnabled")
     public boolean passwordChangeEnabled() { return authentication.authMode() == AuthenticationProperties.Mode.DATABASE; }
-
 
 
     @ModelAttribute("languageLinks")

@@ -36,9 +36,13 @@ public class AuthTokenCookies {
 
     private String read(HttpServletRequest request, String name) {
         String value = null;
-        if (request.getCookies() == null) return null;
+        if (request.getCookies() == null) {
+            return null;
+        }
         for (Cookie cookie : request.getCookies()) if (name.equals(cookie.getName())) {
-            if (value != null) throw new IllegalArgumentException("Ambiguous authentication cookies");
+            if (value != null) {
+                throw new IllegalArgumentException("Ambiguous authentication cookies");
+            }
             value = cookie.getValue();
         }
         if (value != null && (value.isBlank() || value.length() > 4096))

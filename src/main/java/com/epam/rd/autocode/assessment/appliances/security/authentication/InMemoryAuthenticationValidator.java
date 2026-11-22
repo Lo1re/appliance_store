@@ -30,7 +30,9 @@ public class InMemoryAuthenticationValidator {
                 throw new IllegalArgumentException("Local in-memory accounts require an email and a BCrypt hash");
             }
             String email = EmailAddress.normalize(configured.getEmail());
-            if (!seen.add(email)) throw new IllegalArgumentException("Duplicate local in-memory account");
+            if (!seen.add(email)) {
+                throw new IllegalArgumentException("Duplicate local in-memory account");
+            }
             if (configured.getRole() != null) {
                 users.findByEmailIgnoreCase(email).ifPresent(account -> {
                     if (AccountRole.from(account).filter(configured.getRole()::equals).isEmpty()) {

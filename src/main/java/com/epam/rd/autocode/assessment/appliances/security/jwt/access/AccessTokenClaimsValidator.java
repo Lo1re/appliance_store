@@ -21,7 +21,9 @@ public class AccessTokenClaimsValidator implements OAuth2TokenValidator<Jwt> {
         boolean valid;
         try {
             String subject = jwt.getSubject();
-            valid = AccessTokenVersion.read(jwt) >= 0 && subject != null && subject.matches("[1-9][0-9]{0,18}") && Long.parseLong(subject) > 0
+            // Require the canonical decimal representation of a strictly positive Java long.
+            long accountId = Long.parseLong(subject);
+            valid = AccessTokenVersion.read(jwt) >= 0 && accountId > 0 && subject.equals(Long.toString(accountId))
                     && jwt.getAudience() != null && jwt.getAudience().contains(properties.getAudience())
                     && jwt.getIssuedAt() != null && jwt.getExpiresAt() != null
                     && jwt.getExpiresAt().isAfter(jwt.getIssuedAt())

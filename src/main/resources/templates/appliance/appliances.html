@@ -1,77 +1,72 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
-<head>
-    <meta charset="UTF-8">
-    <title th:text="#{appliance.header.list}">Products</title>
-</head>
-<body>
-<header th:insert="~{menunavy :: navy}"></header>
-<main>
-
-
-    <h1 th:text="#{appliance.header.list}">Products</h1>
-    <p th:if="${errorKey != null}" role="alert" th:text="#{${errorKey}}"></p>
-
-    <form th:action="@{/appliances}" method="get">
-        <label for="search" th:text="#{list.search}">Search</label>
-        <input id="search" name="search" type="search" maxlength="100" th:value="${search}">
-
-        <label for="sort" th:text="#{list.sort}">Sort by</label>
-        <select id="sort" name="sort">
-            <option value="name" th:selected="${sort == 'name'}"
-                    th:text="#{appliance.field.name}">Name</option>
-            <option value="id" th:selected="${sort == 'id'}">ID</option>
-            <option value="price" th:selected="${sort == 'price'}"
-                    th:text="#{appliance.field.price}">Price</option>
-        </select>
-
-        <button type="submit" th:text="#{list.search}">Search</button>
-    </form>
-
-    <p th:if="${canManage}">
-        <a th:href="@{/appliances/add}" th:text="#{appliance.btn.new}">New product</a>
-    </p>
-
-    <table>
-        <thead>
-        <tr>
-            <th scope="col">ID</th>
-            <th scope="col" th:text="#{appliance.field.name}">Name</th>
-            <th scope="col" th:text="#{appliance.field.model}">Model</th>
-            <th scope="col" th:text="#{appliance.field.manufacturer}">Manufacturer</th>
-            <th scope="col" th:text="#{appliance.field.price}">Price</th>
-            <th scope="col" th:if="${canManage}" th:text="#{list.actions}">Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="appliance : ${appliances.content}">
-            <td th:text="${appliance.id}"></td>
-            <td th:text="${appliance.name}"></td>
-            <td th:text="${appliance.model}"></td>
-            <td th:text="${appliance.manufacturerName}"></td>
-            <td th:text="${#numbers.formatDecimal(appliance.price, 1, 2)}"></td>
-            <td th:if="${canManage}">
-                <a th:href="@{/appliances/{id}/edit(id=${appliance.id})}"
-                   th:text="#{form.edit}">Edit</a>
-                <form th:action="@{/appliances/{id}/delete(id=${appliance.id})}" method="post">
-                    <button type="submit" th:text="#{form.delete}">Delete</button>
-                </form>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-
-    <p th:if="${appliances.empty}" th:text="#{appliance.empty}">No products found.</p>
-
-    <nav th:if="${appliances.totalPages > 1}">
-        <a th:if="${appliances.hasPrevious()}"
-           th:href="@{/appliances(search=${search},sort=${sort},page=${appliances.number - 1})}"
-           th:text="#{list.previous}">Previous</a>
-        <span th:text="|${appliances.number + 1} / ${appliances.totalPages}|"></span>
-        <a th:if="${appliances.hasNext()}"
-           th:href="@{/appliances(search=${search},sort=${sort},page=${appliances.number + 1})}"
-           th:text="#{list.next}">Next</a>
-    </nav>
-</main>
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <title th:text="#{appliance.header.list}">
+            Products
+        </title>
+        <th:block th:replace="~{fragments/assets :: assets}">
+        </th:block>
+    </head>
+    <body>
+        <header th:insert="~{menunavy :: navy}">
+        </header>
+        <main id="main-content">
+            <h1 th:text="#{appliance.header.list}">
+                Products
+            </h1>
+            <p th:if="${errorKey != null}" role="alert" th:text="#{${errorKey}}">
+            </p>
+            <form th:action="@{/appliances}" method="get">
+                <label for="search" th:text="#{list.search}">
+                    Search
+                </label>
+                <input id="search" name="search" type="search" maxlength="100" th:value="${search}">
+                <label for="sort" th:text="#{list.sort}">
+                    Sort by
+                </label>
+                <select id="sort" name="sort">
+                    <option value="name" th:selected="${sort == 'name'}"
+                    th:text="#{appliance.field.name}">
+                        Name
+                    </option>
+                    <option value="id" th:selected="${sort == 'id'}">
+                        ID
+                    </option>
+                    <option value="price" th:selected="${sort == 'price'}"
+                    th:text="#{appliance.field.price}">
+                        Price
+                    </option>
+                </select>
+                <button type="submit" th:text="#{list.search}">
+                    Search
+                </button>
+            </form>
+            <p class="list-create" th:if="${canManage}">
+                <a th:href="@{/appliances/add}" th:text="#{appliance.btn.new}">
+                    New product
+                </a>
+            </p>
+            <section th:replace="~{fragments/products :: cards(${appliances.content}, ${canManage})}"></section>
+            <p class="empty-state" th:if="${appliances.empty}" th:text="#{appliance.empty}">
+                No products found.
+            </p>
+            <nav class="pagination" th:if="${appliances.totalPages > 1}">
+                <a th:if="${appliances.hasPrevious()}"
+                th:href="@{/appliances(search=${search},sort=${sort},page=${appliances.number - 1})}"
+                th:text="#{list.previous}">
+                    Previous
+                </a>
+                <span th:text="|${appliances.number + 1} / ${appliances.totalPages}|">
+                </span>
+                <a th:if="${appliances.hasNext()}"
+                th:href="@{/appliances(search=${search},sort=${sort},page=${appliances.number + 1})}"
+                th:text="#{list.next}">
+                    Next
+                </a>
+            </nav>
+        </main>
+        <footer th:replace="~{footer :: footer}">
+        </footer>
+    </body>
 </html>

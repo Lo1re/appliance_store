@@ -3,17 +3,12 @@ package com.epam.rd.autocode.assessment.appliances.security.password.reset;
 import com.epam.rd.autocode.assessment.appliances.dto.password.PasswordResetRequest;
 import com.epam.rd.autocode.assessment.appliances.exception.password.PasswordChangeError;
 import com.epam.rd.autocode.assessment.appliances.exception.password.PasswordChangeException;
-import com.epam.rd.autocode.assessment.appliances.mail.SecurityNotificationMail;
-import com.epam.rd.autocode.assessment.appliances.repository.LoginAttemptRepository;
-import com.epam.rd.autocode.assessment.appliances.repository.RefreshTokenRepository;
+import com.epam.rd.autocode.assessment.appliances.mail.SecurityMailLinkFactory;
 import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.lock.AccountRowLock;
 import com.epam.rd.autocode.assessment.appliances.repository.password.PasswordResetRepository;
-import com.epam.rd.autocode.assessment.appliances.security.jwt.access.AccessTokenVersionService;
-import com.epam.rd.autocode.assessment.appliances.security.password.PasswordChanged;
-import com.epam.rd.autocode.assessment.appliances.security.password.PasswordCredentialStatusService;
+import com.epam.rd.autocode.assessment.appliances.security.password.PasswordReplacementEffects;
 import com.epam.rd.autocode.assessment.appliances.validation.EmailAddress;
-import com.epam.rd.autocode.assessment.appliances.mail.SecurityMailLinkFactory;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.time.Clock;
@@ -22,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Profile;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,25 +33,30 @@ public class PasswordResetService {
     private final ResetTokenCodec codec;
     private final ResetRequestLimiter limits;
     private final PasswordEncoder encoder;
-    private final RefreshTokenRepository refresh;
-    private final LoginAttemptRepository attempts;
     private final ApplicationEventPublisher events;
     private final Clock clock;
-    private final PasswordCredentialStatusService passwordState;
-    private final AccessTokenVersionService tokenVersions;
     private final SecurityMailLinkFactory links;
+    private final PasswordReplacementEffects replacementEffects;
 
     @Transactional
     public long request(String email, String source, Locale locale) {
         String normalized = EmailAddress.normalize(email);
         long retryAfter = limits.acquire(normalized, source);
-        if (retryAfter > 0) return retryAfter;
+        if (retryAfter > 0) {
+            return retryAfter;
+        }
         var found = users.findByEmailIgnoreCase(normalized);
-        if (found.isEmpty()) return 0;
+        if (found.isEmpty()) {
+            return 0;
+        }
         Long id = found.orElseThrow().getId();
-        if (accounts.lock(id).isEmpty()) return 0;
+        if (accounts.lock(id).isEmpty()) {
+            return 0;
+        }
         var current = users.findCredentialSnapshot(id);
-        if (current.isEmpty() || !current.orElseThrow().email().equalsIgnoreCase(normalized)) return 0;
+        if (current.isEmpty() || !current.orElseThrow().email().equalsIgnoreCase(normalized)) {
+            return 0;
+        }
         String token = codec.generate();
         tokens.replace(id, codec.hash(token), clock.instant().plusSeconds(1800));
         events.publishEvent(new PasswordResetMail(normalized, links.passwordReset(token), locale));
@@ -66,22 +65,20 @@ public class PasswordResetService {
 
     @Transactional
     public void reset(@NotNull @Valid PasswordResetRequest form) {
-        if (!codec.valid(form.getToken())) throw new InvalidPasswordResetException();
+        if (!codec.valid(form.getToken())) {
+            throw new InvalidPasswordResetException();
+        }
         String hash = codec.hash(form.getToken());
         Long id = tokens.owner(hash).orElseThrow(InvalidPasswordResetException::new);
         accounts.lock(id).orElseThrow(InvalidPasswordResetException::new);
         var current = users.findCredentialSnapshot(id).orElseThrow(InvalidPasswordResetException::new);
-        if (!tokens.consume(id, hash, clock.instant())) throw new InvalidPasswordResetException();
+        if (!tokens.consume(id, hash, clock.instant())) {
+            throw new InvalidPasswordResetException();
+        }
         if (encoder.matches(form.getNewPassword(), current.passwordHash()))
             throw new PasswordChangeException(PasswordChangeError.NEW_UNCHANGED);
         if (users.replacePassword(id, current.passwordHash(), encoder.encode(form.getNewPassword())) != 1)
             throw new InvalidPasswordResetException();
-        tokens.deleteAll(id);
-        passwordState.markSet(id);
-        tokenVersions.revokePrevious(id);
-        refresh.revokeAll(id, clock.instant());
-        attempts.findLocked(current.email()).ifPresent(attempts::delete);
-        events.publishEvent(new PasswordChanged(id));
-        events.publishEvent(new SecurityNotificationMail(current.email(), SecurityNotificationMail.Kind.PASSWORD_CHANGED, LocaleContextHolder.getLocale()));
+        replacementEffects.complete(id, current.email());
     }
 }

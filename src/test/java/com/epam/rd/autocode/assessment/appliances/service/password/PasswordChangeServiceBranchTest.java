@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 class PasswordChangeServiceBranchTest {
     final CurrentActor actor=mock(CurrentActor.class);final AccountRowLock accounts=mock(AccountRowLock.class);final UserRepository users=mock(UserRepository.class);
     final PasswordCredentialStatusService state=mock(PasswordCredentialStatusService.class);final PasswordEncoder encoder=mock(PasswordEncoder.class);
-    final PasswordChangeService service=new PasswordChangeService(actor,accounts,users,mock(CurrentPasswordVerifier.class),encoder,mock(RefreshTokenRepository.class),mock(LoginAttemptRepository.class),mock(ApplicationEventPublisher.class),Clock.systemUTC(),state,mock(AccessTokenVersionService.class),mock(PasswordResetRepository.class));
+    final PasswordChangeService service=new PasswordChangeService(actor,accounts,users,mock(CurrentPasswordVerifier.class),encoder,state,mock(PasswordReplacementEffects.class));
     final PasswordChangeRequest form=new PasswordChangeRequest();
     void account() { when(actor.requireUser()).thenReturn(new Client(1L,"Client","client@example.test","old-hash",null)); }
     @Test void missingAccountAfterAuthenticationIsDenied() {account();assertThatThrownBy(()->service.change(form)).isInstanceOf(AccessDeniedException.class);}

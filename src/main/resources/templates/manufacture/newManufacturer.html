@@ -1,26 +1,36 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
-<head>
-    <meta charset="UTF-8">
-    <title th:text="${editing} ? #{manufacturer.btn.edit} : #{manufacturer.btn.new}">
-        Manufacturer
-    </title>
-</head>
-<body>
-<header th:insert="~{menunavy :: navy}"></header>
-<main>
-    <h1 th:text="${editing} ? #{manufacturer.btn.edit} : #{manufacturer.btn.new}">
-        Manufacturer
-    </h1>
-
-    <form th:action="@{${formAction}}" th:object="${manufacturer}" method="post">
-        <label for="name" th:text="#{object.manufacturer.name}">Name</label>
-        <input type="text" th:field="*{name}" maxlength="150">
-        <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" role="alert"></p>
-
-        <button type="submit" th:text="#{form.save}">Save</button>
-        <a th:href="@{/manufacturers}" th:text="#{form.cancel}">Cancel</a>
-    </form>
-</main>
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <title th:text="${editing} ? #{manufacturer.btn.edit} : #{manufacturer.btn.new}">
+            Manufacturer
+        </title>
+        <th:block th:replace="~{fragments/assets :: assets}">
+        </th:block>
+    </head>
+    <body>
+        <header th:insert="~{menunavy :: navy}">
+        </header>
+        <main id="main-content">
+            <h1 th:text="${editing} ? #{manufacturer.btn.edit} : #{manufacturer.btn.new}">
+                Manufacturer
+            </h1>
+            <form th:action="@{${formAction}}" th:object="${manufacturer}" method="post">
+                <label for="name" th:text="#{object.manufacturer.name}">
+                    Name
+                </label>
+                <input type="text" th:errorclass="field-error" th:field="*{name}" maxlength="150">
+                <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" role="alert">
+                </p>
+                <button type="submit" th:text="#{form.save}">
+                    Save
+                </button>
+                <a th:href="@{/manufacturers}" th:text="#{form.cancel}">
+                    Cancel
+                </a>
+            </form>
+        </main>
+        <footer th:replace="~{footer :: footer}">
+        </footer>
+    </body>
 </html>
