@@ -19,6 +19,7 @@ public enum CatalogError implements ErrorCode {
     public String messageKey() {
         return messageKey;
     }
+
     @Override
     public ErrorKind kind() {
         return kind;

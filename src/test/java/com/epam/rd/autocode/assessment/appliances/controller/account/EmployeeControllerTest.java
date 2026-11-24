@@ -1,5 +1,10 @@
 package com.epam.rd.autocode.assessment.appliances.controller.account;
 
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.epam.rd.autocode.assessment.appliances.controller.advice.BusinessExceptionAdvice;
 import com.epam.rd.autocode.assessment.appliances.dto.employee.EmployeeRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.user.PasswordRequest;
@@ -9,6 +14,7 @@ import com.epam.rd.autocode.assessment.appliances.mapper.EmployeeMapper;
 import com.epam.rd.autocode.assessment.appliances.service.EmployeeService;
 import com.epam.rd.autocode.assessment.appliances.web.form.AccountFormView;
 import com.epam.rd.autocode.assessment.appliances.web.pagination.ListPageFactory;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,10 +25,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
 class EmployeeControllerTest {
@@ -33,19 +35,27 @@ class EmployeeControllerTest {
 
     @BeforeEach
     void setUp() {
-        mvc = MockMvcBuilders.standaloneSetup(
-                        new EmployeeController(service, Mappers.getMapper(EmployeeMapper.class), new AccountFormView(), new ListPageFactory(10)))
-                .setControllerAdvice(new BusinessExceptionAdvice())
-                .build();
+        mvc =
+                MockMvcBuilders.standaloneSetup(
+                                new EmployeeController(
+                                        service,
+                                        Mappers.getMapper(EmployeeMapper.class),
+                                        new AccountFormView(),
+                                        new ListPageFactory(10)))
+                        .setControllerAdvice(new BusinessExceptionAdvice())
+                        .build();
     }
 
     @Test
     void validatesBothProfileAndCredentialsBeforeCreating() throws Exception {
         mvc.perform(profile("/employees/add", " ").param("password", "GoodPassword2026!"))
+                .andExpect(status().isBadRequest())
                 .andExpect(model().attributeHasFieldErrors("account", "name"));
         mvc.perform(profile("/employees/add", "Good Name").param("password", "short"))
+                .andExpect(status().isBadRequest())
                 .andExpect(model().attributeHasFieldErrors("credentials", "password"));
         mvc.perform(profile("/employees/7/edit", " "))
+                .andExpect(status().isBadRequest())
                 .andExpect(model().attributeHasFieldErrors("account", "name"));
         verifyNoInteractions(service);
     }
@@ -53,14 +63,19 @@ class EmployeeControllerTest {
     @Test
     void showsDuplicateEmailOnTheFormDuringCreateAndUpdate() throws Exception {
         var duplicate = new AccountException(AccountError.EMAIL_DUPLICATE);
-        when(service.create(any(EmployeeRequest.class), any(PasswordRequest.class))).thenThrow(duplicate);
+        when(service.create(any(EmployeeRequest.class), any(PasswordRequest.class)))
+                .thenThrow(duplicate);
         when(service.update(eq(7L), any(EmployeeRequest.class))).thenThrow(duplicate);
 
         mvc.perform(profile("/employees/add", "New Name").param("password", "GoodPassword2026!"))
                 .andExpect(view().name(org.hamcrest.Matchers.endsWith("account/form")))
-                .andExpect(model().attributeHasFieldErrorCode("account", "email", "user.email.duplicate"));
+                .andExpect(
+                        model().attributeHasFieldErrorCode(
+                                        "account", "email", "user.email.duplicate"));
         mvc.perform(profile("/employees/7/edit", "New Name"))
-                .andExpect(model().attributeHasFieldErrorCode("account", "email", "user.email.duplicate"));
+                .andExpect(
+                        model().attributeHasFieldErrorCode(
+                                        "account", "email", "user.email.duplicate"));
     }
 
     @Test
@@ -79,7 +94,9 @@ class EmployeeControllerTest {
     }
 
     private MockHttpServletRequestBuilder profile(String path, String name) {
-        return post(path).param("name", name).param("email", "account@example.com")
+        return post(path)
+                .param("name", name)
+                .param("email", "account@example.com")
                 .param("department", "Stock");
     }
 }

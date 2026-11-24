@@ -1,9 +1,11 @@
 package com.epam.rd.autocode.assessment.appliances.dto.user;
 
-import com.epam.rd.autocode.assessment.appliances.validation.EmailAddress;
+import com.epam.rd.autocode.assessment.appliances.validation.normalization.EmailAddress;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
 import lombok.Getter;
 
 @Getter

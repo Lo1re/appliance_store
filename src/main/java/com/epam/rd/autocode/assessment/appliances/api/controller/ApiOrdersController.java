@@ -8,10 +8,11 @@ import com.epam.rd.autocode.assessment.appliances.dto.query.ApiListQuery;
 import com.epam.rd.autocode.assessment.appliances.dto.query.PageResponse;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
 import com.epam.rd.autocode.assessment.appliances.web.pagination.ListPageFactory;
+
 import jakarta.validation.Valid;
-import java.net.URI;
-import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,6 +26,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URI;
+import java.util.Set;
+
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
@@ -34,21 +38,40 @@ public class ApiOrdersController {
     private final OrderService orders;
     private final ListPageFactory pages;
 
-    @GetMapping public PageResponse<OrderSummary> list(@Valid @ModelAttribute ApiListQuery query,
-                                                      @RequestParam(required = false) Boolean approved) {
-        var page = pages.create(query.getPage(), query.getSize(), query.getSort(), SORT_FIELDS, "id");
+    @GetMapping
+    public PageResponse<OrderSummary> list(
+            @Valid @ModelAttribute ApiListQuery query,
+            @RequestParam(required = false) Boolean approved) {
+        var page =
+                pages.create(query.getPage(), query.getSize(), query.getSort(), SORT_FIELDS, "id");
         return PageResponse.from(orders.findAll(approved, page.pageable()));
     }
-    @GetMapping("/{id}") public OrderResponse details(@PathVariable Long id) { return orders.findById(id); }
-    @PostMapping public ResponseEntity<OrderResponse> create(@Valid @RequestBody ApiOrderCreateRequest request) {
-        var order = orders.create(request.clientId(), request.order());
-        return ResponseEntity.created(URI.create("/api/orders/" + order.summary().id())).body(order);
+
+    @GetMapping("/{id}")
+    public OrderResponse details(@PathVariable Long id) {
+        return orders.findById(id);
     }
-    @PutMapping("/{id}") public OrderResponse update(@PathVariable Long id, @Valid @RequestBody OrderRequest request) {
+
+    @PostMapping
+    public ResponseEntity<OrderResponse> create(@Valid @RequestBody ApiOrderCreateRequest request) {
+        var order = orders.create(request.clientId(), request.order());
+        return ResponseEntity.created(URI.create("/api/orders/" + order.summary().id()))
+                .body(order);
+    }
+
+    @PutMapping("/{id}")
+    public OrderResponse update(@PathVariable Long id, @Valid @RequestBody OrderRequest request) {
         return orders.update(id, request);
     }
-    @DeleteMapping("/{id}") public ResponseEntity<Void> delete(@PathVariable Long id) {
-        orders.delete(id); return ResponseEntity.noContent().build();
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        orders.delete(id);
+        return ResponseEntity.noContent().build();
     }
-    @PostMapping("/{id}/approve") public OrderResponse approve(@PathVariable Long id) { return orders.approve(id); }
+
+    @PostMapping("/{id}/approve")
+    public OrderResponse approve(@PathVariable Long id) {
+        return orders.approve(id);
+    }
 }

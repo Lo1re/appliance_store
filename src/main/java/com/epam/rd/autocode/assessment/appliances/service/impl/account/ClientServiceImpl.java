@@ -17,7 +17,9 @@ import com.epam.rd.autocode.assessment.appliances.repository.OrdersRepository;
 import com.epam.rd.autocode.assessment.appliances.security.session.RevokesAccountSessions;
 import com.epam.rd.autocode.assessment.appliances.service.ClientService;
 import com.epam.rd.autocode.assessment.appliances.service.policy.ClientCardPolicy;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -105,7 +107,8 @@ public class ClientServiceImpl implements ClientService {
     }
 
     private Client requireClient(Long id) {
-        return clientRepository.findById(id)
+        return clientRepository
+                .findById(id)
                 .orElseThrow(() -> new AccountException(AccountError.CLIENT_NOT_FOUND));
     }
 }

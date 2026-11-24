@@ -6,13 +6,19 @@ import com.epam.rd.autocode.assessment.appliances.dto.query.ListQuery;
 import com.epam.rd.autocode.assessment.appliances.exception.CatalogError;
 import com.epam.rd.autocode.assessment.appliances.exception.CatalogException;
 import com.epam.rd.autocode.assessment.appliances.service.ApplianceService;
+import com.epam.rd.autocode.assessment.appliances.web.error.BusinessErrorStatus;
 import com.epam.rd.autocode.assessment.appliances.web.form.ApplianceFormAssembler;
+import com.epam.rd.autocode.assessment.appliances.web.form.ApplianceFormView;
 import com.epam.rd.autocode.assessment.appliances.web.pagination.ListPage;
 import com.epam.rd.autocode.assessment.appliances.web.pagination.ListPageFactory;
+
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -21,6 +27,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.util.Set;
 
 @Controller
 @ControllerSection(path = "/appliances", errorView = "error/catalog")
@@ -39,13 +47,12 @@ public class ApplianceController {
 
     @GetMapping
     public String list(
-            @Valid @ModelAttribute ListQuery query,
-            HttpServletRequest request,
-            Model model
-    ) {
-        ListPage listPage = pages.create(query.getPage(), null, query.getSort(), SORT_FIELDS, "name");
+            @Valid @ModelAttribute ListQuery query, HttpServletRequest request, Model model) {
+        ListPage listPage =
+                pages.create(query.getPage(), null, query.getSort(), SORT_FIELDS, "name");
 
-        model.addAttribute("appliances", applianceService.findAll(query.getSearch(), listPage.pageable()));
+        model.addAttribute(
+                "appliances", applianceService.findAll(query.getSearch(), listPage.pageable()));
         model.addAttribute("search", query.getSearch());
         model.addAttribute("sort", listPage.sort());
         model.addAttribute("canManage", request.isUserInRole("EMPLOYEE"));
@@ -60,13 +67,9 @@ public class ApplianceController {
     }
 
     @GetMapping({"/add", "/{id}/edit"})
-    public String form(
-            @PathVariable(name = "id", required = false) Long id,
-            Model model
-    ) {
+    public String form(@PathVariable(name = "id", required = false) Long id, Model model) {
         ApplianceRequest request = forms.request(id);
-        model.addAttribute("appliance", request);
-        return forms.render(id, request, model);
+        return ApplianceFormView.render(forms.prepare(id, request), model);
     }
 
     @PostMapping({"/add", "/{id}/edit"})
@@ -74,10 +77,11 @@ public class ApplianceController {
             @PathVariable(name = "id", required = false) Long id,
             @Valid @ModelAttribute("appliance") ApplianceRequest request,
             BindingResult errors,
-            Model model
-    ) {
+            HttpServletResponse response,
+            Model model) {
         if (errors.hasErrors()) {
-            return forms.render(id, request, model);
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            return ApplianceFormView.render(forms.prepare(id, request), model);
         }
 
         try {
@@ -94,7 +98,8 @@ public class ApplianceController {
             }
 
             errors.rejectValue("manufacturerId", exception.error().messageKey());
-            return forms.render(id, request, model);
+            response.setStatus(BusinessErrorStatus.of(exception).value());
+            return ApplianceFormView.render(forms.prepare(id, request), model);
         }
     }
 
@@ -103,5 +108,4 @@ public class ApplianceController {
         applianceService.delete(id);
         return REDIRECT;
     }
-
 }

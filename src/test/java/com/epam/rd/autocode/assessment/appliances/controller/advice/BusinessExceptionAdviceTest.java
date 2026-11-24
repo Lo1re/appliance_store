@@ -1,12 +1,14 @@
 package com.epam.rd.autocode.assessment.appliances.controller.advice;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.epam.rd.autocode.assessment.appliances.exception.AccountError;
 import com.epam.rd.autocode.assessment.appliances.exception.AccountException;
 import com.epam.rd.autocode.assessment.appliances.exception.OrderError;
 import com.epam.rd.autocode.assessment.appliances.exception.OrderException;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.web.method.HandlerMethod;
-import static org.assertj.core.api.Assertions.assertThat;
 
 class BusinessExceptionAdviceTest {
     private final BusinessExceptionAdvice advice = new BusinessExceptionAdvice();
@@ -18,7 +20,9 @@ class BusinessExceptionAdviceTest {
         check(handler, OrderError.NOT_EDITABLE, 409);
         check(handler, OrderError.ALREADY_APPROVED, 409);
         check(handler, OrderError.CLIENT_REQUIRED, 400);
-        var conflict = advice.handleBusinessError(new AccountException(AccountError.EMAIL_DUPLICATE), handler);
+        var conflict =
+                advice.handleBusinessError(
+                        new AccountException(AccountError.EMAIL_DUPLICATE), handler);
         assertThat(conflict.getStatus().value()).isEqualTo(409);
         assertThat(conflict.getModel().get("errorMessageKey")).isEqualTo("user.email.duplicate");
     }
@@ -33,7 +37,6 @@ class BusinessExceptionAdviceTest {
 
     @ControllerSection(path = "/orders", errorView = "error/general")
     public static class Endpoint {
-        public void action() {
-        }
+        public void action() {}
     }
 }

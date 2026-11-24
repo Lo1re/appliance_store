@@ -1,14 +1,17 @@
 package com.epam.rd.autocode.assessment.appliances.model;
 
-import java.util.Arrays;
-import java.util.List;
+import static com.epam.rd.autocode.assessment.appliances.model.TestConstants.CATEGORY_TYPE;
+import static com.epam.rd.autocode.assessment.appliances.model.TestConstants.Category.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import static com.epam.rd.autocode.assessment.appliances.model.TestConstants.CATEGORY_TYPE;
-import static com.epam.rd.autocode.assessment.appliances.model.TestConstants.Category.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Arrays;
+import java.util.List;
 
 class CategoryTest {
     private static List<?> constants;
@@ -37,20 +40,22 @@ class CategoryTest {
     @Test
     @DisplayName("There must be constant with name " + ENUM_CONSTANT_BIG)
     void checkEnumConstantBIG() {
-        long actual = Arrays.stream(clazz.getDeclaredFields())
-                .map(f -> f.getName())
-                .filter(name -> name.equals(ENUM_CONSTANT_BIG))
-                .count();
+        long actual =
+                Arrays.stream(clazz.getDeclaredFields())
+                        .map(f -> f.getName())
+                        .filter(name -> name.equals(ENUM_CONSTANT_BIG))
+                        .count();
         assertEquals(1, actual);
     }
 
     @Test
     @DisplayName("There must be constant with name " + ENUM_CONSTANT_SMALL)
     void checkEnumConstantSMALL() {
-        long actual = Arrays.stream(clazz.getDeclaredFields())
-                .map(f -> f.getName())
-                .filter(name -> name.equals(ENUM_CONSTANT_SMALL))
-                .count();
+        long actual =
+                Arrays.stream(clazz.getDeclaredFields())
+                        .map(f -> f.getName())
+                        .filter(name -> name.equals(ENUM_CONSTANT_SMALL))
+                        .count();
         assertEquals(1, actual);
     }
 }

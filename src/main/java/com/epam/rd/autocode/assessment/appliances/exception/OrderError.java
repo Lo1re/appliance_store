@@ -22,6 +22,7 @@ public enum OrderError implements ErrorCode {
     public String messageKey() {
         return messageKey;
     }
+
     @Override
     public ErrorKind kind() {
         return kind;

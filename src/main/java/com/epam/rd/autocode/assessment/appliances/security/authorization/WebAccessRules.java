@@ -1,6 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.security.authorization;
 
 import jakarta.servlet.DispatcherType;
+
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -8,46 +9,53 @@ import org.springframework.security.config.annotation.web.configurers.AuthorizeH
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.springframework.stereotype.Component;
 
-/** One URL authorization policy, independent of how credentials reach the application. */
+// One URL authorization policy, independent of how credentials reach the application.
 @Component
-public class WebAccessRules implements Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry> {
+public class WebAccessRules
+        implements Customizer<
+                AuthorizeHttpRequestsConfigurer<HttpSecurity>
+                        .AuthorizationManagerRequestMatcherRegistry> {
     @Override
-    public void customize(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry requests) {
-        requests
-                .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-                .requestMatchers(
-                        "/",
-                        "/css/**",
-                        "/js/**",
-                        "/images/**"
-                ).permitAll()
-                .requestMatchers(HttpMethod.GET, "/login", "/auth/renew").permitAll()
-                .requestMatchers(HttpMethod.GET, "/register", "/register/check-email").anonymous()
-                .requestMatchers(HttpMethod.POST, "/register").anonymous()
-                .requestMatchers(HttpMethod.GET, "/register/verify", "/register/confirm").permitAll()
-                .requestMatchers(HttpMethod.POST, "/register/complete").permitAll()
-                .requestMatchers(HttpMethod.POST, "/auth/renew").permitAll()
-                .requestMatchers(HttpMethod.GET, "/password/forgot", "/password/reset").permitAll()
-                .requestMatchers(HttpMethod.POST, "/password/forgot", "/password/reset").permitAll()
-                .requestMatchers("/password/change", "/password/setup").hasAnyRole("CLIENT", "EMPLOYEE")
-                .requestMatchers("/lookups/clients").hasRole("EMPLOYEE")
+    public void customize(
+            AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
+                    requests) {
+        requests.dispatcherTypeMatchers(DispatcherType.ERROR)
+                .permitAll()
+                .requestMatchers("/", "/css/**", "/js/**", "/images/**")
+                .permitAll()
+                .requestMatchers(HttpMethod.GET, "/login", "/auth/renew")
+                .permitAll()
+                .requestMatchers(HttpMethod.GET, "/register", "/register/check-email")
+                .anonymous()
+                .requestMatchers(HttpMethod.POST, "/register")
+                .anonymous()
+                .requestMatchers(HttpMethod.GET, "/register/verify", "/register/confirm")
+                .permitAll()
+                .requestMatchers(HttpMethod.POST, "/register/complete")
+                .permitAll()
+                .requestMatchers(HttpMethod.POST, "/auth/renew")
+                .permitAll()
+                .requestMatchers(HttpMethod.GET, "/password/forgot", "/password/reset")
+                .permitAll()
+                .requestMatchers(HttpMethod.POST, "/password/forgot", "/password/reset")
+                .permitAll()
+                .requestMatchers("/password/change", "/password/setup")
+                .hasAnyRole("CLIENT", "EMPLOYEE")
+                .requestMatchers("/lookups/clients")
+                .hasRole("EMPLOYEE")
                 .requestMatchers(HttpMethod.GET, "/lookups/products", "/lookups/manufacturers")
                 .hasAnyRole("CLIENT", "EMPLOYEE")
                 .requestMatchers("/employees/**", "/clients/**")
                 .hasRole("EMPLOYEE")
-                .requestMatchers(
-                        HttpMethod.GET,
-                        "/appliances",
-                        "/manufacturers"
-                ).hasAnyRole("CLIENT", "EMPLOYEE")
+                .requestMatchers(HttpMethod.GET, "/appliances", "/manufacturers")
+                .hasAnyRole("CLIENT", "EMPLOYEE")
                 .requestMatchers(new RegexRequestMatcher("/appliances/[0-9]+(?:\\?.*)?", "GET"))
                 .hasAnyRole("CLIENT", "EMPLOYEE")
-                .requestMatchers(
-                        "/appliances/**",
-                        "/manufacturers/**"
-                ).hasRole("EMPLOYEE")
+                .requestMatchers("/appliances/**", "/manufacturers/**")
+                .hasRole("EMPLOYEE")
                 .requestMatchers("/orders/**")
                 .hasAnyRole("CLIENT", "EMPLOYEE")
-                .anyRequest().denyAll();
+                .anyRequest()
+                .denyAll();
     }
 }

@@ -1,5 +1,9 @@
 package com.epam.rd.autocode.assessment.appliances.service;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderItemRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderResponse;
@@ -11,21 +15,20 @@ import com.epam.rd.autocode.assessment.appliances.security.identity.AccountRole;
 import com.epam.rd.autocode.assessment.appliances.security.identity.CurrentActor;
 import com.epam.rd.autocode.assessment.appliances.service.lookup.LookupService;
 import com.epam.rd.autocode.assessment.appliances.web.form.OrderFormAssembler;
-import java.math.BigDecimal;
-import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
-import org.springframework.data.domain.Page;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 class OrderFormAssemblerTest {
     private final CurrentActor actor = mock(CurrentActor.class);
 
     private final OrderService orders = mock(OrderService.class);
     private final LookupService lookups = mock(LookupService.class);
-    private final OrderFormAssembler forms = new OrderFormAssembler(orders, Mappers.getMapper(OrderMapper.class), lookups, actor);
+    private final OrderFormAssembler forms =
+            new OrderFormAssembler(orders, Mappers.getMapper(OrderMapper.class), lookups, actor);
 
     @Test
     void loadsClientOptionsOnlyForEmployeeCreation() {
@@ -42,18 +45,25 @@ class OrderFormAssemblerTest {
 
     @Test
     void authorizesEditBeforeLoadingOptionsAndNeverOffersAnotherClient() {
-        when(orders.findForEditing(7L)).thenReturn(new OrderResponse(
-                new OrderSummary(7L, 1L, "Buyer", null, null, false),
-                List.of(new OrderResponse.Item(2L, 3L, "Product", 4L, new BigDecimal("20.00"))),
-                new BigDecimal("20.00")));
+        when(orders.findForEditing(7L))
+                .thenReturn(
+                        new OrderResponse(
+                                new OrderSummary(7L, 1L, "Buyer", null, null, false),
+                                List.of(
+                                        new OrderResponse.Item(
+                                                2L, 3L, "Product", 4L, new BigDecimal("20.00"))),
+                                new BigDecimal("20.00")));
         when(lookups.products(eq(""), any())).thenReturn(List.of());
         var form = forms.edit(7L);
         assertThat(form.editing()).isTrue();
         assertThat(form.selectClient()).isFalse();
-        assertThat(form.request().getItems()).singleElement().satisfies(item -> {
-            assertThat(item.getApplianceId()).isEqualTo(3L);
-            assertThat(item.getQuantity()).isEqualTo(4L);
-        });
+        assertThat(form.request().getItems())
+                .singleElement()
+                .satisfies(
+                        item -> {
+                            assertThat(item.getApplianceId()).isEqualTo(3L);
+                            assertThat(item.getQuantity()).isEqualTo(4L);
+                        });
         var sequence = inOrder(orders, lookups);
         sequence.verify(orders).findForEditing(7L);
         sequence.verify(lookups).products(eq(""), any());
@@ -64,7 +74,8 @@ class OrderFormAssemblerTest {
     void invalidInputCannotRedisplayAnOrderThatIsNoLongerEditable() {
         doThrow(new OrderException(OrderError.NOT_EDITABLE)).when(orders).requireEditable(7L);
         assertThatThrownBy(() -> forms.redisplay(7L, null, new OrderRequest()))
-                .isInstanceOf(OrderException.class).hasMessage("order.not-editable");
+                .isInstanceOf(OrderException.class)
+                .hasMessage("order.not-editable");
         verifyNoInteractions(lookups);
     }
 

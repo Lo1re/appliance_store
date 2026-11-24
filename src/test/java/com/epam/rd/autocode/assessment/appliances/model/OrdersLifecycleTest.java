@@ -1,11 +1,14 @@
 package com.epam.rd.autocode.assessment.appliances.model;
 
-import com.epam.rd.autocode.assessment.appliances.exception.OrderException;
-import java.util.List;
-import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import com.epam.rd.autocode.assessment.appliances.exception.OrderException;
+
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 class OrdersLifecycleTest {
 
@@ -48,9 +51,11 @@ class OrdersLifecycleTest {
         assertThat(order.getApproved()).isTrue();
         assertThat(order.getEmployee()).isSameAs(employee);
         assertThatThrownBy(order::assertEditable)
-                .isInstanceOf(OrderException.class).hasMessage("order.not-editable");
+                .isInstanceOf(OrderException.class)
+                .hasMessage("order.not-editable");
         assertThatThrownBy(() -> order.replaceRows(List.of(new OrderRow())))
-                .isInstanceOf(OrderException.class).hasMessage("order.not-editable");
+                .isInstanceOf(OrderException.class)
+                .hasMessage("order.not-editable");
         assertThat(order.getOrderRowSet()).containsExactly(row);
     }
 
@@ -61,7 +66,8 @@ class OrdersLifecycleTest {
         order.approve(employee);
 
         assertThatThrownBy(() -> order.approve(new Employee()))
-                .isInstanceOf(OrderException.class).hasMessage("order.already-approved");
+                .isInstanceOf(OrderException.class)
+                .hasMessage("order.already-approved");
         assertThat(order.getEmployee()).isSameAs(employee);
         assertThat(order.getApproved()).isTrue();
     }
@@ -70,8 +76,7 @@ class OrdersLifecycleTest {
     void missingEmployeeDoesNotPartiallyApproveOrder() {
         var order = new Orders();
 
-        assertThatThrownBy(() -> order.approve(null))
-                .isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> order.approve(null)).isInstanceOf(NullPointerException.class);
         assertThat(order.getApproved()).isFalse();
         assertThat(order.getEmployee()).isNull();
     }

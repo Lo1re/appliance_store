@@ -4,7 +4,9 @@ import com.epam.rd.autocode.assessment.appliances.exception.BusinessException;
 import com.epam.rd.autocode.assessment.appliances.logging.SafeFailure;
 import com.epam.rd.autocode.assessment.appliances.web.error.BusinessErrorStatus;
 import com.epam.rd.autocode.assessment.appliances.web.error.MvcErrorViews;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -27,10 +29,13 @@ public class BusinessExceptionAdvice {
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ModelAndView handleDatabaseError(DataIntegrityViolationException exception,
-                                            HandlerMethod handler) {
-        log.error("Database integrity error in {}.{}", handler.getBeanType().getSimpleName(),
-                handler.getMethod().getName(), SafeFailure.snapshot(exception));
+    public ModelAndView handleDatabaseError(
+            DataIntegrityViolationException exception, HandlerMethod handler) {
+        log.error(
+                "Database integrity error in {}.{}",
+                handler.getBeanType().getSimpleName(),
+                handler.getMethod().getName(),
+                SafeFailure.snapshot(exception));
         var view = new ModelAndView(section(handler).errorView());
         view.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
         view.addObject("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -39,7 +44,8 @@ public class BusinessExceptionAdvice {
     }
 
     private ControllerSection section(HandlerMethod handler) {
-        return java.util.Objects.requireNonNull(AnnotatedElementUtils.findMergedAnnotation(
-                handler.getBeanType(), ControllerSection.class));
+        return java.util.Objects.requireNonNull(
+                AnnotatedElementUtils.findMergedAnnotation(
+                        handler.getBeanType(), ControllerSection.class));
     }
 }

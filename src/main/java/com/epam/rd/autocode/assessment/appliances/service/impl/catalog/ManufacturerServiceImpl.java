@@ -14,7 +14,9 @@ import com.epam.rd.autocode.assessment.appliances.persistence.PersistenceOperati
 import com.epam.rd.autocode.assessment.appliances.repository.ApplianceRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.ManufacturerRepository;
 import com.epam.rd.autocode.assessment.appliances.service.ManufacturerService;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,8 +41,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
     @PreAuthorize("hasAnyRole('CLIENT', 'EMPLOYEE')")
     public Page<ManufacturerResponse> findAll(String search, Pageable pageable) {
         if (search == null || search.isBlank()) {
-            return manufacturerRepository.findAll(pageable)
-                    .map(manufacturerMapper::toResponse);
+            return manufacturerRepository.findAll(pageable).map(manufacturerMapper::toResponse);
         }
 
         return manufacturerRepository
@@ -103,7 +104,8 @@ public class ManufacturerServiceImpl implements ManufacturerService {
     }
 
     private Manufacturer requireManufacturer(Long id) {
-        return manufacturerRepository.findById(id)
+        return manufacturerRepository
+                .findById(id)
                 .orElseThrow(() -> new CatalogException(CatalogError.MANUFACTURER_NOT_FOUND));
     }
 }

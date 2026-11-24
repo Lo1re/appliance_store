@@ -5,6 +5,12 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 
 @ConfigurationProperties("store.api")
 public record ApiTransportProperties(@DefaultValue("cookie") Transport tokenTransport) {
-    public enum Transport { HEADER, COOKIE }
-    public boolean cookieMode() { return tokenTransport == Transport.COOKIE; }
+    public enum Transport {
+        HEADER,
+        COOKIE
+    }
+
+    public boolean cookieMode() {
+        return tokenTransport == Transport.COOKIE;
+    }
 }

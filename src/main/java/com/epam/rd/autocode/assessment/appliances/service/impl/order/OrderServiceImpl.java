@@ -21,15 +21,18 @@ import com.epam.rd.autocode.assessment.appliances.repository.OrdersRepository;
 import com.epam.rd.autocode.assessment.appliances.security.authorization.OrderAccessPolicy;
 import com.epam.rd.autocode.assessment.appliances.security.identity.CurrentActor;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
-import java.math.BigDecimal;
-import java.util.List;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @Validated
@@ -53,15 +56,16 @@ public class OrderServiceImpl implements OrderService {
         Page<Orders> orders;
 
         if (currentUser instanceof Client client) {
-            orders = approved == null
-                    ? ordersRepository.findByClient_Id(client.getId(), pageable)
-                    : ordersRepository.findByClient_IdAndApproved(
-                    client.getId(), approved, pageable
-            );
+            orders =
+                    approved == null
+                            ? ordersRepository.findByClient_Id(client.getId(), pageable)
+                            : ordersRepository.findByClient_IdAndApproved(
+                                    client.getId(), approved, pageable);
         } else {
-            orders = approved == null
-                    ? ordersRepository.findAll(pageable)
-                    : ordersRepository.findByApproved(approved, pageable);
+            orders =
+                    approved == null
+                            ? ordersRepository.findAll(pageable)
+                            : ordersRepository.findByApproved(approved, pageable);
         }
 
         return orders.map(orderMapper::toSummary);
@@ -87,9 +91,10 @@ public class OrderServiceImpl implements OrderService {
 
     private Orders requireAccessibleOrder(Long orderId) {
         User actor = currentActor.requireUser();
-        var accessible = actor instanceof Client client
-                ? ordersRepository.findDetailedByIdAndClient_Id(orderId, client.getId())
-                : ordersRepository.findDetailedById(orderId);
+        var accessible =
+                actor instanceof Client client
+                        ? ordersRepository.findDetailedByIdAndClient_Id(orderId, client.getId())
+                        : ordersRepository.findDetailedById(orderId);
         Orders order = accessible.orElseThrow(() -> new OrderException(OrderError.NOT_FOUND));
         orderAccessPolicy.requireAccess(actor, order);
         return order;
@@ -175,14 +180,16 @@ public class OrderServiceImpl implements OrderService {
             throw new OrderException(OrderError.CLIENT_REQUIRED);
         }
 
-        return clientRepository.findById(clientId)
+        return clientRepository
+                .findById(clientId)
                 .orElseThrow(() -> new OrderException(OrderError.CLIENT_NOT_FOUND));
     }
 
     private Orders requireOrderForUpdate(Long orderId, User actor) {
-        var accessible = actor instanceof Client client
-                ? ordersRepository.findOwnedForUpdate(orderId, client.getId())
-                : ordersRepository.findForUpdate(orderId);
+        var accessible =
+                actor instanceof Client client
+                        ? ordersRepository.findOwnedForUpdate(orderId, client.getId())
+                        : ordersRepository.findForUpdate(orderId);
         return accessible.orElseThrow(() -> new OrderException(OrderError.NOT_FOUND));
     }
 

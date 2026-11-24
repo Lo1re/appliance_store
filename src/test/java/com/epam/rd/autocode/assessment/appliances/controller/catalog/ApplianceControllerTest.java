@@ -1,5 +1,11 @@
 package com.epam.rd.autocode.assessment.appliances.controller.catalog;
 
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.epam.rd.autocode.assessment.appliances.controller.advice.BusinessExceptionAdvice;
 import com.epam.rd.autocode.assessment.appliances.dto.appliance.ApplianceRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.appliance.ApplianceResponse;
@@ -12,7 +18,7 @@ import com.epam.rd.autocode.assessment.appliances.service.ApplianceService;
 import com.epam.rd.autocode.assessment.appliances.service.lookup.LookupService;
 import com.epam.rd.autocode.assessment.appliances.web.form.ApplianceFormAssembler;
 import com.epam.rd.autocode.assessment.appliances.web.pagination.ListPageFactory;
-import java.math.BigDecimal;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,16 +28,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.math.BigDecimal;
 
 @ExtendWith(MockitoExtension.class)
 class ApplianceControllerTest {
@@ -43,10 +45,17 @@ class ApplianceControllerTest {
 
     @BeforeEach
     void setUp() {
-        mvc = MockMvcBuilders.standaloneSetup(
-                        new ApplianceController(service, new ApplianceFormAssembler(service, Mappers.getMapper(ApplianceMapper.class), lookups), new ListPageFactory(10)))
-                .setControllerAdvice(new BusinessExceptionAdvice())
-                .build();
+        mvc =
+                MockMvcBuilders.standaloneSetup(
+                                new ApplianceController(
+                                        service,
+                                        new ApplianceFormAssembler(
+                                                service,
+                                                Mappers.getMapper(ApplianceMapper.class),
+                                                lookups),
+                                        new ListPageFactory(10)))
+                        .setControllerAdvice(new BusinessExceptionAdvice())
+                        .build();
     }
 
     @Test
@@ -54,7 +63,11 @@ class ApplianceControllerTest {
         var page = PageRequest.of(2, 10, Sort.by("price", "id"));
         when(service.findAll("claw", page)).thenReturn(Page.empty(page));
 
-        mvc.perform(get("/appliances").param("search", "claw").param("page", "2").param("sort", "price"))
+        mvc.perform(
+                        get("/appliances")
+                                .param("search", "claw")
+                                .param("page", "2")
+                                .param("sort", "price"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("appliance/appliances"))
                 .andExpect(model().attribute("sort", "price"));
@@ -88,10 +101,14 @@ class ApplianceControllerTest {
                 .thenThrow(new CatalogException(CatalogError.APPLIANCE_MANUFACTURER_NOT_FOUND));
 
         mvc.perform(post("/appliances/add"))
+                .andExpect(status().isBadRequest())
                 .andExpect(model().attributeHasFieldErrors("appliance", "name"));
         mvc.perform(product("/appliances/add"))
-                .andExpect(model().attributeHasFieldErrorCode(
-                        "appliance", "manufacturerId", "appliance.manufacturer.not-found"));
+                .andExpect(
+                        model().attributeHasFieldErrorCode(
+                                        "appliance",
+                                        "manufacturerId",
+                                        "appliance.manufacturer.not-found"));
         verify(service, times(1)).create(any(ApplianceRequest.class));
     }
 
@@ -130,17 +147,26 @@ class ApplianceControllerTest {
                 .andExpect(view().name("appliance/details"))
                 .andExpect(model().attribute("appliance", product))
                 .andExpect(model().attribute("canManage", false));
-        mvc.perform(get("/appliances/7").with(request -> {
-            request.addUserRole("EMPLOYEE");
-            return request;
-        })).andExpect(model().attribute("canManage", true));
+        mvc.perform(
+                        get("/appliances/7")
+                                .with(
+                                        request -> {
+                                            request.addUserRole("EMPLOYEE");
+                                            return request;
+                                        }))
+                .andExpect(model().attribute("canManage", true));
     }
 
     private MockHttpServletRequestBuilder product(String path) {
-        return post(path).param("name", "Product").param("model", "M1")
-                .param("manufacturerId", "1").param("category", "SMALL")
-                .param("powerType", "AC220").param("characteristic", "Compact")
-                .param("description", "Product description").param("power", "100")
+        return post(path)
+                .param("name", "Product")
+                .param("model", "M1")
+                .param("manufacturerId", "1")
+                .param("category", "SMALL")
+                .param("powerType", "AC220")
+                .param("characteristic", "Compact")
+                .param("description", "Product description")
+                .param("power", "100")
                 .param("price", "1.01");
     }
 }

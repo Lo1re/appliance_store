@@ -3,7 +3,9 @@ package com.epam.rd.autocode.assessment.appliances.controller.order;
 import java.util.Arrays;
 
 enum OrderFilter {
-    ALL("all", null), PENDING("pending", false), APPROVED("approved", true);
+    ALL("all", null),
+    PENDING("pending", false),
+    APPROVED("approved", true);
 
     private final String parameter;
     private final Boolean approved;
@@ -16,7 +18,8 @@ enum OrderFilter {
     static OrderFilter fromParameter(String parameter) {
         return Arrays.stream(values())
                 .filter(value -> value.parameter.equals(parameter))
-                .findFirst().orElse(ALL);
+                .findFirst()
+                .orElse(ALL);
     }
 
     String parameter() {

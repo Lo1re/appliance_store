@@ -5,5 +5,8 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 
 @ConfigurationProperties("store.security")
 public record AuthenticationProperties(@DefaultValue("database") Mode authMode) {
-    public enum Mode { DATABASE, INMEMORY }
+    public enum Mode {
+        DATABASE,
+        INMEMORY
+    }
 }

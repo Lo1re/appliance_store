@@ -1,6 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.security.session;
 
 import lombok.RequiredArgsConstructor;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -17,14 +18,21 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 public class AccountSessionRevocation {
     private final AccountSessionInvalidator sessions;
 
-    @Around(value = "@annotation(com.epam.rd.autocode.assessment.appliances.security.session.RevokesAccountSessions) && args(accountId)",
+    @Around(
+            value =
+                    "@annotation(com.epam.rd.autocode.assessment.appliances.security.session.RevokesAccountSessions)"
+                        + " && args(accountId)",
             argNames = "operation,accountId")
     public Object afterDeletion(ProceedingJoinPoint operation, Long accountId) throws Throwable {
         Object result = operation.proceed();
         if (TransactionSynchronizationManager.isActualTransactionActive()) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override public void afterCommit() { expire(accountId); }
-            });
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            expire(accountId);
+                        }
+                    });
         } else {
             expire(accountId);
         }

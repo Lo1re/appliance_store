@@ -1,11 +1,13 @@
 package com.epam.rd.autocode.assessment.appliances.security.jwt.config;
 
-import java.time.Duration;
 import lombok.Getter;
 import lombok.Setter;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/** No generated toString: the signing secret must never be logged. */
+import java.time.Duration;
+
+// No generated toString: the signing secret must never be logged.
 @Getter
 @Setter
 @ConfigurationProperties("store.security.jwt")

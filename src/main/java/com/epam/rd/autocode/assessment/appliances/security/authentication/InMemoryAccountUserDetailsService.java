@@ -3,22 +3,26 @@ package com.epam.rd.autocode.assessment.appliances.security.authentication;
 import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
 import com.epam.rd.autocode.assessment.appliances.security.identity.AccountRole;
 import com.epam.rd.autocode.assessment.appliances.security.identity.StorePrincipal;
-import com.epam.rd.autocode.assessment.appliances.validation.EmailAddress;
-import java.util.Map;
+import com.epam.rd.autocode.assessment.appliances.validation.normalization.EmailAddress;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Resolves in-memory credentials to the current local account and its domain role. */
+import java.util.Map;
+
+// Resolves in-memory credentials to the current local account and its domain role.
 public class InMemoryAccountUserDetailsService implements UserDetailsService {
     private final InMemoryUserDetailsManager credentials;
     private final UserRepository users;
     private final Map<String, AccountRole> expectedRoles;
 
-    public InMemoryAccountUserDetailsService(InMemoryUserDetailsManager credentials, UserRepository users,
-                                             Map<String, AccountRole> expectedRoles) {
+    public InMemoryAccountUserDetailsService(
+            InMemoryUserDetailsManager credentials,
+            UserRepository users,
+            Map<String, AccountRole> expectedRoles) {
         this.credentials = credentials;
         this.users = users;
         this.expectedRoles = Map.copyOf(expectedRoles);
@@ -38,8 +42,11 @@ public class InMemoryAccountUserDetailsService implements UserDetailsService {
         if (expected != null && expected != role) {
             throw missing();
         }
-        return new StorePrincipal(account.getId(), account.getEmail(), configured.getPassword(), role);
+        return new StorePrincipal(
+                account.getId(), account.getEmail(), configured.getPassword(), role);
     }
 
-    private UsernameNotFoundException missing() { return new UsernameNotFoundException("Account not found"); }
+    private UsernameNotFoundException missing() {
+        return new UsernameNotFoundException("Account not found");
+    }
 }

@@ -1,5 +1,9 @@
 package com.epam.rd.autocode.assessment.appliances.integration;
 
+import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -7,11 +11,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(properties = {"spring.datasource.url=jdbc:h2:mem:foundation-ui;DB_CLOSE_DELAY=-1", "store.security.hsts.enabled=true"})
+@SpringBootTest(
+        properties = {
+            "spring.datasource.url=jdbc:h2:mem:foundation-ui;DB_CLOSE_DELAY=-1",
+            "store.security.hsts.enabled=true"
+        })
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class FoundationUiIntegrationTest {
@@ -20,9 +25,22 @@ class FoundationUiIntegrationTest {
     @Test
     @WithUserDetails("phobos@gmail.com")
     void allCurrentFormsRenderTheSharedLanguageNavigation() throws Exception {
-        for (String path : new String[]{"/", "/appliances", "/appliances/add", "/manufacturers", "/manufacturers/add",
-                "/clients", "/clients/add", "/employees", "/employees/add", "/orders", "/orders/add"}) {
-            mvc.perform(get(path)).andExpect(status().isOk())
+        for (String path :
+                new String[] {
+                    "/",
+                    "/appliances",
+                    "/appliances/add",
+                    "/manufacturers",
+                    "/manufacturers/add",
+                    "/clients",
+                    "/clients/add",
+                    "/employees",
+                    "/employees/add",
+                    "/orders",
+                    "/orders/add"
+                }) {
+            mvc.perform(get(path))
+                    .andExpect(status().isOk())
                     .andExpect(content().string(containsString("hreflang=\"uk\"")))
                     .andExpect(content().string(not(containsString("??"))));
         }
@@ -32,11 +50,18 @@ class FoundationUiIntegrationTest {
     void expiredSessionMessageIsLocalized() throws Exception {
         mvc.perform(get("/login").param("expired", "").param("lang", "uk"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Ваш сеанс завершено. Увійдіть повторно.")));
+                .andExpect(
+                        content()
+                                .string(containsString("Ваш сеанс завершено. Увійдіть повторно.")));
     }
+
     @Test
     void secureResponsesApplyTheConfiguredProductionHstsPolicy() throws Exception {
-        mvc.perform(get("/").secure(true)).andExpect(status().isOk())
-                .andExpect(header().string("Strict-Transport-Security", "max-age=31536000 ; includeSubDomains"));
+        mvc.perform(get("/").secure(true))
+                .andExpect(status().isOk())
+                .andExpect(
+                        header().string(
+                                        "Strict-Transport-Security",
+                                        "max-age=31536000 ; includeSubDomains"));
     }
 }

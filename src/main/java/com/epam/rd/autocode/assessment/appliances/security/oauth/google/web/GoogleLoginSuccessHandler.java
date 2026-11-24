@@ -11,11 +11,13 @@ import com.epam.rd.autocode.assessment.appliances.security.oauth.google.identity
 import com.epam.rd.autocode.assessment.appliances.security.oauth.google.identity.GoogleIdentityService;
 import com.epam.rd.autocode.assessment.appliances.security.oauth.google.identity.GoogleIdentityVerifier;
 import com.epam.rd.autocode.assessment.appliances.security.oauth.google.identity.GoogleLoginException;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -25,7 +27,10 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.transaction.TransactionException;
 
-@RequiredArgsConstructor @Slf4j
+import java.io.IOException;
+
+@RequiredArgsConstructor
+@Slf4j
 public class GoogleLoginSuccessHandler implements AuthenticationSuccessHandler {
     private final GoogleIdentityVerifier verifier;
     private final GoogleIdentityService identities;
@@ -36,12 +41,17 @@ public class GoogleLoginSuccessHandler implements AuthenticationSuccessHandler {
     private final AuthTokenCookies browserCookies;
     private final GoogleLinkVerifier links;
 
-    @Override public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
+    @Override
+    public void onAuthenticationSuccess(
+            HttpServletRequest request, HttpServletResponse response, Authentication authentication)
+            throws IOException {
         response.setHeader("Cache-Control", "no-store");
         try {
-            if (!(authentication instanceof OAuth2AuthenticationToken oauth) || !"google".equals(oauth.getAuthorizedClientRegistrationId())
-                    || !(oauth.getPrincipal() instanceof OidcUser oidc))
+            if (!(authentication instanceof OAuth2AuthenticationToken oauth)
+                    || !"google".equals(oauth.getAuthorizedClientRegistrationId())
+                    || !(oauth.getPrincipal() instanceof OidcUser oidc)) {
                 throw new GoogleLoginException(GoogleLoginException.Reason.INVALID_IDENTITY);
+            }
             var identity = verifier.verify(oidc);
             var intent = flows.link(request);
             if (intent.isPresent()) {
@@ -57,7 +67,8 @@ public class GoogleLoginSuccessHandler implements AuthenticationSuccessHandler {
             if (account.isPresent()) {
                 var local = accounts.forAccount(account.orElseThrow());
                 flows.finish(request, response);
-                new JwtLoginSuccessHandler(tokens, cookies, browserCookies).onAuthenticationSuccess(request, response, local);
+                new JwtLoginSuccessHandler(tokens, cookies, browserCookies)
+                        .onAuthenticationSuccess(request, response, local);
                 log.info("Google sign-in completed (accountId={})", account.orElseThrow());
             } else {
                 if (identity.emailVerified() && identities.emailTaken(identity.email())) {
@@ -68,12 +79,17 @@ public class GoogleLoginSuccessHandler implements AuthenticationSuccessHandler {
             }
         } catch (GoogleLoginException rejected) {
             flows.finish(request, response);
-            String flag = rejected.reason() == GoogleLoginException.Reason.LINK_REQUIRED ? "googleLinkRequired" : "googleError";
+            String flag =
+                    rejected.reason() == GoogleLoginException.Reason.LINK_REQUIRED
+                            ? "googleLinkRequired"
+                            : "googleError";
             response.sendRedirect(request.getContextPath() + "/login?" + flag);
         } catch (DataIntegrityViolationException conflict) {
             flows.finish(request, response);
             response.sendRedirect(request.getContextPath() + "/login?googleError");
-        } catch (DataAccessException | TransactionException | AuthenticationServiceException unavailable) {
+        } catch (DataAccessException
+                | TransactionException
+                | AuthenticationServiceException unavailable) {
             flows.finish(request, response);
             log.error("Google sign-in storage unavailable", SafeFailure.snapshot(unavailable));
             response.sendError(503);

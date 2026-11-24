@@ -1,26 +1,34 @@
 package com.epam.rd.autocode.assessment.appliances.security.password;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import com.epam.rd.autocode.assessment.appliances.model.security.PasswordCredentialState;
 import com.epam.rd.autocode.assessment.appliances.repository.oauth.OAuthIdentityRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.password.PasswordCredentialStateRepository;
-import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import static org.mockito.Mockito.*;
-import static org.assertj.core.api.Assertions.*;
+
+import java.util.Optional;
 
 class PasswordCredentialStatusServiceTest {
-    private final PasswordCredentialStateRepository states = mock(PasswordCredentialStateRepository.class);
+    private final PasswordCredentialStateRepository states =
+            mock(PasswordCredentialStateRepository.class);
     private final OAuthIdentityRepository identities = mock(OAuthIdentityRepository.class);
-    private final PasswordCredentialStatusService service = new PasswordCredentialStatusService(states, identities);
-    @Test void preservesLegacyPasswordAccessWithoutGuessingFromTheHash() {
+    private final PasswordCredentialStatusService service =
+            new PasswordCredentialStatusService(states, identities);
+
+    @Test
+    void preservesLegacyPasswordAccessWithoutGuessingFromTheHash() {
         when(states.findById(1L)).thenReturn(Optional.empty());
         assertThat(service.status(1L)).isEqualTo(PasswordCredentialStatus.SET);
         when(identities.existsByProviderAndUserId("GOOGLE", 1L)).thenReturn(true);
         assertThat(service.status(1L)).isEqualTo(PasswordCredentialStatus.UNKNOWN);
         assertThat(service.explicitlyMissing(1L)).isFalse();
     }
-    @Test void explicitGooglePasswordStateChangesOnlyWhenARealPasswordWasSet() {
+
+    @Test
+    void explicitGooglePasswordStateChangesOnlyWhenARealPasswordWasSet() {
         var state = new PasswordCredentialState(1L, false);
         when(states.findById(1L)).thenReturn(Optional.of(state));
         assertThat(service.status(1L)).isEqualTo(PasswordCredentialStatus.NOT_SET);
@@ -29,7 +37,9 @@ class PasswordCredentialStatusServiceTest {
         assertThat(service.status(1L)).isEqualTo(PasswordCredentialStatus.SET);
         assertThat(service.explicitlyMissing(1L)).isFalse();
     }
-    @Test void linkingAnAccountDoesNotOverwriteAnExistingPasswordlessMarker() {
+
+    @Test
+    void linkingAnAccountDoesNotOverwriteAnExistingPasswordlessMarker() {
         when(states.existsById(1L)).thenReturn(true);
         service.rememberExistingPassword(1L);
         verify(states, never()).save(any());

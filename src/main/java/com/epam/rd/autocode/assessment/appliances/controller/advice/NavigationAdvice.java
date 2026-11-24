@@ -4,36 +4,54 @@ import com.epam.rd.autocode.assessment.appliances.security.authentication.Authen
 import com.epam.rd.autocode.assessment.appliances.security.password.reset.PasswordResetService;
 import com.epam.rd.autocode.assessment.appliances.security.registration.RegistrationPreparation;
 import com.epam.rd.autocode.assessment.appliances.web.LanguageNavigation;
+
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 @ControllerAdvice
-@RequiredArgsConstructor
 public class NavigationAdvice {
     private final LanguageNavigation languages;
     private final AuthenticationProperties authentication;
     private final ObjectProvider<PasswordResetService> passwordReset;
     private final ObjectProvider<RegistrationPreparation> registration;
+    private final boolean googleEnabled;
+
+    public NavigationAdvice(
+            LanguageNavigation languages,
+            AuthenticationProperties authentication,
+            ObjectProvider<PasswordResetService> passwordReset,
+            ObjectProvider<RegistrationPreparation> registration,
+            @Value("${store.security.google.enabled:false}") boolean googleEnabled) {
+        this.languages = languages;
+        this.authentication = authentication;
+        this.passwordReset = passwordReset;
+        this.registration = registration;
+        this.googleEnabled = googleEnabled;
+    }
 
     @ModelAttribute("registrationEnabled")
-    public boolean registrationEnabled() { return registration.getIfAvailable() != null; }
-
-    @Value("${store.security.google.enabled:false}")
-    private boolean googleEnabled;
+    public boolean registrationEnabled() {
+        return registration.getIfAvailable() != null;
+    }
 
     @ModelAttribute("googleLoginEnabled")
-    public boolean googleLoginEnabled() { return googleEnabled; }
+    public boolean googleLoginEnabled() {
+        return googleEnabled;
+    }
 
     @ModelAttribute("passwordResetEnabled")
-    public boolean passwordResetEnabled() { return passwordReset.getIfAvailable() != null; }
+    public boolean passwordResetEnabled() {
+        return passwordReset.getIfAvailable() != null;
+    }
 
     @ModelAttribute("passwordChangeEnabled")
-    public boolean passwordChangeEnabled() { return authentication.authMode() == AuthenticationProperties.Mode.DATABASE; }
-
+    public boolean passwordChangeEnabled() {
+        return authentication.authMode() == AuthenticationProperties.Mode.DATABASE;
+    }
 
     @ModelAttribute("languageLinks")
     public LanguageNavigation.Links languageLinks(HttpServletRequest request) {
@@ -42,12 +60,8 @@ public class NavigationAdvice {
 
     @ModelAttribute("navigation")
     public Navigation navigation(HttpServletRequest request) {
-        return new Navigation(
-                request.getUserPrincipal() != null,
-                request.isUserInRole("EMPLOYEE")
-        );
+        return new Navigation(request.getUserPrincipal() != null, request.isUserInRole("EMPLOYEE"));
     }
 
-    public record Navigation(boolean signedIn, boolean employee) {
-    }
+    public record Navigation(boolean signedIn, boolean employee) {}
 }

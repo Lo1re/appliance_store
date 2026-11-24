@@ -1,10 +1,13 @@
 package com.epam.rd.autocode.assessment.appliances.aspect;
 
 import com.epam.rd.autocode.assessment.appliances.exception.BusinessException;
+import com.epam.rd.autocode.assessment.appliances.logging.OperationCompletionLogger;
+
 import jakarta.validation.ConstraintViolationException;
-import java.util.concurrent.TimeUnit;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -12,6 +15,8 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Aspect
@@ -46,5 +51,4 @@ public class LoggingServices {
             throw exception;
         }
     }
-
 }

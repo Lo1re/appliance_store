@@ -1,9 +1,11 @@
 package com.epam.rd.autocode.assessment.appliances.dto.client;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
+
 import org.junit.jupiter.api.Test;
-import static org.assertj.core.api.Assertions.assertThat;
 
 class ClientRequestTest {
     @Test

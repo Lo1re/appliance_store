@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,6 +28,6 @@ public class Manufacturer {
 
     @NotBlank
     @Size(max = 150)
-    @Column(nullable = false,unique = true, length = 150)
+    @Column(nullable = false, unique = true, length = 150)
     private String name;
 }

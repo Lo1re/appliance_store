@@ -7,13 +7,16 @@ import com.epam.rd.autocode.assessment.appliances.exception.OrderException;
 import com.epam.rd.autocode.assessment.appliances.model.Appliance;
 import com.epam.rd.autocode.assessment.appliances.model.OrderRow;
 import com.epam.rd.autocode.assessment.appliances.repository.ApplianceRepository;
+
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.stereotype.Component;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
@@ -24,9 +27,7 @@ public class OrderRowsFactory {
         Map<Long, Long> quantities = new LinkedHashMap<>();
 
         for (OrderItemRequest item : request.getItems()) {
-            Long previous = quantities.putIfAbsent(
-                    item.getApplianceId(), item.getQuantity()
-            );
+            Long previous = quantities.putIfAbsent(item.getApplianceId(), item.getQuantity());
 
             if (previous != null) {
                 throw new OrderException(OrderError.DUPLICATE_APPLIANCE);
@@ -50,5 +51,4 @@ public class OrderRowsFactory {
 
         return rows;
     }
-
 }

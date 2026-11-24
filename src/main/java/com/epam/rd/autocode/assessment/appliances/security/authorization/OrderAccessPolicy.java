@@ -6,6 +6,7 @@ import com.epam.rd.autocode.assessment.appliances.model.Client;
 import com.epam.rd.autocode.assessment.appliances.model.Employee;
 import com.epam.rd.autocode.assessment.appliances.model.Orders;
 import com.epam.rd.autocode.assessment.appliances.model.User;
+
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
@@ -35,8 +36,7 @@ public class OrderAccessPolicy {
     }
 
     public void requireClientSelection(Client actor, Long requestedClientId) {
-        if (requestedClientId != null
-                && !actor.getId().equals(requestedClientId)) {
+        if (requestedClientId != null && !actor.getId().equals(requestedClientId)) {
             throw new AccessDeniedException("Access denied");
         }
     }

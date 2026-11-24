@@ -1084,3 +1084,29 @@ Home/catalog/gallery were visually checked in an isolated temporary H2 applicati
 The user's normal PostgreSQL application was unavailable during this verification; its demo
 catalog update is applied by Flyway on the next normal application Run.
 No commits, staging, .idea access or external SMTP delivery.
+
+## Package and style consistency — 24 November 2026
+
+The current conventions are documented in [Architecture conventions](docs/architecture-conventions.md).
+Security persistence types and repositories, normalization helpers, mail events, lookup routes
+and logging helpers now live in their corresponding layer subpackages. Main and test Java
+sources use one four-space formatter style, braced control-flow bodies and `//` comments.
+
+All application repositories use Spring Data JPA, including password-reset storage. Reset-token
+replacement, atomic single-use consumption and password rollback retain their transaction
+guarantees without a schema migration. Purpose-specific committed login/refresh transactions
+remain explicit. Forgot-password email normalization happens before validation, navigation
+configuration uses constructor injection, and complex appliance/order forms share the
+Assembler/Data/View responsibility split. Invalid HTML forms return 400; duplicate-data
+conflicts return 409 while retaining field errors. Successful redirects remain unchanged.
+
+Verification after applying this refactor to the project: `clean verify -Pcontainer-tests`
+completed with BUILD SUCCESS, 643 Surefire tests and 9 PostgreSQL Failsafe tests, with zero
+failures/errors/skips. JaCoCo reports 3736 covered lines, 1294 covered branches and zero
+missed counters. Existing coverage gates and exclusions are unchanged. The PostgreSQL
+suite additionally checks that concurrent consumption of a reset token has one winner.
+
+A separate real HTTPS acceptance run passed 269 assertions over 169 HTTP responses
+against disposable PostgreSQL and Mailpit, including registration and password-recovery emails.
+All fixture records and disposable runtime storage were removed. Details and limits are in
+[Refactoring verification](docs/refactoring-verification-2026-11-24.md).

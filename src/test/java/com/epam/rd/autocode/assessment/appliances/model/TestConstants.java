@@ -38,7 +38,6 @@ public class TestConstants {
         public static final String FIELD_NAME = "name";
         public static final int CLASS_COUNT_CONSTRUCTORS = 2;
         public static final int PARAMETERS_IN_CONSTRUCTOR_WITH_PARAMETERS = CLASS_COUNT_FIELDS;
-
     }
 
     static class Appliance {
@@ -60,7 +59,8 @@ public class TestConstants {
         public static final int CLASS_COUNT_FIELDS = 1;
         public static final String FIELD_CARD = "card";
         public static final int CLASS_COUNT_CONSTRUCTORS = 2;
-        public static final int PARAMETERS_IN_CONSTRUCTOR_WITH_PARAMETERS = CLASS_COUNT_FIELDS + User.CLASS_COUNT_FIELDS;
+        public static final int PARAMETERS_IN_CONSTRUCTOR_WITH_PARAMETERS =
+                CLASS_COUNT_FIELDS + User.CLASS_COUNT_FIELDS;
     }
 
     static class Employee {
@@ -68,7 +68,8 @@ public class TestConstants {
         public static final int CLASS_COUNT_FIELDS = 1;
         public static final String FIELD_DEPARTMENT = "department";
         public static final int CLASS_COUNT_CONSTRUCTORS = 2;
-        public static final int PARAMETERS_IN_CONSTRUCTOR_WITH_PARAMETERS = CLASS_COUNT_FIELDS + User.CLASS_COUNT_FIELDS;
+        public static final int PARAMETERS_IN_CONSTRUCTOR_WITH_PARAMETERS =
+                CLASS_COUNT_FIELDS + User.CLASS_COUNT_FIELDS;
     }
 
     static class OrderRow {
@@ -83,6 +84,5 @@ public class TestConstants {
         public static final int CLASS_COUNT_FIELDS = 5;
         public static final int CLASS_COUNT_CONSTRUCTORS = 2;
         public static final int PARAMETERS_IN_CONSTRUCTOR_WITH_PARAMETERS = CLASS_COUNT_FIELDS;
-
     }
 }

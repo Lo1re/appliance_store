@@ -1,19 +1,22 @@
 package com.epam.rd.autocode.assessment.appliances.security.password;
 
 import com.epam.rd.autocode.assessment.appliances.mail.SecurityNotificationMail;
-import com.epam.rd.autocode.assessment.appliances.repository.LoginAttemptRepository;
-import com.epam.rd.autocode.assessment.appliances.repository.RefreshTokenRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.password.PasswordResetRepository;
+import com.epam.rd.autocode.assessment.appliances.repository.security.LoginAttemptRepository;
+import com.epam.rd.autocode.assessment.appliances.repository.security.RefreshTokenRepository;
 import com.epam.rd.autocode.assessment.appliances.security.jwt.access.AccessTokenVersionService;
-import java.time.Clock;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Completes a successful password replacement in the existing, account-locked transaction. */
+import java.time.Clock;
+
+// Completes a successful password replacement in the existing, account-locked transaction.
 @Component
 @RequiredArgsConstructor
 public class PasswordReplacementEffects {
@@ -33,7 +36,10 @@ public class PasswordReplacementEffects {
         resetTokens.deleteAll(accountId);
         attempts.findLocked(email).ifPresent(attempts::delete);
         events.publishEvent(new PasswordChanged(accountId));
-        events.publishEvent(new SecurityNotificationMail(email,
-                SecurityNotificationMail.Kind.PASSWORD_CHANGED, LocaleContextHolder.getLocale()));
+        events.publishEvent(
+                new SecurityNotificationMail(
+                        email,
+                        SecurityNotificationMail.Kind.PASSWORD_CHANGED,
+                        LocaleContextHolder.getLocale()));
     }
 }

@@ -2,9 +2,12 @@ package com.epam.rd.autocode.assessment.appliances.controller.advice;
 
 import com.epam.rd.autocode.assessment.appliances.logging.SafeFailure;
 import com.epam.rd.autocode.assessment.appliances.web.error.MvcErrorViews;
+
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolationException;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -35,16 +38,23 @@ public class MvcExceptionAdvice {
             status = HttpStatus.BAD_REQUEST;
         } else if (exception instanceof ErrorResponse error) {
             status = error.getStatusCode();
-            error.getHeaders().forEach((name, values) ->
-                    values.forEach(value -> response.addHeader(name, value)));
+            error.getHeaders()
+                    .forEach(
+                            (name, values) ->
+                                    values.forEach(value -> response.addHeader(name, value)));
         } else {
             status = HttpStatus.INTERNAL_SERVER_ERROR;
         }
 
         if (status.is5xxServerError()) {
-            log.error("Unexpected MVC failure (type={})", exception.getClass().getSimpleName(), SafeFailure.snapshot(exception));
+            log.error(
+                    "Unexpected MVC failure (type={})",
+                    exception.getClass().getSimpleName(),
+                    SafeFailure.snapshot(exception));
         } else {
-            log.debug("MVC request rejected (status={}, type={})", status.value(),
+            log.debug(
+                    "MVC request rejected (status={}, type={})",
+                    status.value(),
                     exception.getClass().getSimpleName());
         }
         return MvcErrorViews.render(status);

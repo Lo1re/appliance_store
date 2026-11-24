@@ -1,12 +1,19 @@
 package com.epam.rd.autocode.assessment.appliances.controller.advice;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.epam.rd.autocode.assessment.appliances.exception.AccountError;
 import com.epam.rd.autocode.assessment.appliances.exception.CatalogError;
 import com.epam.rd.autocode.assessment.appliances.exception.ErrorKind;
 import com.epam.rd.autocode.assessment.appliances.exception.OrderError;
+
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.Cookie;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -22,12 +29,10 @@ import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:mvc-errors-it;MODE=PostgreSQL;DB_CLOSE_DELAY=-1")
+@SpringBootTest(
+        properties =
+                "spring.datasource.url=jdbc:h2:mem:mvc-errors-it;MODE=PostgreSQL;DB_CLOSE_DELAY=-1")
 @AutoConfigureMockMvc
 @Import(MvcErrorsIntegrationTest.Probes.class)
 class MvcErrorsIntegrationTest {
@@ -68,7 +73,11 @@ class MvcErrorsIntegrationTest {
     @Test
     @WithUserDetails("mercury@gmail.com")
     void unsupportedMethodKeeps405AndItsAllowHeader() throws Exception {
-        mvc.perform(put("/orders/1").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf()))
+        mvc.perform(
+                        put("/orders/1")
+                                .with(
+                                        org.springframework.security.test.web.servlet.request
+                                                .SecurityMockMvcRequestPostProcessors.csrf()))
                 .andExpect(status().isMethodNotAllowed())
                 .andExpect(view().name("error/405"))
                 .andExpect(header().string("Allow", containsString("GET")));
@@ -76,13 +85,17 @@ class MvcErrorsIntegrationTest {
 
     @Test
     void containerErrorDispatchUsesLocalizedTemplatesWithoutAuthentication() throws Exception {
-        mvc.perform(get("/error").accept(org.springframework.http.MediaType.TEXT_HTML).with(request -> {
-                            request.setDispatcherType(DispatcherType.ERROR);
-                            return request;
-                        })
-                        .requestAttr(RequestDispatcher.ERROR_STATUS_CODE, 403)
-                        .requestAttr(RequestDispatcher.ERROR_REQUEST_URI, "/clients")
-                        .cookie(new Cookie("store-lang", "uk")))
+        mvc.perform(
+                        get("/error")
+                                .accept(org.springframework.http.MediaType.TEXT_HTML)
+                                .with(
+                                        request -> {
+                                            request.setDispatcherType(DispatcherType.ERROR);
+                                            return request;
+                                        })
+                                .requestAttr(RequestDispatcher.ERROR_STATUS_CODE, 403)
+                                .requestAttr(RequestDispatcher.ERROR_REQUEST_URI, "/clients")
+                                .cookie(new Cookie("store-lang", "uk")))
                 .andExpect(status().isForbidden())
                 .andExpect(view().name("error/403"))
                 .andExpect(content().string(containsString("HTTP 403")))
@@ -95,7 +108,8 @@ class MvcErrorsIntegrationTest {
         assertThat(OrderError.NOT_FOUND.kind()).isEqualTo(ErrorKind.NOT_FOUND);
         assertThat(OrderError.CLIENT_NOT_FOUND.kind()).isEqualTo(ErrorKind.VALIDATION);
         assertThat(OrderError.APPLIANCE_NOT_FOUND.kind()).isEqualTo(ErrorKind.VALIDATION);
-        assertThat(CatalogError.APPLIANCE_MANUFACTURER_NOT_FOUND.kind()).isEqualTo(ErrorKind.VALIDATION);
+        assertThat(CatalogError.APPLIANCE_MANUFACTURER_NOT_FOUND.kind())
+                .isEqualTo(ErrorKind.VALIDATION);
         assertThat(AccountError.EMAIL_DUPLICATE.kind()).isEqualTo(ErrorKind.CONFLICT);
     }
 
@@ -105,10 +119,8 @@ class MvcErrorsIntegrationTest {
         mvc.perform(get("/appliances1"))
                 .andExpect(status().isNotFound())
                 .andExpect(header().doesNotExist("Location"));
-        mvc.perform(get("/clients"))
-                .andExpect(status().isForbidden());
-        mvc.perform(get("/unlisted-error-probe"))
-                .andExpect(status().isForbidden());
+        mvc.perform(get("/clients")).andExpect(status().isForbidden());
+        mvc.perform(get("/unlisted-error-probe")).andExpect(status().isForbidden());
         mvc.perform(get("/orders/error-probe/missing"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("HTTP 404")));
@@ -116,26 +128,31 @@ class MvcErrorsIntegrationTest {
 
     @Test
     void anonymousUnknownAddressIs404ButProtectedRoutesStillRequireLogin() throws Exception {
-        mvc.perform(get("/appliances1"))
-                .andExpect(status().isNotFound());
+        mvc.perform(get("/appliances1")).andExpect(status().isNotFound());
         mvc.perform(get("/orders"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(header().string("Location", endsWith("/login")));
-        mvc.perform(post("/appliances1"))
-                .andExpect(status().isForbidden());
+        mvc.perform(post("/appliances1")).andExpect(status().isForbidden());
     }
 
     @ParameterizedTest
     @ValueSource(ints = {400, 401, 403, 404, 405, 409, 429, 500, 503})
     void containerErrorsShowTheActualStatusAndHideInternalAttributes(int code) throws Exception {
-        mvc.perform(get("/error").accept(org.springframework.http.MediaType.TEXT_HTML).with(request -> {
-                            request.setDispatcherType(DispatcherType.ERROR);
-                            return request;
-                        })
-                        .requestAttr(RequestDispatcher.ERROR_STATUS_CODE, code)
-                        .requestAttr(RequestDispatcher.ERROR_REQUEST_URI, "/private-path")
-                        .requestAttr(RequestDispatcher.ERROR_MESSAGE, "private-container-detail")
-                        .requestAttr(RequestDispatcher.ERROR_EXCEPTION, new IllegalStateException("private-marker")))
+        mvc.perform(
+                        get("/error")
+                                .accept(org.springframework.http.MediaType.TEXT_HTML)
+                                .with(
+                                        request -> {
+                                            request.setDispatcherType(DispatcherType.ERROR);
+                                            return request;
+                                        })
+                                .requestAttr(RequestDispatcher.ERROR_STATUS_CODE, code)
+                                .requestAttr(RequestDispatcher.ERROR_REQUEST_URI, "/private-path")
+                                .requestAttr(
+                                        RequestDispatcher.ERROR_MESSAGE, "private-container-detail")
+                                .requestAttr(
+                                        RequestDispatcher.ERROR_EXCEPTION,
+                                        new IllegalStateException("private-marker")))
                 .andExpect(status().is(code))
                 .andExpect(content().string(containsString("HTTP " + code)))
                 .andExpect(content().string(not(containsString("private-container-detail"))))
@@ -157,17 +174,25 @@ class MvcErrorsIntegrationTest {
 
     @Test
     void jsonErrorResponseKeepsStatusAndDoesNotExposeInternalDetails() throws Exception {
-        mvc.perform(get("/error").accept(org.springframework.http.MediaType.APPLICATION_JSON)
-                        .with(request -> {
-                            request.setDispatcherType(DispatcherType.ERROR);
-                            return request;
-                        })
-                        .requestAttr(RequestDispatcher.ERROR_STATUS_CODE, 500)
-                        .requestAttr(RequestDispatcher.ERROR_MESSAGE, "private-container-detail")
-                        .requestAttr(RequestDispatcher.ERROR_EXCEPTION,
-                                new IllegalStateException("private-marker")))
+        mvc.perform(
+                        get("/error")
+                                .accept(org.springframework.http.MediaType.APPLICATION_JSON)
+                                .with(
+                                        request -> {
+                                            request.setDispatcherType(DispatcherType.ERROR);
+                                            return request;
+                                        })
+                                .requestAttr(RequestDispatcher.ERROR_STATUS_CODE, 500)
+                                .requestAttr(
+                                        RequestDispatcher.ERROR_MESSAGE, "private-container-detail")
+                                .requestAttr(
+                                        RequestDispatcher.ERROR_EXCEPTION,
+                                        new IllegalStateException("private-marker")))
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().contentTypeCompatibleWith(org.springframework.http.MediaType.APPLICATION_JSON))
+                .andExpect(
+                        content()
+                                .contentTypeCompatibleWith(
+                                        org.springframework.http.MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.status").value(500))
                 .andExpect(jsonPath("$.message").doesNotExist())
                 .andExpect(jsonPath("$.exception").doesNotExist())
@@ -175,6 +200,7 @@ class MvcErrorsIntegrationTest {
                 .andExpect(content().string(not(containsString("private-container-detail"))))
                 .andExpect(content().string(not(containsString("private-marker"))));
     }
+
     @TestConfiguration
     static class Probes {
         @Bean
@@ -189,7 +215,8 @@ class MvcErrorsIntegrationTest {
     public static class FailureEndpoints {
         @GetMapping("/orders/error-probe/conflict")
         public String conflict() {
-            throw new com.epam.rd.autocode.assessment.appliances.exception.OrderException(OrderError.NOT_EDITABLE);
+            throw new com.epam.rd.autocode.assessment.appliances.exception.OrderException(
+                    OrderError.NOT_EDITABLE);
         }
 
         @GetMapping("/unlisted-error-probe")

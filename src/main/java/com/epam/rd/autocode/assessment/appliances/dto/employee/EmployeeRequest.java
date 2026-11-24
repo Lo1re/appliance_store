@@ -1,8 +1,10 @@
 package com.epam.rd.autocode.assessment.appliances.dto.employee;
 
 import com.epam.rd.autocode.assessment.appliances.dto.user.UserProfileRequest;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
 import lombok.Getter;
 
 @Getter

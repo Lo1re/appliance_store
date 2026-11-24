@@ -9,16 +9,23 @@ import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
 import com.epam.rd.autocode.assessment.appliances.security.password.reset.ResetRequestLimiter;
 import com.epam.rd.autocode.assessment.appliances.security.password.reset.ResetTokenCodec;
 import com.epam.rd.autocode.assessment.appliances.service.policy.ClientCardPolicy;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import java.time.Clock;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
-/** Validates/admission-limits signup and hashes the password before any temporary storage. */
-@Component @Validated @RequiredArgsConstructor @ConditionalOnClientRegistration
+import java.time.Clock;
+
+// Validates/admission-limits signup and hashes the password before any temporary storage.
+@Component
+@Validated
+@RequiredArgsConstructor
+@ConditionalOnClientRegistration
 public class RegistrationPreparation {
     private final UserRepository users;
     private final ClientRepository clients;
@@ -27,6 +34,7 @@ public class RegistrationPreparation {
     private final ResetRequestLimiter limits;
     private final SecurityMailLinkFactory links;
     private final Clock clock;
+
     public Result prepare(@NotNull @Valid ClientRegistrationRequest form, String source) {
         long retry = limits.acquire("registration:" + form.getEmail(), "registration:" + source);
         if (retry > 0) {
@@ -39,10 +47,21 @@ public class RegistrationPreparation {
         }
         new ClientCardPolicy(clients).requireAvailable(form.getCard(), null);
         String token = tokens.generate();
-        var details = new RegistrationDetails(form.getName(), form.getEmail(), form.getCard(), hash);
-        return new Result(0, new RegistrationChallenge(details, tokens.hash(token), links.registration(token), clock.instant().plusSeconds(1800)));
+        var details =
+                new RegistrationDetails(form.getName(), form.getEmail(), form.getCard(), hash);
+        return new Result(
+                0,
+                new RegistrationChallenge(
+                        details,
+                        tokens.hash(token),
+                        links.registration(token),
+                        clock.instant().plusSeconds(1800)));
     }
+
     public record Result(long retryAfter, RegistrationChallenge challenge) {
-        @Override public String toString() { return "RegistrationPreparationResult[redacted]"; }
+        @Override
+        public String toString() {
+            return "RegistrationPreparationResult[redacted]";
+        }
     }
 }

@@ -1,11 +1,13 @@
 package com.epam.rd.autocode.assessment.appliances.mapper;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.epam.rd.autocode.assessment.appliances.dto.employee.EmployeeRequest;
 import com.epam.rd.autocode.assessment.appliances.model.Employee;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
-import static org.assertj.core.api.Assertions.assertThat;
 
 class EmployeeMapperTest {
     private final ObjectMapper json = new ObjectMapper();

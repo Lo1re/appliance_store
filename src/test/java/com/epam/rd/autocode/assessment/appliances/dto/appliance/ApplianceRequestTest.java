@@ -1,10 +1,13 @@
 package com.epam.rd.autocode.assessment.appliances.dto.appliance;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
-import java.math.BigDecimal;
+
 import org.junit.jupiter.api.Test;
-import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
 
 class ApplianceRequestTest {
     @Test
@@ -20,8 +23,16 @@ class ApplianceRequestTest {
             request.setPrice(new BigDecimal("1.234"));
             assertThat(factory.getValidator().validate(request))
                     .extracting(v -> v.getPropertyPath().toString())
-                    .contains("name", "model", "characteristic", "description",
-                            "manufacturerId", "power", "price", "category", "powerType");
+                    .contains(
+                            "name",
+                            "model",
+                            "characteristic",
+                            "description",
+                            "manufacturerId",
+                            "power",
+                            "price",
+                            "category",
+                            "powerType");
         }
     }
 }

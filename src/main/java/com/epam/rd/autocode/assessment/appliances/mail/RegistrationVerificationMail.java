@@ -4,5 +4,8 @@ import java.net.URI;
 import java.util.Locale;
 
 public record RegistrationVerificationMail(String recipient, URI link, Locale locale) {
-    @Override public String toString() { return "RegistrationVerificationMail[redacted]"; }
+    @Override
+    public String toString() {
+        return "RegistrationVerificationMail[redacted]";
+    }
 }

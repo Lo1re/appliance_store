@@ -6,6 +6,4 @@ public record OrderSummary(
         String clientName,
         Long employeeId,
         String employeeName,
-        boolean approved
-) {
-}
+        boolean approved) {}

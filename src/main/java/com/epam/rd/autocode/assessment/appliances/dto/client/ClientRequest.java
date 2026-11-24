@@ -1,8 +1,10 @@
 package com.epam.rd.autocode.assessment.appliances.dto.client;
 
 import com.epam.rd.autocode.assessment.appliances.dto.user.UserProfileRequest;
-import com.epam.rd.autocode.assessment.appliances.validation.LoyaltyCardNumber;
+import com.epam.rd.autocode.assessment.appliances.validation.normalization.LoyaltyCardNumber;
+
 import jakarta.validation.constraints.Size;
+
 import lombok.Getter;
 
 @Getter

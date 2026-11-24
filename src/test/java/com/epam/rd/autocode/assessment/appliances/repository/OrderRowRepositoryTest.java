@@ -1,15 +1,18 @@
 package com.epam.rd.autocode.assessment.appliances.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.epam.rd.autocode.assessment.appliances.model.Client;
 import com.epam.rd.autocode.assessment.appliances.model.OrderRow;
 import com.epam.rd.autocode.assessment.appliances.model.Orders;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.PageRequest;
-import static org.assertj.core.api.Assertions.assertThat;
 
-@org.springframework.context.annotation.Import(com.epam.rd.autocode.assessment.appliances.config.demo.DemoMigrationConfiguration.class)
+@org.springframework.context.annotation.Import(
+        com.epam.rd.autocode.assessment.appliances.config.demo.DemoMigrationConfiguration.class)
 @DataJpaTest
 class OrderRowRepositoryTest {
     @Autowired private OrderRowRepository rows;
@@ -19,7 +22,8 @@ class OrderRowRepositoryTest {
 
     @Test
     void tracksWhetherAnApplianceAppearsInAnOrder() {
-        var appliance = appliances.search("Samsung Galaxy S10", PageRequest.of(0, 1)).getContent().get(0);
+        var appliance =
+                appliances.search("Samsung Galaxy S10", PageRequest.of(0, 1)).getContent().get(0);
         var client = (Client) users.findByEmailIgnoreCase("mercury@gmail.com").orElseThrow();
         assertThat(rows.existsByAppliance_Id(appliance.getId())).isFalse();
 

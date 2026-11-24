@@ -1,11 +1,19 @@
 package com.epam.rd.autocode.assessment.appliances.integration;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.epam.rd.autocode.assessment.appliances.exception.AccountError;
 import com.epam.rd.autocode.assessment.appliances.exception.AccountException;
 import com.epam.rd.autocode.assessment.appliances.model.Employee;
 import com.epam.rd.autocode.assessment.appliances.repository.EmployeeRepository;
 import com.epam.rd.autocode.assessment.appliances.service.EmployeeService;
+
 import jakarta.servlet.http.Cookie;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -13,13 +21,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import static org.assertj.core.api.Assertions.*;
-import static org.hamcrest.Matchers.containsString;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:employee-deletion-it;MODE=PostgreSQL;DB_CLOSE_DELAY=-1")
+@SpringBootTest(
+        properties =
+                "spring.datasource.url=jdbc:h2:mem:employee-deletion-it;MODE=PostgreSQL;DB_CLOSE_DELAY=-1")
 @AutoConfigureMockMvc
 @WithUserDetails("phobos@gmail.com")
 @Transactional
@@ -32,8 +37,10 @@ class EmployeeDeletionIntegrationTest {
     void selfDeletionIs409AndDoesNotRemoveTheAccount() throws Exception {
         Employee actor = employee("phobos@gmail.com");
         long before = employees.count();
-        mvc.perform(post("/employees/{id}/delete", actor.getId()).with(csrf())
-                        .cookie(new Cookie("store-lang", "uk")))
+        mvc.perform(
+                        post("/employees/{id}/delete", actor.getId())
+                                .with(csrf())
+                                .cookie(new Cookie("store-lang", "uk")))
                 .andExpect(status().isConflict())
                 .andExpect(model().attribute("errorMessageKey", "employee.self-delete"))
                 .andExpect(content().string(containsString("HTTP 409")))
@@ -45,14 +52,21 @@ class EmployeeDeletionIntegrationTest {
     @Test
     void lastEmployeeCannotBeDeletedEvenByTheirOwnAccount() throws Exception {
         Employee actor = employee("phobos@gmail.com");
-        employees.findAll().stream().filter(employee -> !employee.getId().equals(actor.getId()))
+        employees.findAll().stream()
+                .filter(employee -> !employee.getId().equals(actor.getId()))
                 .forEach(employees::delete);
         employees.flush();
-        mvc.perform(post("/employees/{id}/delete", actor.getId()).with(csrf())
-                        .cookie(new Cookie("store-lang", "uk")))
+        mvc.perform(
+                        post("/employees/{id}/delete", actor.getId())
+                                .with(csrf())
+                                .cookie(new Cookie("store-lang", "uk")))
                 .andExpect(status().isConflict())
                 .andExpect(model().attribute("errorMessageKey", "employee.last-employee"))
-                .andExpect(content().string(containsString("Не можна видалити останнього працівника.")));
+                .andExpect(
+                        content()
+                                .string(
+                                        containsString(
+                                                "Не можна видалити останнього працівника.")));
         assertThat(employees.count()).isEqualTo(1);
         assertThat(employees.existsById(actor.getId())).isTrue();
     }
@@ -68,12 +82,17 @@ class EmployeeDeletionIntegrationTest {
     @Test
     void nonexistentEmployeeKeepsTheNotFoundContract() {
         assertThatThrownBy(() -> service.delete(Long.MAX_VALUE))
-                .isInstanceOfSatisfying(AccountException.class,
-                        error -> assertThat(error.error()).isEqualTo(AccountError.EMPLOYEE_NOT_FOUND));
+                .isInstanceOfSatisfying(
+                        AccountException.class,
+                        error ->
+                                assertThat(error.error())
+                                        .isEqualTo(AccountError.EMPLOYEE_NOT_FOUND));
     }
 
     private Employee employee(String email) {
-        return employees.findAll().stream().filter(employee -> employee.getEmail().equals(email))
-                .findFirst().orElseThrow();
+        return employees.findAll().stream()
+                .filter(employee -> employee.getEmail().equals(email))
+                .findFirst()
+                .orElseThrow();
     }
 }

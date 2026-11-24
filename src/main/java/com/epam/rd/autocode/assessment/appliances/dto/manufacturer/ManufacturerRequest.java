@@ -2,6 +2,7 @@ package com.epam.rd.autocode.assessment.appliances.dto.manufacturer;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

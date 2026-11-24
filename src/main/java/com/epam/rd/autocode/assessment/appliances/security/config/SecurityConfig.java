@@ -10,7 +10,7 @@ import com.epam.rd.autocode.assessment.appliances.security.login.LoginProtection
 import com.epam.rd.autocode.assessment.appliances.security.login.PasswordLoginFailureHandler;
 import com.epam.rd.autocode.assessment.appliances.security.session.SessionPolicyProperties;
 import com.epam.rd.autocode.assessment.appliances.security.web.MvcSecurityFailures;
-import java.time.Clock;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -31,24 +31,37 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
+import java.time.Clock;
+
 @Configuration
 @EnableMethodSecurity
-@EnableConfigurationProperties({AuthenticationProperties.class, LoginProtectionProperties.class, SessionPolicyProperties.class, WebAuthenticationProperties.class})
+@EnableConfigurationProperties({
+    AuthenticationProperties.class,
+    LoginProtectionProperties.class,
+    SessionPolicyProperties.class,
+    WebAuthenticationProperties.class
+})
 @EnableScheduling
 public class SecurityConfig {
 
     @Bean
-    public Clock securityClock() { return Clock.systemUTC(); }
+    public Clock securityClock() {
+        return Clock.systemUTC();
+    }
 
     @Bean
-    public SessionRegistry sessionRegistry() { return new SessionRegistryImpl(); }
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
 
     @Bean
-    public HttpSessionEventPublisher sessionEventPublisher() { return new HttpSessionEventPublisher(); }
+    public HttpSessionEventPublisher sessionEventPublisher() {
+        return new HttpSessionEventPublisher();
+    }
 
     @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
+            throws Exception {
         return configuration.getAuthenticationManager();
     }
 
@@ -60,8 +73,8 @@ public class SecurityConfig {
     @Bean
     public AuthenticationProvider authenticationProvider(
             UserDetailsService userDetailsService,
-            PasswordEncoder passwordEncoder, LoginAttemptService attempts
-    ) {
+            PasswordEncoder passwordEncoder,
+            LoginAttemptService attempts) {
         var provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
@@ -70,33 +83,39 @@ public class SecurityConfig {
 
     @Bean
     @ConditionalOnProperty(name = "store.security.web-auth", havingValue = "session")
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, MvcSecurityFailures failures,
-                                                    CurrentActor actor, SessionRegistry sessions,
-                                                    SessionPolicyProperties sessionPolicy, PasswordLoginFailureHandler loginFailures, WebAccessRules accessRules, WebSecurityHeaders headers)
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            MvcSecurityFailures failures,
+            CurrentActor actor,
+            SessionRegistry sessions,
+            SessionPolicyProperties sessionPolicy,
+            PasswordLoginFailureHandler loginFailures,
+            WebAccessRules accessRules,
+            WebSecurityHeaders headers)
             throws Exception {
         return http.headers(headers)
                 .addFilterAfter(new ActiveAccountFilter(actor), AnonymousAuthenticationFilter.class)
-                .sessionManagement(session -> {
-                    session.sessionFixation(fixation -> fixation.changeSessionId());
-                    session.maximumSessions(sessionPolicy.maximum()).maxSessionsPreventsLogin(false)
-                            .sessionRegistry(sessions).expiredUrl("/login?expired");
-                })
+                .sessionManagement(
+                        session -> {
+                            session.sessionFixation(fixation -> fixation.changeSessionId());
+                            session.maximumSessions(sessionPolicy.maximum())
+                                    .maxSessionsPreventsLogin(false)
+                                    .sessionRegistry(sessions)
+                                    .expiredUrl("/login?expired");
+                        })
                 .authorizeHttpRequests(accessRules)
-                .exceptionHandling(errors -> errors
-                        .authenticationEntryPoint(failures)
-                        .accessDeniedHandler(failures)
-                )
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .loginProcessingUrl("/login")
-                        .failureHandler(loginFailures)
-                        .defaultSuccessUrl("/", false)
-                        .permitAll()
-                )
-                .logout(logout -> logout
-                        .logoutSuccessUrl("/login?logout")
-                        .permitAll()
-                )
+                .exceptionHandling(
+                        errors ->
+                                errors.authenticationEntryPoint(failures)
+                                        .accessDeniedHandler(failures))
+                .formLogin(
+                        form ->
+                                form.loginPage("/login")
+                                        .loginProcessingUrl("/login")
+                                        .failureHandler(loginFailures)
+                                        .defaultSuccessUrl("/", false)
+                                        .permitAll())
+                .logout(logout -> logout.logoutSuccessUrl("/login?logout").permitAll())
                 .build();
     }
 }

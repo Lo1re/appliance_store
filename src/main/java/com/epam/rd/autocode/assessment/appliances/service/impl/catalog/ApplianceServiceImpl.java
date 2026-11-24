@@ -16,7 +16,9 @@ import com.epam.rd.autocode.assessment.appliances.repository.ApplianceRepository
 import com.epam.rd.autocode.assessment.appliances.repository.ManufacturerRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.OrderRowRepository;
 import com.epam.rd.autocode.assessment.appliances.service.ApplianceService;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,8 +45,7 @@ public class ApplianceServiceImpl implements ApplianceService {
     public Page<ApplianceResponse> findAll(String search, Pageable pageable) {
         String query = search == null ? "" : search.strip();
 
-        return applianceRepository.search(query, pageable)
-                .map(applianceMapper::toResponse);
+        return applianceRepository.search(query, pageable).map(applianceMapper::toResponse);
     }
 
     @Override
@@ -99,14 +100,15 @@ public class ApplianceServiceImpl implements ApplianceService {
     }
 
     private Appliance requireAppliance(Long id) {
-        return applianceRepository.findById(id)
+        return applianceRepository
+                .findById(id)
                 .orElseThrow(() -> new CatalogException(CatalogError.APPLIANCE_NOT_FOUND));
     }
 
     private Manufacturer requireManufacturer(Long id) {
-        return manufacturerRepository.findById(id)
-                .orElseThrow(() -> new CatalogException(
-                        CatalogError.APPLIANCE_MANUFACTURER_NOT_FOUND
-                ));
+        return manufacturerRepository
+                .findById(id)
+                .orElseThrow(
+                        () -> new CatalogException(CatalogError.APPLIANCE_MANUFACTURER_NOT_FOUND));
     }
 }

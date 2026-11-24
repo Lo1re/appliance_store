@@ -4,8 +4,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 public final class SafeFailure {
-    private SafeFailure() {
-    }
+    private SafeFailure() {}
 
     public static Throwable snapshot(Throwable failure) {
         return copy(failure, new IdentityHashMap<>(), 0);

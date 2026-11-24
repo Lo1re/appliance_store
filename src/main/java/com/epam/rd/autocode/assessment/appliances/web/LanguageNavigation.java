@@ -2,20 +2,27 @@ package com.epam.rd.autocode.assessment.appliances.web;
 
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletRequest;
+
+import org.springframework.stereotype.Component;
+
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import org.springframework.stereotype.Component;
 
-/** Prepares language links, retaining only non-sensitive list filters. */
+// Prepares language links, retaining only non-sensitive list filters.
 @Component
 public class LanguageNavigation {
-    private static final List<String> FILTERS = List.of("search", "sort", "page", "status", "error", "logout", "expired", "locked");
+    private static final List<String> FILTERS =
+            List.of("search", "sort", "page", "status", "error", "logout", "expired", "locked");
 
     public Links links(HttpServletRequest request) {
         String path = request.getRequestURI();
-        if (request.getDispatcherType() == DispatcherType.ERROR || path == null
-                || !path.startsWith("/") || path.startsWith("//") || path.contains("\r") || path.contains("\n")) {
+        if (request.getDispatcherType() == DispatcherType.ERROR
+                || path == null
+                || !path.startsWith("/")
+                || path.startsWith("//")
+                || path.contains("\r")
+                || path.contains("\n")) {
             path = request.getContextPath() + "/";
         }
         return new Links(link(path, "uk", request), link(path, "en", request));
@@ -26,11 +33,14 @@ public class LanguageNavigation {
         for (String key : FILTERS) {
             String value = request.getParameter(key);
             if (value != null && value.length() <= 100) {
-                result.append('&').append(key).append('=').append(URLEncoder.encode(value, StandardCharsets.UTF_8));
+                result.append('&')
+                        .append(key)
+                        .append('=')
+                        .append(URLEncoder.encode(value, StandardCharsets.UTF_8));
             }
         }
         return result.toString();
     }
 
-    public record Links(String uk, String en) { }
+    public record Links(String uk, String en) {}
 }

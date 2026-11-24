@@ -8,12 +8,15 @@ import com.epam.rd.autocode.assessment.appliances.security.identity.AccountRole;
 import com.epam.rd.autocode.assessment.appliances.security.identity.CurrentActor;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
 import com.epam.rd.autocode.assessment.appliances.service.lookup.LookupService;
+
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
@@ -45,12 +48,19 @@ public class OrderFormAssembler {
             request.setItems(new ArrayList<>(List.of(new OrderItemRequest())));
         }
         boolean selectClient = id == null && currentActor.hasRole(AccountRole.EMPLOYEE);
-        var selected = request.getItems().stream().filter(Objects::nonNull)
-                .map(OrderItemRequest::getApplianceId).filter(Objects::nonNull)
-                .distinct().limit(50).toList();
+        var selected =
+                request.getItems().stream()
+                        .filter(Objects::nonNull)
+                        .map(OrderItemRequest::getApplianceId)
+                        .filter(Objects::nonNull)
+                        .distinct()
+                        .limit(50)
+                        .toList();
         var products = lookups.products("", selected);
-        var clients = selectClient ? lookups.clients("", clientId == null ? List.of() : List.of(clientId))
-                : List.<SelectOption>of();
+        var clients =
+                selectClient
+                        ? lookups.clients("", clientId == null ? List.of() : List.of(clientId))
+                        : List.<SelectOption>of();
         return new OrderFormData(id, clientId, request, selectClient, products, clients);
     }
 }

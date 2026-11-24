@@ -1,9 +1,10 @@
 package com.epam.rd.autocode.assessment.appliances.security.identity;
 
+import static org.assertj.core.api.Assertions.*;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.User;
-import static org.assertj.core.api.Assertions.*;
 
 class StorePrincipalTest {
     @Test
@@ -15,17 +16,21 @@ class StorePrincipalTest {
         before.eraseCredentials();
         assertThat(before.getPassword()).isNull();
         assertThat(before).isEqualTo(after);
-        assertThat(before.getAuthorities()).extracting(a -> a.getAuthority()).containsExactly("ROLE_EMPLOYEE");
+        assertThat(before.getAuthorities())
+                .extracting(a -> a.getAuthority())
+                .containsExactly("ROLE_EMPLOYEE");
     }
 
     @Test
     void reusedEmailDoesNotMergeDifferentAccountsOrFrameworkUsers() {
         var first = principal(7L, "same@example.com");
         var second = principal(8L, "same@example.com");
-        var frameworkUser = User.withUsername("same@example.com").password("hash").roles("EMPLOYEE").build();
+        var frameworkUser =
+                User.withUsername("same@example.com").password("hash").roles("EMPLOYEE").build();
         assertThat(first).isNotEqualTo(second).isNotEqualTo(frameworkUser);
         assertThat(frameworkUser).isNotEqualTo(first);
-        assertThat(principal(null, "same@example.com")).isNotEqualTo(principal(null, "same@example.com"));
+        assertThat(principal(null, "same@example.com"))
+                .isNotEqualTo(principal(null, "same@example.com"));
     }
 
     @Test

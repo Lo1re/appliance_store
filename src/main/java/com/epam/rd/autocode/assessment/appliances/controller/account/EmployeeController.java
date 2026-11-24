@@ -7,12 +7,17 @@ import com.epam.rd.autocode.assessment.appliances.dto.user.PasswordRequest;
 import com.epam.rd.autocode.assessment.appliances.exception.AccountException;
 import com.epam.rd.autocode.assessment.appliances.mapper.EmployeeMapper;
 import com.epam.rd.autocode.assessment.appliances.service.EmployeeService;
+import com.epam.rd.autocode.assessment.appliances.web.error.BusinessErrorStatus;
 import com.epam.rd.autocode.assessment.appliances.web.form.AccountFormView;
 import com.epam.rd.autocode.assessment.appliances.web.pagination.ListPage;
 import com.epam.rd.autocode.assessment.appliances.web.pagination.ListPageFactory;
+
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -21,6 +26,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.util.Set;
 
 @Controller
 @ControllerSection(path = "/employees", errorView = "error/account")
@@ -36,21 +43,20 @@ public class EmployeeController {
     private final EmployeeMapper employeeMapper;
     private final AccountFormView accountFormView;
 
+    private final ListPageFactory pages;
+
     @ModelAttribute
     public void addSectionAttributes(Model model) {
         model.addAttribute("basePath", BASE_PATH);
         model.addAttribute("section", "employee");
     }
 
-    private final ListPageFactory pages;
-
     @GetMapping
-    public String list(
-            @Valid @ModelAttribute ListQuery query,
-            Model model
-    ) {
-        ListPage listPage = pages.create(query.getPage(), null, query.getSort(), SORT_FIELDS, "name");
-        model.addAttribute("accounts", employeeService.findAll(query.getSearch(), listPage.pageable()));
+    public String list(@Valid @ModelAttribute ListQuery query, Model model) {
+        ListPage listPage =
+                pages.create(query.getPage(), null, query.getSort(), SORT_FIELDS, "name");
+        model.addAttribute(
+                "accounts", employeeService.findAll(query.getSearch(), listPage.pageable()));
         model.addAttribute("search", query.getSearch());
         model.addAttribute("sort", listPage.sort());
         return "account/list";
@@ -69,9 +75,10 @@ public class EmployeeController {
             BindingResult accountErrors,
             @Valid @ModelAttribute("credentials") PasswordRequest credentials,
             BindingResult passwordErrors,
-            Model model
-    ) {
+            HttpServletResponse response,
+            Model model) {
         if (accountErrors.hasErrors() || passwordErrors.hasErrors()) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
             return renderForm(null, model);
         }
 
@@ -80,6 +87,7 @@ public class EmployeeController {
             return REDIRECT;
         } catch (AccountException exception) {
             accountFormView.rejectDuplicate(exception, accountErrors);
+            response.setStatus(BusinessErrorStatus.of(exception).value());
             return renderForm(null, model);
         }
     }
@@ -95,9 +103,10 @@ public class EmployeeController {
             @PathVariable Long id,
             @Valid @ModelAttribute("account") EmployeeRequest request,
             BindingResult errors,
-            Model model
-    ) {
+            HttpServletResponse response,
+            Model model) {
         if (errors.hasErrors()) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
             return renderForm(id, model);
         }
 
@@ -106,6 +115,7 @@ public class EmployeeController {
             return REDIRECT;
         } catch (AccountException exception) {
             accountFormView.rejectDuplicate(exception, errors);
+            response.setStatus(BusinessErrorStatus.of(exception).value());
             return renderForm(id, model);
         }
     }

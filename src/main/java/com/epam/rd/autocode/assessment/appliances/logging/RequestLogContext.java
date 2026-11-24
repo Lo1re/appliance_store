@@ -5,6 +5,5 @@ public final class RequestLogContext {
     public static final String HEADER = "X-Request-ID";
     public static final String ATTRIBUTE = RequestLogContext.class.getName() + ".id";
 
-    private RequestLogContext() {
-    }
+    private RequestLogContext() {}
 }

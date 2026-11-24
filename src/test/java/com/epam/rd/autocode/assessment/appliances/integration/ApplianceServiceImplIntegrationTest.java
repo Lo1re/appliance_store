@@ -1,24 +1,28 @@
 package com.epam.rd.autocode.assessment.appliances.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.epam.rd.autocode.assessment.appliances.dto.appliance.ApplianceRequest;
 import com.epam.rd.autocode.assessment.appliances.exception.CatalogException;
 import com.epam.rd.autocode.assessment.appliances.model.Category;
 import com.epam.rd.autocode.assessment.appliances.model.PowerType;
 import com.epam.rd.autocode.assessment.appliances.service.ApplianceService;
 import com.epam.rd.autocode.assessment.appliances.service.ManufacturerService;
-import java.math.BigDecimal;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.test.context.support.WithUserDetails;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:catalog-accounts-it",
-})
+import java.math.BigDecimal;
+
+@SpringBootTest(
+        properties = {
+            "spring.datasource.url=jdbc:h2:mem:catalog-accounts-it",
+        })
 @WithUserDetails("phobos@gmail.com")
 class ApplianceServiceImplIntegrationTest {
 
@@ -39,7 +43,9 @@ class ApplianceServiceImplIntegrationTest {
         assertThat(created.getManufacturerId()).isEqualTo(samsung.getId());
         assertThat(appliances.findById(id).getModel()).isEqualTo("TEST-MODEL");
         assertThat(appliances.findAll(null, PAGE)).extracting(a -> a.getId()).contains(id);
-        assertThat(appliances.findAll(" TEST-model ", PAGE)).extracting(a -> a.getId()).contains(id);
+        assertThat(appliances.findAll(" TEST-model ", PAGE))
+                .extracting(a -> a.getId())
+                .contains(id);
         assertThat(appliances.findAll("Samsung", PAGE)).extracting(a -> a.getId()).contains(id);
 
         appliances.update(id, appliance("Revised appliance", dell.getId()));
@@ -47,11 +53,13 @@ class ApplianceServiceImplIntegrationTest {
         assertThat(appliances.findById(id).getName()).isEqualTo("Revised appliance");
 
         assertThatThrownBy(() -> appliances.create(appliance("Unknown brand", MISSING)))
-                .isInstanceOf(CatalogException.class).hasMessage("appliance.manufacturer.not-found");
+                .isInstanceOf(CatalogException.class)
+                .hasMessage("appliance.manufacturer.not-found");
 
         appliances.delete(id);
         assertThatThrownBy(() -> appliances.findById(id))
-                .isInstanceOf(CatalogException.class).hasMessage("appliance.not-found");
+                .isInstanceOf(CatalogException.class)
+                .hasMessage("appliance.not-found");
     }
 
     private ApplianceRequest appliance(String name, Long manufacturerId) {

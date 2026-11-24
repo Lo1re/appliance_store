@@ -3,6 +3,7 @@ package com.epam.rd.autocode.assessment.appliances.dto.order;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,9 +11,7 @@ import lombok.Setter;
 @Setter
 public class OrderItemRequest {
 
-    @NotNull
-    @Positive
-    private Long applianceId;
+    @NotNull @Positive private Long applianceId;
 
     @NotNull
     @Positive

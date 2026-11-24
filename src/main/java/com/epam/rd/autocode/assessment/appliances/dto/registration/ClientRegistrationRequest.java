@@ -4,14 +4,25 @@ import com.epam.rd.autocode.assessment.appliances.dto.client.ClientRequest;
 import com.epam.rd.autocode.assessment.appliances.validation.password.PasswordConfirmation;
 import com.epam.rd.autocode.assessment.appliances.validation.password.PasswordsMatch;
 import com.epam.rd.autocode.assessment.appliances.validation.password.StrongPassword;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter @PasswordsMatch
+@Getter
+@Setter
+@PasswordsMatch
 public class ClientRegistrationRequest extends ClientRequest implements PasswordConfirmation {
     @NotBlank @StrongPassword private String newPassword;
-    @NotBlank @Size(max = 1024) private String confirmPassword;
-    @Override public String toString() { return "ClientRegistrationRequest[redacted]"; }
+
+    @NotBlank
+    @Size(max = 1024)
+    private String confirmPassword;
+
+    @Override
+    public String toString() {
+        return "ClientRegistrationRequest[redacted]";
+    }
 }

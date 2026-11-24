@@ -1,14 +1,17 @@
 package com.epam.rd.autocode.assessment.appliances.mapper;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.epam.rd.autocode.assessment.appliances.model.Appliance;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
 import com.epam.rd.autocode.assessment.appliances.model.Employee;
 import com.epam.rd.autocode.assessment.appliances.model.OrderRow;
 import com.epam.rd.autocode.assessment.appliances.model.Orders;
-import java.math.BigDecimal;
+
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
-import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
 
 class OrderMapperTest {
     @Test
@@ -28,16 +31,20 @@ class OrderMapperTest {
         order.getOrderRowSet().add(new OrderRow(1L, later, 1L, new BigDecimal("7.50")));
         order.getOrderRowSet().add(new OrderRow(2L, earlier, 2L, new BigDecimal("10.00")));
 
-        var response = Mappers.getMapper(OrderMapper.class).toResponse(order, new BigDecimal("17.50"));
+        var response =
+                Mappers.getMapper(OrderMapper.class).toResponse(order, new BigDecimal("17.50"));
         assertThat(response.summary().id()).isEqualTo(100L);
         assertThat(response.summary().clientName()).isEqualTo("Buyer");
         assertThat(response.summary().employeeName()).isEqualTo("Staff");
-        assertThat(response.items()).extracting(item -> item.applianceId()).containsExactly(10L, 20L);
+        assertThat(response.items())
+                .extracting(item -> item.applianceId())
+                .containsExactly(10L, 20L);
         assertThat(response.items().get(0).applianceName()).isEqualTo("First product");
         assertThat(response.items().get(0).quantity()).isEqualTo(2L);
         assertThat(response.items().get(0).amount()).isEqualByComparingTo("10.00");
         assertThat(response.total()).isEqualByComparingTo("17.50");
     }
+
     @Test
     void pendingOrderMapsWithoutAnEmployeeAndCanBeConvertedToAnEditableRequest() {
         var order = new Orders();
@@ -52,9 +59,12 @@ class OrderMapperTest {
         assertThat(response.summary().employeeId()).isNull();
         assertThat(response.summary().employeeName()).isNull();
         assertThat(response.summary().approved()).isFalse();
-        assertThat(mapper.toRequest(response).getItems()).singleElement().satisfies(item -> {
-            assertThat(item.getApplianceId()).isEqualTo(3L);
-            assertThat(item.getQuantity()).isEqualTo(2L);
-        });
+        assertThat(mapper.toRequest(response).getItems())
+                .singleElement()
+                .satisfies(
+                        item -> {
+                            assertThat(item.getApplianceId()).isEqualTo(3L);
+                            assertThat(item.getQuantity()).isEqualTo(2L);
+                        });
     }
 }

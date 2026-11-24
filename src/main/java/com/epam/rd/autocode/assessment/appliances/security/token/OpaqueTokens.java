@@ -8,14 +8,13 @@ import java.util.Base64;
 import java.util.HexFormat;
 import java.util.regex.Pattern;
 
-/** Shared 256-bit opaque-token encoding, canonical validation and storage fingerprinting. */
+// Shared 256-bit opaque-token encoding, canonical validation and storage fingerprinting.
 public final class OpaqueTokens {
     private static final int TOKEN_BYTES = 32;
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final Pattern TOKEN_FORMAT = Pattern.compile("[A-Za-z0-9_-]{43}");
 
-    private OpaqueTokens() {
-    }
+    private OpaqueTokens() {}
 
     public static String generate() {
         byte[] bytes = new byte[TOKEN_BYTES];
@@ -32,11 +31,13 @@ public final class OpaqueTokens {
                 && Base64.getUrlEncoder().withoutPadding().encodeToString(bytes).equals(token);
     }
 
-    /** Accepts arbitrary identifiers too; format validation belongs to the credential boundary. */
+    // Accepts arbitrary identifiers too; format validation belongs to the credential boundary.
     public static String fingerprint(String value) {
         try {
-            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
-                    .digest(value.getBytes(StandardCharsets.UTF_8)));
+            return HexFormat.of()
+                    .formatHex(
+                            MessageDigest.getInstance("SHA-256")
+                                    .digest(value.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException impossible) {
             throw new IllegalStateException("SHA-256 unavailable");
         }

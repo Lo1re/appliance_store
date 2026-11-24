@@ -1,7 +1,9 @@
 package com.epam.rd.autocode.assessment.appliances.config.transport;
 
 import com.epam.rd.autocode.assessment.appliances.web.transport.HttpsRedirectFilter;
+
 import jakarta.servlet.DispatcherType;
+
 import org.apache.catalina.connector.Connector;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;

@@ -21,8 +21,7 @@ import com.epam.rd.autocode.assessment.appliances.security.oauth.google.web.Goog
 import com.epam.rd.autocode.assessment.appliances.security.oauth.google.web.GoogleLoginSuccessHandler;
 import com.epam.rd.autocode.assessment.appliances.security.password.reset.ResetTokenCodec;
 import com.epam.rd.autocode.assessment.appliances.security.web.MvcSecurityFailures;
-import java.net.URI;
-import java.time.Clock;
+
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,63 +45,171 @@ import org.springframework.security.web.context.NullSecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.savedrequest.NullRequestCache;
 
+import java.net.URI;
+import java.time.Clock;
+
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnGoogleLogin
 @EnableConfigurationProperties(GoogleLoginProperties.class)
 public class GoogleLoginConfiguration {
     @Bean
-    public ClientRegistrationRepository googleClientRegistrations(GoogleLoginProperties properties, Environment environment) {
+    public ClientRegistrationRepository googleClientRegistrations(
+            GoogleLoginProperties properties, Environment environment) {
         if (!"jwt".equals(environment.getProperty("store.security.web-auth", "jwt"))
-                || !"database".equals(environment.getProperty("store.security.auth-mode", "database")))
-            throw new IllegalArgumentException("Google sign-in requires database authentication and JWT web mode");
+                || !"database"
+                        .equals(environment.getProperty("store.security.auth-mode", "database"))) {
+            throw new IllegalArgumentException(
+                    "Google sign-in requires database authentication and JWT web mode");
+        }
         URI redirect = URI.create(properties.getRedirectUri());
-        boolean localHttp = !environment.getProperty("server.ssl.enabled", Boolean.class, false)
-                && "http".equals(redirect.getScheme()) && ("localhost".equals(redirect.getHost()) || "127.0.0.1".equals(redirect.getHost()))
-                && environment.acceptsProfiles(Profiles.of("local", "test")) && !environment.acceptsProfiles(Profiles.of("prod"));
-        if ((!"https".equals(redirect.getScheme()) && !localHttp) || redirect.getHost() == null
-                || redirect.getUserInfo() != null || redirect.getQuery() != null || redirect.getFragment() != null
-                || !redirect.getPath().endsWith("/login/oauth2/code/google"))
-            throw new IllegalArgumentException("Google callback requires a trusted HTTPS URI (HTTP is allowed only for non-TLS local/test runs)");
-        return new InMemoryClientRegistrationRepository(CommonOAuth2Provider.GOOGLE.getBuilder("google")
-                .clientId(properties.getClientId()).clientSecret(properties.getClientSecret())
-                .scope("openid", "profile", "email").redirectUri(properties.getRedirectUri()).build());
+        boolean localHttp =
+                !environment.getProperty("server.ssl.enabled", Boolean.class, false)
+                        && "http".equals(redirect.getScheme())
+                        && ("localhost".equals(redirect.getHost())
+                                || "127.0.0.1".equals(redirect.getHost()))
+                        && environment.acceptsProfiles(Profiles.of("local", "test"))
+                        && !environment.acceptsProfiles(Profiles.of("prod"));
+        if ((!"https".equals(redirect.getScheme()) && !localHttp)
+                || redirect.getHost() == null
+                || redirect.getUserInfo() != null
+                || redirect.getQuery() != null
+                || redirect.getFragment() != null
+                || !redirect.getPath().endsWith("/login/oauth2/code/google")) {
+            throw new IllegalArgumentException(
+                    "Google callback requires a trusted HTTPS URI (HTTP is allowed only for non-TLS"
+                            + " local/test runs)");
+        }
+        return new InMemoryClientRegistrationRepository(
+                CommonOAuth2Provider.GOOGLE
+                        .getBuilder("google")
+                        .clientId(properties.getClientId())
+                        .clientSecret(properties.getClientSecret())
+                        .scope("openid", "profile", "email")
+                        .redirectUri(properties.getRedirectUri())
+                        .build());
     }
 
-    @Bean @Order(0)
-    public SecurityFilterChain googleFlowChain(HttpSecurity http, ClientRegistrationRepository registrations,
-            Clock clock, CurrentActor actor, MvcSecurityFailures failures, JwtDecoder decoder,
-            AuthTokenCookies browserCookies, JwtCookieLifecycle cookies, RefreshTokenService tokens,
-            CookieCsrfTokenRepository csrfTokens, GoogleIdentityService identities, GoogleIdentityVerifier verifier,
-            GoogleAccountAuthentication accounts, GoogleFlowSession flows, ResetTokenCodec hashes, AccessTokenVersionService versions, WebSecurityHeaders headers) throws Exception {
-        var resolver = new DefaultOAuth2AuthorizationRequestResolver(registrations, "/oauth2/authorization");
-        resolver.setAuthorizationRequestCustomizer(OAuth2AuthorizationRequestCustomizers.withPkce());
-        var success = new GoogleLoginSuccessHandler(verifier, identities, accounts, flows, tokens, cookies, browserCookies,
-                new GoogleLinkVerifier(browserCookies, decoder, hashes, versions));
+    @Bean
+    @Order(0)
+    public SecurityFilterChain googleFlowChain(
+            HttpSecurity http,
+            ClientRegistrationRepository registrations,
+            Clock clock,
+            CurrentActor actor,
+            MvcSecurityFailures failures,
+            JwtDecoder decoder,
+            AuthTokenCookies browserCookies,
+            JwtCookieLifecycle cookies,
+            RefreshTokenService tokens,
+            CookieCsrfTokenRepository csrfTokens,
+            GoogleIdentityService identities,
+            GoogleIdentityVerifier verifier,
+            GoogleAccountAuthentication accounts,
+            GoogleFlowSession flows,
+            ResetTokenCodec hashes,
+            AccessTokenVersionService versions,
+            WebSecurityHeaders headers)
+            throws Exception {
+        var resolver =
+                new DefaultOAuth2AuthorizationRequestResolver(
+                        registrations, "/oauth2/authorization");
+        resolver.setAuthorizationRequestCustomizer(
+                OAuth2AuthorizationRequestCustomizers.withPkce());
+        var success =
+                new GoogleLoginSuccessHandler(
+                        verifier,
+                        identities,
+                        accounts,
+                        flows,
+                        tokens,
+                        cookies,
+                        browserCookies,
+                        new GoogleLinkVerifier(browserCookies, decoder, hashes, versions));
         var bearer = new BrowserAccessTokenResolver(browserCookies);
-        return http.headers(headers).securityMatcher("/oauth2/**", "/login/oauth2/**", "/onboarding/google/**", "/account/google/**")
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                        .sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy()))
-                .securityContext(context -> context.securityContextRepository(new NullSecurityContextRepository()))
+        return http.headers(headers)
+                .securityMatcher(
+                        "/oauth2/**",
+                        "/login/oauth2/**",
+                        "/onboarding/google/**",
+                        "/account/google/**")
+                .sessionManagement(
+                        session ->
+                                session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                                        .sessionAuthenticationStrategy(
+                                                new NullAuthenticatedSessionStrategy()))
+                .securityContext(
+                        context ->
+                                context.securityContextRepository(
+                                        new NullSecurityContextRepository()))
                 .requestCache(cache -> cache.requestCache(new NullRequestCache()))
-                .csrf(csrf -> csrf.csrfTokenRepository(csrfTokens).sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy())
-                        .withObjectPostProcessor(new CookieCsrfProtection()))
-                .authorizeHttpRequests(access -> access
-                        .requestMatchers("/account/google/**").hasAnyRole("CLIENT", "EMPLOYEE")
-                        .requestMatchers(HttpMethod.GET, "/oauth2/authorization/google", "/login/oauth2/code/google", "/onboarding/google", "/onboarding/google/verify").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/onboarding/google", "/onboarding/google/cancel").permitAll()
-                        .anyRequest().denyAll())
-                .addFilterAfter(new JwtAccountFilter(actor, browserCookies, failures, true), BearerTokenAuthenticationFilter.class)
-                .exceptionHandling(errors -> errors.authenticationEntryPoint(failures).accessDeniedHandler(failures))
-                .formLogin(AbstractHttpConfigurer::disable).httpBasic(AbstractHttpConfigurer::disable).logout(AbstractHttpConfigurer::disable)
-                .oauth2Login(login -> login.clientRegistrationRepository(registrations).loginPage("/login")
-                        .authorizedClientRepository(new DiscardingAuthorizedClientRepository())
-                        .authorizationEndpoint(endpoint -> endpoint.authorizationRequestResolver(resolver)
-                                .authorizationRequestRepository(new GoogleAuthorizationRequestRepository(clock)))
-                        .successHandler(success).failureHandler(new GoogleLoginFailureHandler(flows)))
-                .oauth2ResourceServer(resource -> resource.bearerTokenResolver(request ->
-                        request.getRequestURI().substring(request.getContextPath().length()).startsWith("/account/google") ? bearer.resolve(request) : null)
-                        .jwt(jwt -> jwt.decoder(decoder).jwtAuthenticationConverter(new AccessTokenAuthenticationConverter()))
-                        .authenticationEntryPoint(failures).accessDeniedHandler(failures))
+                .csrf(
+                        csrf ->
+                                csrf.csrfTokenRepository(csrfTokens)
+                                        .sessionAuthenticationStrategy(
+                                                new NullAuthenticatedSessionStrategy())
+                                        .withObjectPostProcessor(new CookieCsrfProtection()))
+                .authorizeHttpRequests(
+                        access ->
+                                access.requestMatchers("/account/google/**")
+                                        .hasAnyRole("CLIENT", "EMPLOYEE")
+                                        .requestMatchers(
+                                                HttpMethod.GET,
+                                                "/oauth2/authorization/google",
+                                                "/login/oauth2/code/google",
+                                                "/onboarding/google",
+                                                "/onboarding/google/verify")
+                                        .permitAll()
+                                        .requestMatchers(
+                                                HttpMethod.POST,
+                                                "/onboarding/google",
+                                                "/onboarding/google/cancel")
+                                        .permitAll()
+                                        .anyRequest()
+                                        .denyAll())
+                .addFilterAfter(
+                        new JwtAccountFilter(actor, browserCookies, failures, true),
+                        BearerTokenAuthenticationFilter.class)
+                .exceptionHandling(
+                        errors ->
+                                errors.authenticationEntryPoint(failures)
+                                        .accessDeniedHandler(failures))
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable)
+                .oauth2Login(
+                        login ->
+                                login.clientRegistrationRepository(registrations)
+                                        .loginPage("/login")
+                                        .authorizedClientRepository(
+                                                new DiscardingAuthorizedClientRepository())
+                                        .authorizationEndpoint(
+                                                endpoint ->
+                                                        endpoint.authorizationRequestResolver(
+                                                                        resolver)
+                                                                .authorizationRequestRepository(
+                                                                        new GoogleAuthorizationRequestRepository(
+                                                                                clock)))
+                                        .successHandler(success)
+                                        .failureHandler(new GoogleLoginFailureHandler(flows)))
+                .oauth2ResourceServer(
+                        resource ->
+                                resource.bearerTokenResolver(
+                                                request ->
+                                                        request.getRequestURI()
+                                                                        .substring(
+                                                                                request.getContextPath()
+                                                                                        .length())
+                                                                        .startsWith(
+                                                                                "/account/google")
+                                                                ? bearer.resolve(request)
+                                                                : null)
+                                        .jwt(
+                                                jwt ->
+                                                        jwt.decoder(decoder)
+                                                                .jwtAuthenticationConverter(
+                                                                        new AccessTokenAuthenticationConverter()))
+                                        .authenticationEntryPoint(failures)
+                                        .accessDeniedHandler(failures))
                 .build();
     }
 }

@@ -2,6 +2,7 @@ package com.epam.rd.autocode.assessment.appliances.validation.password;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
@@ -35,7 +36,8 @@ public class StrongPasswordValidator implements ConstraintValidator<StrongPasswo
         return valid;
     }
 
-    private boolean require(String value, Pattern category, ConstraintValidatorContext context, String message) {
+    private boolean require(
+            String value, Pattern category, ConstraintValidatorContext context, String message) {
         if (category.matcher(value).find()) {
             return true;
         }

@@ -7,14 +7,19 @@ import com.epam.rd.autocode.assessment.appliances.dto.query.ListQuery;
 import com.epam.rd.autocode.assessment.appliances.exception.OrderException;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
 import com.epam.rd.autocode.assessment.appliances.web.OrderCapabilities;
+import com.epam.rd.autocode.assessment.appliances.web.error.BusinessErrorStatus;
 import com.epam.rd.autocode.assessment.appliances.web.form.OrderFormAssembler;
 import com.epam.rd.autocode.assessment.appliances.web.form.OrderFormView;
 import com.epam.rd.autocode.assessment.appliances.web.pagination.ListPage;
 import com.epam.rd.autocode.assessment.appliances.web.pagination.ListPageFactory;
+
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -25,6 +30,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.Set;
 
 @Controller
 @ControllerSection(path = "/orders", errorView = "error/general")
@@ -46,8 +53,7 @@ public class OrdersController {
     public String list(
             @Valid @ModelAttribute ListQuery query,
             @RequestParam(defaultValue = "all") String status,
-            Model model
-    ) {
+            Model model) {
         ListPage listPage = pages.create(query.getPage(), null, query.getSort(), SORT_FIELDS, "id");
         OrderFilter filter = OrderFilter.fromParameter(status);
         model.addAttribute("orders", orderService.findAll(filter.approved(), listPage.pageable()));
@@ -84,18 +90,19 @@ public class OrdersController {
             @RequestParam(name = "clientId", required = false) Long clientId,
             @Valid @ModelAttribute("orderForm") OrderRequest request,
             BindingResult errors,
+            HttpServletResponse response,
             Model model,
-            RedirectAttributes redirect
-    ) {
+            RedirectAttributes redirect) {
         if (errors.hasErrors()) {
-            return OrderFormView.render(orderFormAssembler.redisplay(
-                    id, clientId, request), model);
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            return OrderFormView.render(orderFormAssembler.redisplay(id, clientId, request), model);
         }
 
         try {
-            var saved = id == null
-                    ? orderService.create(clientId, request)
-                    : orderService.update(id, request);
+            var saved =
+                    id == null
+                            ? orderService.create(clientId, request)
+                            : orderService.update(id, request);
             redirect.addAttribute("orderId", saved.summary().id());
             return REDIRECT + "/{orderId}";
         } catch (OrderException exception) {
@@ -104,8 +111,8 @@ public class OrdersController {
                         errors.reject(exception.error().messageKey());
                 default -> throw exception;
             }
-            return OrderFormView.render(orderFormAssembler.redisplay(
-                    id, clientId, request), model);
+            response.setStatus(BusinessErrorStatus.of(exception).value());
+            return OrderFormView.render(orderFormAssembler.redisplay(id, clientId, request), model);
         }
     }
 
@@ -121,5 +128,4 @@ public class OrdersController {
         redirect.addAttribute("orderId", id);
         return REDIRECT + "/{orderId}";
     }
-
 }

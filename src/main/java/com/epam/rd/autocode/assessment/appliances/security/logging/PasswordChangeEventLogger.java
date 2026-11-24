@@ -1,6 +1,9 @@
-package com.epam.rd.autocode.assessment.appliances.security.password;
+package com.epam.rd.autocode.assessment.appliances.security.logging;
+
+import com.epam.rd.autocode.assessment.appliances.security.password.PasswordChanged;
 
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;

@@ -1,10 +1,12 @@
 package com.epam.rd.autocode.assessment.appliances.mapper;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.epam.rd.autocode.assessment.appliances.dto.manufacturer.ManufacturerRequest;
 import com.epam.rd.autocode.assessment.appliances.model.Manufacturer;
+
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
-import static org.assertj.core.api.Assertions.assertThat;
 
 class ManufacturerMapperTest {
 

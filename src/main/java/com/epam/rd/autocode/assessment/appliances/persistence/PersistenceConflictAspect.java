@@ -1,7 +1,9 @@
 package com.epam.rd.autocode.assessment.appliances.persistence;
 
 import com.epam.rd.autocode.assessment.appliances.exception.BusinessException;
+
 import lombok.RequiredArgsConstructor;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -18,7 +20,8 @@ public class PersistenceConflictAspect {
     private final PersistenceConflictTranslator translator;
 
     @Around(value = "@annotation(boundary)", argNames = "operation,boundary")
-    public Object translate(ProceedingJoinPoint operation, PersistenceBoundary boundary) throws Throwable {
+    public Object translate(ProceedingJoinPoint operation, PersistenceBoundary boundary)
+            throws Throwable {
         try {
             return operation.proceed();
         } catch (RuntimeException failure) {

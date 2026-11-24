@@ -1,15 +1,17 @@
 package com.epam.rd.autocode.assessment.appliances.security.authorization;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.epam.rd.autocode.assessment.appliances.exception.OrderException;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
 import com.epam.rd.autocode.assessment.appliances.model.Employee;
 import com.epam.rd.autocode.assessment.appliances.model.Orders;
 import com.epam.rd.autocode.assessment.appliances.model.User;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class OrderAccessPolicyTest {
 
@@ -22,8 +24,7 @@ class OrderAccessPolicyTest {
 
         Orders order = orderFor(client(1L));
 
-        assertThatCode(() -> policy.requireAccess(employee, order))
-                .doesNotThrowAnyException();
+        assertThatCode(() -> policy.requireAccess(employee, order)).doesNotThrowAnyException();
         assertThat(policy.requireEmployee(employee)).isSameAs(employee);
     }
 
@@ -32,8 +33,7 @@ class OrderAccessPolicyTest {
         Client owner = client(1L);
         Orders order = orderFor(owner);
 
-        assertThatCode(() -> policy.requireAccess(owner, order))
-                .doesNotThrowAnyException();
+        assertThatCode(() -> policy.requireAccess(owner, order)).doesNotThrowAnyException();
     }
 
     @Test
@@ -63,10 +63,8 @@ class OrderAccessPolicyTest {
     void clientCanSelectOnlyOwnAccount() {
         Client owner = client(1L);
 
-        assertThatCode(() -> policy.requireClientSelection(owner, null))
-                .doesNotThrowAnyException();
-        assertThatCode(() -> policy.requireClientSelection(owner, 1L))
-                .doesNotThrowAnyException();
+        assertThatCode(() -> policy.requireClientSelection(owner, null)).doesNotThrowAnyException();
+        assertThatCode(() -> policy.requireClientSelection(owner, 1L)).doesNotThrowAnyException();
         assertThatThrownBy(() -> policy.requireClientSelection(owner, 2L))
                 .isInstanceOf(AccessDeniedException.class);
     }

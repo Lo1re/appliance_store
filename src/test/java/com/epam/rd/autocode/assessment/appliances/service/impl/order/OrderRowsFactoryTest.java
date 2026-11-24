@@ -1,17 +1,20 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl.order;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderItemRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.order.OrderRequest;
 import com.epam.rd.autocode.assessment.appliances.exception.OrderError;
 import com.epam.rd.autocode.assessment.appliances.exception.OrderException;
 import com.epam.rd.autocode.assessment.appliances.model.Appliance;
 import com.epam.rd.autocode.assessment.appliances.repository.ApplianceRepository;
+
+import org.junit.jupiter.api.Test;
+
 import java.math.BigDecimal;
 import java.util.List;
-import org.junit.jupiter.api.Test;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 class OrderRowsFactoryTest {
     private final ApplianceRepository appliances = mock(ApplianceRepository.class);
@@ -24,23 +27,30 @@ class OrderRowsFactoryTest {
         when(appliances.findAllById(any())).thenReturn(List.of(second, first));
         var rows = factory.create(request(item(1L, 3L), item(2L, 2L)));
         assertThat(rows).hasSize(2);
-        assertThat(rows).filteredOn(row -> row.getAppliance().getId().equals(1L))
-                .singleElement().satisfies(row -> {
-                    assertThat(row.getId()).isNull();
-                    assertThat(row.getNumber()).isEqualTo(3L);
-                    assertThat(row.getAmount()).isEqualByComparingTo("37.05");
-                });
+        assertThat(rows)
+                .filteredOn(row -> row.getAppliance().getId().equals(1L))
+                .singleElement()
+                .satisfies(
+                        row -> {
+                            assertThat(row.getId()).isNull();
+                            assertThat(row.getNumber()).isEqualTo(3L);
+                            assertThat(row.getAmount()).isEqualByComparingTo("37.05");
+                        });
         first.setPrice(new BigDecimal("99.00"));
-        assertThat(rows).filteredOn(row -> row.getAppliance().getId().equals(1L))
-                .singleElement().satisfies(row ->
-                        assertThat(row.getAmount()).isEqualByComparingTo("37.05"));
+        assertThat(rows)
+                .filteredOn(row -> row.getAppliance().getId().equals(1L))
+                .singleElement()
+                .satisfies(row -> assertThat(row.getAmount()).isEqualByComparingTo("37.05"));
     }
 
     @Test
     void rejectsDuplicateProductsBeforeLookingThemUp() {
         assertThatThrownBy(() -> factory.create(request(item(1L, 2L), item(1L, 3L))))
-                .isInstanceOfSatisfying(OrderException.class,
-                        error -> assertThat(error.error()).isEqualTo(OrderError.DUPLICATE_APPLIANCE));
+                .isInstanceOfSatisfying(
+                        OrderException.class,
+                        error ->
+                                assertThat(error.error())
+                                        .isEqualTo(OrderError.DUPLICATE_APPLIANCE));
         verifyNoInteractions(appliances);
     }
 
@@ -48,8 +58,11 @@ class OrderRowsFactoryTest {
     void rejectsARequestWhenAnyProductIsMissing() {
         when(appliances.findAllById(any())).thenReturn(List.of(appliance(1L, "10.00")));
         assertThatThrownBy(() -> factory.create(request(item(1L, 1L), item(2L, 1L))))
-                .isInstanceOfSatisfying(OrderException.class,
-                        error -> assertThat(error.error()).isEqualTo(OrderError.APPLIANCE_NOT_FOUND));
+                .isInstanceOfSatisfying(
+                        OrderException.class,
+                        error ->
+                                assertThat(error.error())
+                                        .isEqualTo(OrderError.APPLIANCE_NOT_FOUND));
     }
 
     private Appliance appliance(Long id, String price) {

@@ -4,4 +4,4 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-public record ApiOrderCreateRequest(@Positive Long clientId, @NotNull @Valid OrderRequest order) { }
+public record ApiOrderCreateRequest(@Positive Long clientId, @NotNull @Valid OrderRequest order) {}

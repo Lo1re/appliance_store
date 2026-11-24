@@ -3,6 +3,7 @@ package com.epam.rd.autocode.assessment.appliances.mapper;
 import com.epam.rd.autocode.assessment.appliances.dto.manufacturer.ManufacturerRequest;
 import com.epam.rd.autocode.assessment.appliances.dto.manufacturer.ManufacturerResponse;
 import com.epam.rd.autocode.assessment.appliances.model.Manufacturer;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;

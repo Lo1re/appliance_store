@@ -1,7 +1,8 @@
 package com.epam.rd.autocode.assessment.appliances.logging;
 
-import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
 
 class SafeFailureTest {
     @Test
@@ -11,7 +12,8 @@ class SafeFailureTest {
         Throwable safe = SafeFailure.snapshot(source);
         assertThat(safe.getMessage()).isEqualTo(IllegalStateException.class.getName());
         assertThat(safe.getStackTrace()).containsExactly(source.getStackTrace());
-        assertThat(safe.getCause().getMessage()).isEqualTo(IllegalArgumentException.class.getName());
+        assertThat(safe.getCause().getMessage())
+                .isEqualTo(IllegalArgumentException.class.getName());
         assertThat(safe.getCause().getCause()).isNull();
         assertThat(source.getMessage()).isEqualTo("private-password");
     }

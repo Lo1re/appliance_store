@@ -1,9 +1,11 @@
 package com.epam.rd.autocode.assessment.appliances.dto.user;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
+
 import org.junit.jupiter.api.Test;
-import static org.assertj.core.api.Assertions.assertThat;
 
 class PasswordRequestTest {
     @Test
@@ -26,7 +28,10 @@ class PasswordRequestTest {
             assertThat(validator.validate(request)).isEmpty();
             request.setPassword(accepted + "я");
             assertThat(validator.validate(request))
-                    .allSatisfy(violation -> assertThat(violation.getPropertyPath().toString()).isEqualTo("password"))
+                    .allSatisfy(
+                            violation ->
+                                    assertThat(violation.getPropertyPath().toString())
+                                            .isEqualTo("password"))
                     .extracting(v -> v.getMessageTemplate())
                     .containsExactly("{user.password.too-long}");
         }

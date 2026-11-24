@@ -5,8 +5,10 @@ import com.epam.rd.autocode.assessment.appliances.repository.UserRepository;
 import com.epam.rd.autocode.assessment.appliances.security.identity.AccountRole;
 import com.epam.rd.autocode.assessment.appliances.security.identity.StorePrincipal;
 import com.epam.rd.autocode.assessment.appliances.security.password.PasswordCredentialStatusService;
-import com.epam.rd.autocode.assessment.appliances.validation.EmailAddress;
+import com.epam.rd.autocode.assessment.appliances.validation.normalization.EmailAddress;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,7 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@ConditionalOnProperty(name = "store.security.auth-mode", havingValue = "database", matchIfMissing = true)
+@ConditionalOnProperty(
+        name = "store.security.auth-mode",
+        havingValue = "database",
+        matchIfMissing = true)
 @RequiredArgsConstructor
 public class DatabaseUserDetailsService implements UserDetailsService {
 
@@ -31,25 +36,19 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 
         String email = EmailAddress.normalize(username);
 
-        User user = userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("Account not found")
-                );
+        User user =
+                userRepository
+                        .findByEmailIgnoreCase(email)
+                        .orElseThrow(() -> new UsernameNotFoundException("Account not found"));
 
         if (passwordState.explicitlyMissing(user.getId())) {
             throw new UsernameNotFoundException("Account not found");
         }
 
-        AccountRole role = AccountRole.from(user)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("Account not found")
-                );
+        AccountRole role =
+                AccountRole.from(user)
+                        .orElseThrow(() -> new UsernameNotFoundException("Account not found"));
 
-        return new StorePrincipal(
-                user.getId(),
-                user.getEmail(),
-                user.getPassword(),
-                role
-        );
+        return new StorePrincipal(user.getId(), user.getEmail(), user.getPassword(), role);
     }
 }

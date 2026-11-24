@@ -1,7 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.exception;
 
 public enum AccountError implements ErrorCode {
-
     CARD_DUPLICATE("client.card.duplicate", ErrorKind.CONFLICT),
     EMAIL_DUPLICATE("user.email.duplicate", ErrorKind.CONFLICT),
     CLIENT_NOT_FOUND("client.not-found", ErrorKind.NOT_FOUND),
@@ -22,6 +21,7 @@ public enum AccountError implements ErrorCode {
     public String messageKey() {
         return messageKey;
     }
+
     @Override
     public ErrorKind kind() {
         return kind;

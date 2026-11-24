@@ -1,19 +1,23 @@
 package com.epam.rd.autocode.assessment.appliances.security.login;
 
-import java.time.Duration;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+
+import java.time.Duration;
 
 class LoginProtectedAuthenticationProviderTest {
     private final AuthenticationProvider delegate = mock(AuthenticationProvider.class);
     private final LoginAttemptService attempts = mock(LoginAttemptService.class);
-    private final LoginProtectedAuthenticationProvider provider = new LoginProtectedAuthenticationProvider(delegate, attempts);
-    private final UsernamePasswordAuthenticationToken input = UsernamePasswordAuthenticationToken.unauthenticated("user@example.com", "password");
+    private final LoginProtectedAuthenticationProvider provider =
+            new LoginProtectedAuthenticationProvider(delegate, attempts);
+    private final UsernamePasswordAuthenticationToken input =
+            UsernamePasswordAuthenticationToken.unauthenticated("user@example.com", "password");
 
     @Test
     void blockedAttemptNeverReachesPasswordVerification() {
@@ -24,7 +28,8 @@ class LoginProtectedAuthenticationProviderTest {
 
     @Test
     void checksFreshLockAgainAfterPasswordVerification() {
-        when(attempts.remainingLock("user@example.com")).thenReturn(Duration.ZERO, Duration.ofSeconds(1));
+        when(attempts.remainingLock("user@example.com"))
+                .thenReturn(Duration.ZERO, Duration.ofSeconds(1));
         when(delegate.authenticate(input)).thenReturn(input);
         assertThatThrownBy(() -> provider.authenticate(input)).isInstanceOf(LockedException.class);
         verify(attempts, times(2)).remainingLock("user@example.com");
@@ -38,12 +43,21 @@ class LoginProtectedAuthenticationProviderTest {
         assertThatThrownBy(() -> provider.authenticate(input)).isSameAs(failure);
         verify(attempts, never()).failed(anyString());
     }
-    @Test void backendTransactionFailureIsNotABadPasswordAndDoesNotLeakItsMessage() {
-        when(attempts.remainingLock("user@example.com")).thenThrow(new org.springframework.transaction.CannotCreateTransactionException("private backend detail"));
+
+    @Test
+    void backendTransactionFailureIsNotABadPasswordAndDoesNotLeakItsMessage() {
+        when(attempts.remainingLock("user@example.com"))
+                .thenThrow(
+                        new org.springframework.transaction.CannotCreateTransactionException(
+                                "private backend detail"));
         assertThatThrownBy(() -> provider.authenticate(input))
-                .isInstanceOf(org.springframework.security.authentication.AuthenticationServiceException.class)
-                .satisfies(failure -> assertThat(failure.getCause()).hasMessageNotContaining("private backend detail"));
+                .isInstanceOf(
+                        org.springframework.security.authentication.AuthenticationServiceException
+                                .class)
+                .satisfies(
+                        failure ->
+                                assertThat(failure.getCause())
+                                        .hasMessageNotContaining("private backend detail"));
         verifyNoInteractions(delegate);
     }
-
 }

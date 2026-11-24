@@ -15,10 +15,12 @@ import com.epam.rd.autocode.assessment.appliances.repository.oauth.OAuthIdentity
 import com.epam.rd.autocode.assessment.appliances.security.password.PasswordCredentialStatusService;
 import com.epam.rd.autocode.assessment.appliances.security.password.reset.ResetTokenCodec;
 import com.epam.rd.autocode.assessment.appliances.service.policy.ClientCardPolicy;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,8 +28,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-/** Provider-to-domain mapping; anonymous OIDC onboarding is not an authenticated application service. */
-@Component @RequiredArgsConstructor @Validated
+import java.util.Optional;
+
+// Provider-to-domain mapping; anonymous OIDC onboarding is not an authenticated application
+// service.
+@Component
+@RequiredArgsConstructor
+@Validated
 @Transactional(readOnly = true)
 public class GoogleIdentityService {
     private final OAuthIdentityRepository identities;
@@ -43,14 +50,23 @@ public class GoogleIdentityService {
     public Optional<Long> findAccount(String subject) {
         return identities.findByProviderAndSubject("GOOGLE", subject).map(OAuthIdentity::getUserId);
     }
-    public boolean emailTaken(String email) { return users.existsByEmailIgnoreCase(email); }
-    public boolean linked(Long id) { return identities.existsByProviderAndUserId("GOOGLE", id); }
+
+    public boolean emailTaken(String email) {
+        return users.existsByEmailIgnoreCase(email);
+    }
+
+    public boolean linked(Long id) {
+        return identities.existsByProviderAndUserId("GOOGLE", id);
+    }
 
     @Transactional
     @PersistenceBoundary(PersistenceOperation.ACCOUNT_WRITE)
-    public Long createProfile(@NotNull VerifiedGoogleIdentity identity, @Valid @NotNull GoogleProfileRequest profile) {
-        if (!identity.emailVerified() || !identity.email().equals(profile.getEmail()))
+    public Long createProfile(
+            @NotNull VerifiedGoogleIdentity identity,
+            @Valid @NotNull GoogleProfileRequest profile) {
+        if (!identity.emailVerified() || !identity.email().equals(profile.getEmail())) {
             throw new GoogleLoginException(GoogleLoginException.Reason.INVALID_IDENTITY);
+        }
         if (findAccount(identity.subject()).isPresent()) {
             throw new GoogleLoginException(GoogleLoginException.Reason.LINK_CONFLICT);
         }
@@ -58,21 +74,36 @@ public class GoogleIdentityService {
             throw new GoogleLoginException(GoogleLoginException.Reason.LINK_REQUIRED);
         }
         new ClientCardPolicy(clients).requireAvailable(profile.getCard(), null);
-        // No known default password for externally created users; verified reset can establish one later.
-        var client = clients.saveAndFlush(new Client(null, profile.getName(), identity.email(),
-                encoder.encode(secrets.generate() + "!aA1"), profile.getCard()));
+        // No known default password for externally created users; verified reset can establish one
+        // later.
+        var client =
+                clients.saveAndFlush(
+                        new Client(
+                                null,
+                                profile.getName(),
+                                identity.email(),
+                                encoder.encode(secrets.generate() + "!aA1"),
+                                profile.getCard()));
         passwords.initializeGoogle(client.getId());
         identities.saveAndFlush(new OAuthIdentity(identity.subject(), client.getId()));
         audit.record(BusinessAction.CLIENT_CREATED, client.getId());
-        events.publishEvent(new SecurityNotificationMail(identity.email(), SecurityNotificationMail.Kind.ACCOUNT_CREATED, LocaleContextHolder.getLocale()));
+        events.publishEvent(
+                new SecurityNotificationMail(
+                        identity.email(),
+                        SecurityNotificationMail.Kind.ACCOUNT_CREATED,
+                        LocaleContextHolder.getLocale()));
         return client.getId();
     }
 
     @Transactional
     public void link(Long accountId, VerifiedGoogleIdentity identity) {
-        accounts.lock(accountId).orElseThrow(() -> new GoogleLoginException(GoogleLoginException.Reason.FLOW_EXPIRED));
+        accounts.lock(accountId)
+                .orElseThrow(
+                        () -> new GoogleLoginException(GoogleLoginException.Reason.FLOW_EXPIRED));
         var existing = identities.findByProviderAndSubject("GOOGLE", identity.subject());
-        if (existing.isPresent() && existing.orElseThrow().getUserId().equals(accountId)) return;
+        if (existing.isPresent() && existing.orElseThrow().getUserId().equals(accountId)) {
+            return;
+        }
         if (existing.isPresent() || linked(accountId)) {
             throw new GoogleLoginException(GoogleLoginException.Reason.LINK_CONFLICT);
         }

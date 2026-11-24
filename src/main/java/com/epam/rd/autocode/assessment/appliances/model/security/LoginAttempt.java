@@ -1,4 +1,4 @@
-package com.epam.rd.autocode.assessment.appliances.model;
+package com.epam.rd.autocode.assessment.appliances.model.security;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -7,11 +7,14 @@ import jakarta.persistence.PostLoad;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
-import java.time.Instant;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import org.springframework.data.domain.Persistable;
+
+import java.time.Instant;
 
 @Entity
 @Table(name = "login_attempt")
@@ -19,25 +22,40 @@ import org.springframework.data.domain.Persistable;
 @Setter
 @NoArgsConstructor
 public class LoginAttempt implements Persistable<String> {
-    @Transient
-    private boolean newRecord = true;
-
-    public LoginAttempt(String email, int failedCount, Instant firstFailedAt, Instant lockedUntil) {
-        this.email = email; this.failedCount = failedCount;
-        this.firstFailedAt = firstFailedAt; this.lockedUntil = lockedUntil;
-    }
-
-    @Override public String getId() { return email; }
-    @Override public boolean isNew() { return newRecord; }
-    @PostLoad @PostPersist
-    private void persisted() { newRecord = false; }
+    @Transient private boolean newRecord = true;
 
     @Id
     @Column(length = 254)
     private String email;
+
     @Column(nullable = false)
     private int failedCount;
+
     @Column(nullable = false)
     private Instant firstFailedAt;
+
     private Instant lockedUntil;
+
+    public LoginAttempt(String email, int failedCount, Instant firstFailedAt, Instant lockedUntil) {
+        this.email = email;
+        this.failedCount = failedCount;
+        this.firstFailedAt = firstFailedAt;
+        this.lockedUntil = lockedUntil;
+    }
+
+    @Override
+    public String getId() {
+        return email;
+    }
+
+    @Override
+    public boolean isNew() {
+        return newRecord;
+    }
+
+    @PostLoad
+    @PostPersist
+    private void persisted() {
+        newRecord = false;
+    }
 }

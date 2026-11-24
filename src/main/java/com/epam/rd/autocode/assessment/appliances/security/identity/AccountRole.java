@@ -3,10 +3,10 @@ package com.epam.rd.autocode.assessment.appliances.security.identity;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
 import com.epam.rd.autocode.assessment.appliances.model.Employee;
 import com.epam.rd.autocode.assessment.appliances.model.User;
+
 import java.util.Optional;
 
 public enum AccountRole {
-
     CLIENT,
     EMPLOYEE;
 

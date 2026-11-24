@@ -1,6 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.security.jwt.cookie;
 
 import com.epam.rd.autocode.assessment.appliances.security.jwt.config.ConditionalOnJwt;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
@@ -9,14 +10,18 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 @ConditionalOnJwt
 public class JwtCookieConfiguration {
     @Bean
-    public CookieCsrfTokenRepository jwtCsrfTokens(AuthCookieProperties properties, AuthTokenCookies cookies) {
+    public CookieCsrfTokenRepository jwtCsrfTokens(
+            AuthCookieProperties properties, AuthTokenCookies cookies) {
         var repository = new CookieCsrfTokenRepository();
         // A distinct name avoids old /api-scoped CSRF cookies from the previous implementation.
         repository.setCookieName("STORE-CSRF");
-        repository.setCookieCustomizer(cookie -> {
-            cookie.path(cookies.path()).httpOnly(true).sameSite("Lax");
-            if (properties.secure()) cookie.secure(true);
-        });
+        repository.setCookieCustomizer(
+                cookie -> {
+                    cookie.path(cookies.path()).httpOnly(true).sameSite("Lax");
+                    if (properties.secure()) {
+                        cookie.secure(true);
+                    }
+                });
         return repository;
     }
 }

@@ -18,7 +18,9 @@ import com.epam.rd.autocode.assessment.appliances.security.identity.CurrentActor
 import com.epam.rd.autocode.assessment.appliances.security.session.RevokesAccountSessions;
 import com.epam.rd.autocode.assessment.appliances.service.EmployeeService;
 import com.epam.rd.autocode.assessment.appliances.service.policy.EmployeeDeletionPolicy;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -108,7 +110,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     private Employee requireEmployee(Long id) {
-        return employeeRepository.findById(id)
+        return employeeRepository
+                .findById(id)
                 .orElseThrow(() -> new AccountException(AccountError.EMPLOYEE_NOT_FOUND));
     }
 }

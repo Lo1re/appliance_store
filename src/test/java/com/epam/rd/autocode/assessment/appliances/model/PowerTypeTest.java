@@ -1,14 +1,17 @@
 package com.epam.rd.autocode.assessment.appliances.model;
 
-import java.util.Arrays;
-import java.util.List;
+import static com.epam.rd.autocode.assessment.appliances.model.TestConstants.POWER_TYPE_TYPE;
+import static com.epam.rd.autocode.assessment.appliances.model.TestConstants.PowerType.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import static com.epam.rd.autocode.assessment.appliances.model.TestConstants.POWER_TYPE_TYPE;
-import static com.epam.rd.autocode.assessment.appliances.model.TestConstants.PowerType.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Arrays;
+import java.util.List;
 
 class PowerTypeTest {
     private static List<?> constants;
@@ -37,30 +40,33 @@ class PowerTypeTest {
     @Test
     @DisplayName("There must be constant with name " + ENUM_CONSTANT_AC220)
     void checkEnumConstantAC220() {
-        long actual = Arrays.stream(clazz.getDeclaredFields())
-                .map(f -> f.getName())
-                .filter(name -> name.equals(ENUM_CONSTANT_AC220))
-                .count();
+        long actual =
+                Arrays.stream(clazz.getDeclaredFields())
+                        .map(f -> f.getName())
+                        .filter(name -> name.equals(ENUM_CONSTANT_AC220))
+                        .count();
         assertEquals(1, actual);
     }
 
     @Test
     @DisplayName("There must be constant with name " + ENUM_CONSTANT_AC110)
     void checkEnumConstantAC110() {
-        long actual = Arrays.stream(clazz.getDeclaredFields())
-                .map(f -> f.getName())
-                .filter(name -> name.equals(ENUM_CONSTANT_AC110))
-                .count();
+        long actual =
+                Arrays.stream(clazz.getDeclaredFields())
+                        .map(f -> f.getName())
+                        .filter(name -> name.equals(ENUM_CONSTANT_AC110))
+                        .count();
         assertEquals(1, actual);
     }
 
     @Test
     @DisplayName("There must be constant with name " + ENUM_CONSTANT_ACCUMULATOR)
     void checkEnumConstantACCUMULATOR() {
-        long actual = Arrays.stream(clazz.getDeclaredFields())
-                .map(f -> f.getName())
-                .filter(name -> name.equals(ENUM_CONSTANT_ACCUMULATOR))
-                .count();
+        long actual =
+                Arrays.stream(clazz.getDeclaredFields())
+                        .map(f -> f.getName())
+                        .filter(name -> name.equals(ENUM_CONSTANT_ACCUMULATOR))
+                        .count();
         assertEquals(1, actual);
     }
 }

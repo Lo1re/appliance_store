@@ -4,6 +4,7 @@ import com.epam.rd.autocode.assessment.appliances.exception.AccountError;
 import com.epam.rd.autocode.assessment.appliances.exception.AccountException;
 import com.epam.rd.autocode.assessment.appliances.model.Employee;
 import com.epam.rd.autocode.assessment.appliances.model.User;
+
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
