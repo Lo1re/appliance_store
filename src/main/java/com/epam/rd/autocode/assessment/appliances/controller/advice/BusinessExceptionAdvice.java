@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.util.Objects;
+
 @Slf4j
 @Order(0)
 @ControllerAdvice(annotations = ControllerSection.class)
@@ -44,7 +46,7 @@ public class BusinessExceptionAdvice {
     }
 
     private ControllerSection section(HandlerMethod handler) {
-        return java.util.Objects.requireNonNull(
+        return Objects.requireNonNull(
                 AnnotatedElementUtils.findMergedAnnotation(
                         handler.getBeanType(), ControllerSection.class));
     }

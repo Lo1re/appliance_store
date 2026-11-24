@@ -8,7 +8,6 @@ import com.epam.rd.autocode.assessment.appliances.security.jwt.refresh.*;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 class JwtRenewalControllerBranchTest {
     @Test
@@ -19,9 +18,7 @@ class JwtRenewalControllerBranchTest {
         var request = new MockHttpServletRequest();
         var response = new MockHttpServletResponse();
         when(browser.readRefresh(request)).thenThrow(new IllegalArgumentException("private"));
-        assertThat(
-                        new JwtRenewalController(refresh, browser, cookies)
-                                .renew(request, response, new RedirectAttributesModelMap()))
+        assertThat(new JwtRenewalController(refresh, browser, cookies).renew(request, response))
                 .isEqualTo("redirect:/login?expired");
         verify(cookies).clear(request, response);
         verifyNoInteractions(refresh);

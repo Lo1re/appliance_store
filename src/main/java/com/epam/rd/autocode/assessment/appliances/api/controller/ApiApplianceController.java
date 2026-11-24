@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/appliances")
+@RequestMapping(value = "/api/appliances", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = "store.api.enabled", havingValue = "true")
 public class ApiApplianceController {

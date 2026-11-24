@@ -15,7 +15,6 @@ import org.springframework.mock.web.*;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.validation.BeanPropertyBindingResult;
-import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 import java.util.Locale;
 
@@ -26,7 +25,6 @@ class PasswordResetControllerBranchTest {
     final MockHttpServletRequest request = new MockHttpServletRequest();
     final MockHttpServletResponse response = new MockHttpServletResponse();
     final ExtendedModelMap model = new ExtendedModelMap();
-    final RedirectAttributesModelMap redirects = new RedirectAttributesModelMap();
 
     @Test
     void oversizedQueryTokenIsNotReflected() {
@@ -48,8 +46,7 @@ class PasswordResetControllerBranchTest {
                                         request,
                                         response,
                                         Locale.ENGLISH,
-                                        model,
-                                        redirects))
+                                        model))
                 .isInstanceOf(AuthenticationServiceException.class);
     }
 
@@ -58,8 +55,7 @@ class PasswordResetControllerBranchTest {
         var form = new PasswordResetRequest();
         var errors = new BeanPropertyBindingResult(form, "resetForm");
         errors.reject("invalid");
-        assertThat(controller.reset(form, errors, request, response, redirects))
-                .isEqualTo("password/reset");
+        assertThat(controller.reset(form, errors, request, response)).isEqualTo("password/reset");
         verifyNoInteractions(passwords);
     }
 
@@ -73,8 +69,7 @@ class PasswordResetControllerBranchTest {
                                         form,
                                         new BeanPropertyBindingResult(form, "resetForm"),
                                         request,
-                                        response,
-                                        redirects))
+                                        response))
                 .isInstanceOf(AuthenticationServiceException.class);
     }
 
@@ -84,9 +79,7 @@ class PasswordResetControllerBranchTest {
         var form = new ForgotPasswordRequest();
         var errors = new BeanPropertyBindingResult(form, "forgotForm");
         errors.reject("invalid");
-        assertThat(
-                        controller.request(
-                                form, errors, request, response, Locale.ENGLISH, model, redirects))
+        assertThat(controller.request(form, errors, request, response, Locale.ENGLISH, model))
                 .isEqualTo("password/forgot");
         assertThat(response.getStatus()).isEqualTo(400);
         verifyNoInteractions(passwords);

@@ -1110,3 +1110,22 @@ A separate real HTTPS acceptance run passed 269 assertions over 169 HTTP respons
 against disposable PostgreSQL and Mailpit, including registration and password-recovery emails.
 All fixture records and disposable runtime storage were removed. Details and limits are in
 [Refactoring verification](docs/refactoring-verification-2026-11-24.md).
+
+
+## Quality review — 25 November 2026
+
+Controller/error handling was simplified, unused redirect arguments were removed with
+the standard Spring 6 safe redirect-model behavior, security mode properties now have one binding owner,
+and test configuration moved to test resources. Spring Boot is 3.5.16 with compatible
+security patch overrides; Java 17 and existing migration history remain in place.
+
+Fresh actual-project `clean verify -Pcontainer-tests`: BUILD SUCCESS, 644 Surefire +
+9 PostgreSQL cases, no failures/errors/skips. JaCoCo: 3569 covered lines and 1286 covered
+branches, zero missed counters and unchanged gates/exclusions. Real HTTPS: 176 responses,
+312 successful assertions, including stored XSS and media-type boundaries; fixtures
+and disposable runtime storage were cleaned up.
+
+An independent OSV scan checked 148 resolved Maven coordinates. Two Spring WebMVC
+advisories for unused SSE/XSLT features remain open at component level; this is not a
+claim that all Qodana/security findings are cleared. Full details, applicability and
+sources: [Quality review](docs/quality-review-2026-11-25.md).

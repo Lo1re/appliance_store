@@ -1,0 +1,16 @@
+{
+  "properties": [
+    {
+      "name": "store.mail.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "description": "Enable local Mailpit delivery and mail-dependent local flows."
+    },
+    {
+      "name": "store.registration.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "description": "Enable email-confirmed public client registration in the local profile."
+    }
+  ]
+}

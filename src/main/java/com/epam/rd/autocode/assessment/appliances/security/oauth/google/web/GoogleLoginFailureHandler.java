@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
@@ -25,7 +26,7 @@ public class GoogleLoginFailureHandler implements AuthenticationFailureHandler {
             AuthenticationException exception)
             throws IOException {
         flows.finish(request, response);
-        response.setHeader("Cache-Control", "no-store");
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
         log.warn("Google authorization rejected");
         response.sendRedirect(request.getContextPath() + "/login?googleError");
     }

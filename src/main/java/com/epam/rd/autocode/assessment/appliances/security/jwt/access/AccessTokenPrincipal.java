@@ -2,12 +2,13 @@ package com.epam.rd.autocode.assessment.appliances.security.jwt.access;
 
 import com.epam.rd.autocode.assessment.appliances.security.identity.AccountPrincipal;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.Objects;
 
 public final class AccessTokenPrincipal implements AccountPrincipal, Principal, Serializable {
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
     private final Long accountId;
 
     public AccessTokenPrincipal(Long accountId) {

@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.LockedException;
@@ -32,7 +33,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Locale;
 
@@ -69,19 +69,15 @@ public class PasswordChangeController {
 
     @GetMapping("/password/change")
     public String form(Model model, HttpServletResponse response) {
-        response.setHeader("Cache-Control", "no-store");
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
         model.addAttribute("passwordForm", new PasswordChangeRequest());
         return PAGE;
     }
 
     @PostMapping("/password/setup")
     public String requestSetup(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            Model model,
-            Locale locale,
-            RedirectAttributes redirects) {
-        response.setHeader("Cache-Control", "no-store");
+            HttpServletRequest request, HttpServletResponse response, Model model, Locale locale) {
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
         var reset = recovery.getIfAvailable();
         if (reset == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
@@ -91,7 +87,7 @@ public class PasswordChangeController {
                     reset.request(actor.requireUser().getEmail(), request.getRemoteAddr(), locale);
             if (retry > 0) {
                 response.setStatus(429);
-                response.setHeader("Retry-After", Long.toString(retry));
+                response.setHeader(HttpHeaders.RETRY_AFTER, Long.toString(retry));
                 model.addAttribute("retryAfterSeconds", retry);
                 model.addAttribute("passwordForm", new PasswordChangeRequest());
                 return PAGE;
@@ -108,9 +104,8 @@ public class PasswordChangeController {
             @Valid @ModelAttribute("passwordForm") PasswordChangeRequest form,
             BindingResult errors,
             HttpServletRequest request,
-            HttpServletResponse response,
-            RedirectAttributes redirects) {
-        response.setHeader("Cache-Control", "no-store");
+            HttpServletResponse response) {
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
         if (errors.hasErrors()) {
             response.setStatus(400);
             return PAGE;

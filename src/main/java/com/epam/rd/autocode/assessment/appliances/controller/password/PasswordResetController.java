@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.TransactionException;
@@ -26,7 +27,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Locale;
 
@@ -42,7 +42,7 @@ public class PasswordResetController {
 
     @ModelAttribute
     public void preventCaching(HttpServletResponse response) {
-        response.setHeader("Cache-Control", "no-store");
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
         response.setHeader("Referrer-Policy", "no-referrer");
     }
 
@@ -59,8 +59,7 @@ public class PasswordResetController {
             HttpServletRequest request,
             HttpServletResponse response,
             Locale locale,
-            Model model,
-            RedirectAttributes redirects) {
+            Model model) {
         if (errors.hasErrors()) {
             response.setStatus(400);
             return "password/forgot";
@@ -69,7 +68,7 @@ public class PasswordResetController {
             long retryAfter = passwords.request(form.getEmail(), request.getRemoteAddr(), locale);
             if (retryAfter > 0) {
                 response.setStatus(429);
-                response.setHeader("Retry-After", Long.toString(retryAfter));
+                response.setHeader(HttpHeaders.RETRY_AFTER, Long.toString(retryAfter));
                 model.addAttribute("retryAfterSeconds", retryAfter);
                 return "password/forgot";
             }
@@ -93,8 +92,7 @@ public class PasswordResetController {
             @Valid @ModelAttribute("resetForm") PasswordResetRequest form,
             BindingResult errors,
             HttpServletRequest request,
-            HttpServletResponse response,
-            RedirectAttributes redirects) {
+            HttpServletResponse response) {
         if (errors.hasErrors()) {
             response.setStatus(400);
             return "password/reset";

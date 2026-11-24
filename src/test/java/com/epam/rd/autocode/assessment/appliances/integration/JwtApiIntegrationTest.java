@@ -53,6 +53,89 @@ class JwtApiIntegrationTest {
     }
 
     @Test
+    void storedHtmlRemainsJsonDataAndIsEscapedInRenderedPages() throws Exception {
+        String payload = "<img src=x onerror=alert(1)>";
+        var client = users.findByEmailIgnoreCase("mercury@gmail.com").orElseThrow();
+        String originalName = client.getName();
+        Long createdOrder = null;
+        try {
+            client.setName(payload);
+            users.saveAndFlush(client);
+            String token = login("mercury@gmail.com", "MercuryLocal2026!");
+            var products =
+                    mvc.perform(get("/api/appliances").header("Authorization", "Bearer " + token))
+                            .andExpect(status().isOk())
+                            .andReturn();
+            long product =
+                    json.readTree(products.getResponse().getContentAsString())
+                            .path("content")
+                            .get(0)
+                            .path("id")
+                            .asLong();
+            String body =
+                    "{\"order\":{\"items\":[{\"applianceId\":" + product + ",\"quantity\":1}]}}";
+            var result =
+                    mvc.perform(
+                                    post("/api/orders")
+                                            .header("Authorization", "Bearer " + token)
+                                            .contentType(MediaType.APPLICATION_JSON)
+                                            .content(body))
+                            .andExpect(status().isCreated())
+                            .andExpect(
+                                    content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                            .andExpect(header().string("X-Content-Type-Options", "nosniff"))
+                            .andExpect(jsonPath("$.summary.clientName").value(payload))
+                            .andReturn();
+            createdOrder =
+                    json.readTree(result.getResponse().getContentAsString())
+                            .path("summary")
+                            .path("id")
+                            .asLong();
+            assertThat(result.getResponse().getHeader("Location"))
+                    .isEqualTo("/api/orders/" + createdOrder);
+            long before = orders.count();
+            mvc.perform(
+                            post("/api/orders")
+                                    .header("Authorization", "Bearer " + token)
+                                    .accept(MediaType.TEXT_HTML)
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(body))
+                    .andExpect(status().isNotAcceptable());
+            assertThat(orders.count()).isEqualTo(before);
+            var session =
+                    (MockHttpSession)
+                            mvc.perform(
+                                            formLogin()
+                                                    .user("mercury@gmail.com")
+                                                    .password("MercuryLocal2026!"))
+                                    .andReturn()
+                                    .getRequest()
+                                    .getSession(false);
+            String html =
+                    mvc.perform(get("/orders/" + createdOrder).session(session))
+                            .andExpect(status().isOk())
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString();
+            assertThat(html).doesNotContain(payload).contains("&lt;img");
+            String reflected =
+                    mvc.perform(get("/appliances").session(session).param("search", payload))
+                            .andExpect(status().isOk())
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString();
+            assertThat(reflected).doesNotContain(payload).contains("&lt;img");
+        } finally {
+            if (createdOrder != null) {
+                orders.deleteById(createdOrder);
+            }
+            var stored = users.findById(client.getId()).orElseThrow();
+            stored.setName(originalName);
+            users.saveAndFlush(stored);
+        }
+    }
+
+    @Test
     void loginAndBearerRequestsCreateNoHttpSessionAndSessionCookieDoesNotAuthenticateApi()
             throws Exception {
         String token = login("mercury@gmail.com", "MercuryLocal2026!");

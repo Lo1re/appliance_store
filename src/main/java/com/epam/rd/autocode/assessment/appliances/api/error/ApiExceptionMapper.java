@@ -31,76 +31,104 @@ import org.springframework.validation.BindException;
 import org.springframework.web.ErrorResponse;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 
 @Slf4j
 @Component
 @ConditionalOnProperty(name = "store.api.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class ApiExceptionMapper {
+    private static final List<StatusRule> STATUS_RULES =
+            List.of(
+                    new StatusRule(LockedException.class, HttpStatus.TOO_MANY_REQUESTS),
+                    new StatusRule(
+                            AuthenticationServiceException.class, HttpStatus.SERVICE_UNAVAILABLE),
+                    new StatusRule(AuthenticationException.class, HttpStatus.UNAUTHORIZED),
+                    new StatusRule(AccessDeniedException.class, HttpStatus.FORBIDDEN),
+                    new StatusRule(BindException.class, HttpStatus.BAD_REQUEST),
+                    new StatusRule(ConstraintViolationException.class, HttpStatus.BAD_REQUEST),
+                    new StatusRule(TypeMismatchException.class, HttpStatus.BAD_REQUEST),
+                    new StatusRule(HttpMessageNotReadableException.class, HttpStatus.BAD_REQUEST));
+
     private final ApiProblems problems;
 
     public ResponseEntity<ProblemDetail> handle(Exception failure, HttpServletRequest request) {
-        HttpStatusCode status;
-        String code;
-        String key;
-        var headers = new HttpHeaders();
+        ApiFailure mapped = classify(failure);
+        HttpHeaders headers = headers(mapped, failure);
+        var problem = problems.create(mapped.status(), mapped.code(), mapped.messageKey(), request);
+        addFieldErrors(problem, failure);
+        logFailure(mapped.status(), mapped.code(), failure);
+        return new ResponseEntity<>(problem, headers, mapped.status());
+    }
+
+    private ApiFailure classify(Exception failure) {
         if (failure instanceof BusinessException business) {
-            status = BusinessErrorStatus.of(business);
-            code = business.error().messageKey();
-            key = code;
-        } else {
-            if (failure instanceof LockedException) {
-                status = HttpStatus.TOO_MANY_REQUESTS;
-            } else if (failure instanceof AuthenticationServiceException) {
-                status = HttpStatus.SERVICE_UNAVAILABLE;
-            } else if (failure instanceof AuthenticationException) {
-                status = HttpStatus.UNAUTHORIZED;
-            } else if (failure instanceof AccessDeniedException) {
-                status = HttpStatus.FORBIDDEN;
-            } else if (failure instanceof BindException
-                    || failure instanceof ConstraintViolationException
-                    || failure instanceof TypeMismatchException
-                    || failure instanceof HttpMessageNotReadableException) {
-                status = HttpStatus.BAD_REQUEST;
-            } else if (failure instanceof ErrorResponse error) {
-                status = error.getStatusCode();
-                headers.addAll(error.getHeaders());
-            } else {
-                status = HttpStatus.INTERNAL_SERVER_ERROR;
-            }
-            code = "http." + status.value();
-            key = "error." + status.value() + ".message";
+            return new ApiFailure(BusinessErrorStatus.of(business), business.error().messageKey());
+        }
+        if (failure instanceof PasswordLoginLockedException) {
+            return new ApiFailure(HttpStatus.TOO_MANY_REQUESTS, "login.locked");
         }
         if (failure instanceof InvalidRefreshTokenException) {
-            code = "refresh.invalid";
-            key = "refresh.invalid";
+            return new ApiFailure(HttpStatus.UNAUTHORIZED, "refresh.invalid");
         }
         if (failure instanceof BadCredentialsException) {
-            code = "login.error";
-            key = "login.error";
+            return new ApiFailure(HttpStatus.UNAUTHORIZED, "login.error");
         }
-        if (status.value() == 401) {
+        HttpStatusCode status = status(failure);
+        return new ApiFailure(
+                status, "http." + status.value(), "error." + status.value() + ".message");
+    }
+
+    private HttpStatusCode status(Exception failure) {
+        for (StatusRule rule : STATUS_RULES) {
+            if (rule.type().isInstance(failure)) {
+                return rule.status();
+            }
+        }
+        return failure instanceof ErrorResponse error
+                ? error.getStatusCode()
+                : HttpStatus.INTERNAL_SERVER_ERROR;
+    }
+
+    private HttpHeaders headers(ApiFailure mapped, Exception failure) {
+        var headers = new HttpHeaders();
+        if (failure instanceof ErrorResponse error) {
+            headers.addAll(error.getHeaders());
+        }
+        if (mapped.status().value() == 401) {
             headers.set(HttpHeaders.WWW_AUTHENTICATE, "Bearer");
         }
         if (failure instanceof PasswordLoginLockedException locked) {
-            headers.set("Retry-After", Long.toString(locked.getRetryAfterSeconds()));
-            code = "login.locked";
-            key = "login.locked";
+            headers.set(HttpHeaders.RETRY_AFTER, Long.toString(locked.getRetryAfterSeconds()));
         }
         headers.setCacheControl("no-store");
         headers.setContentType(MediaType.APPLICATION_PROBLEM_JSON);
-        var problem = problems.create(status, code, key, request);
+        return headers;
+    }
+
+    private void addFieldErrors(ProblemDetail problem, Exception failure) {
         if (failure instanceof BindException binding) {
             var fields = new LinkedHashMap<String, String>();
             binding.getFieldErrors()
                     .forEach(error -> fields.putIfAbsent(error.getField(), "invalid"));
             problem.setProperty("fields", fields);
         }
+    }
+
+    private void logFailure(HttpStatusCode status, String code, Exception failure) {
         if (status.is5xxServerError()) {
             log.error("Unexpected API failure", SafeFailure.snapshot(failure));
         } else {
             log.debug("API request rejected (status={}, code={})", status.value(), code);
         }
-        return new ResponseEntity<>(problem, headers, status);
+    }
+
+    private record ApiFailure(HttpStatusCode status, String code, String messageKey) {
+        private ApiFailure(HttpStatusCode status, String code) {
+            this(status, code, code);
+        }
+    }
+
+    private record StatusRule(Class<? extends Exception> type, HttpStatus status) {
     }
 }

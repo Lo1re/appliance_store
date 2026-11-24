@@ -18,7 +18,6 @@ import org.springframework.mock.web.*;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.validation.BeanPropertyBindingResult;
-import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 import java.util.*;
 
@@ -39,13 +38,12 @@ class GoogleOnboardingControllerBranchTest {
     final MockHttpServletRequest request = new MockHttpServletRequest();
     final MockHttpServletResponse response = new MockHttpServletResponse();
     final ExtendedModelMap model = new ExtendedModelMap();
-    final RedirectAttributesModelMap redirects = new RedirectAttributesModelMap();
+
     final GoogleProfileRequest form = new GoogleProfileRequest();
     final BeanPropertyBindingResult errors = new BeanPropertyBindingResult(form, "googleProfile");
 
     String complete() throws Exception {
-        return controller.complete(
-                form, errors, request, response, model, Locale.ENGLISH, redirects);
+        return controller.complete(form, errors, request, response, model, Locale.ENGLISH);
     }
 
     void pending() {
@@ -58,8 +56,7 @@ class GoogleOnboardingControllerBranchTest {
     void existingDraftIsPreserved() {
         pending();
         when(flows.draft(request)).thenReturn(Optional.of(form));
-        assertThat(controller.form(request, response, model, redirects))
-                .isEqualTo("oauth/google-profile");
+        assertThat(controller.form(request, response, model)).isEqualTo("oauth/google-profile");
         assertThat(model.get("googleProfile")).isSameAs(form);
     }
 
@@ -67,7 +64,7 @@ class GoogleOnboardingControllerBranchTest {
     void expiredFormClearsWorkflow() {
         when(flows.requirePending(request))
                 .thenThrow(new GoogleLoginException(GoogleLoginException.Reason.FLOW_EXPIRED));
-        assertThat(controller.form(request, response, model, redirects))
+        assertThat(controller.form(request, response, model))
                 .isEqualTo("redirect:/login?googleExpired");
         verify(flows).finish(request, response);
     }
@@ -102,13 +99,7 @@ class GoogleOnboardingControllerBranchTest {
         var databaseErrors = new BeanPropertyBindingResult(form, "googleProfile");
         assertThat(
                         controller.complete(
-                                form,
-                                databaseErrors,
-                                request,
-                                response,
-                                model,
-                                Locale.ENGLISH,
-                                redirects))
+                                form, databaseErrors, request, response, model, Locale.ENGLISH))
                 .isEqualTo("oauth/google-profile");
         assertThat(databaseErrors.hasGlobalErrors()).isTrue();
         assertThat(response.getStatus()).isEqualTo(409);
@@ -135,6 +126,6 @@ class GoogleOnboardingControllerBranchTest {
         when(flows.requirePending(request))
                 .thenThrow(new GoogleLoginException(GoogleLoginException.Reason.LINK_REQUIRED));
         assertThat(complete()).isEqualTo("redirect:/login?googleLinkRequired");
-        assertThat(controller.cancel(request, response, redirects)).isEqualTo("redirect:/login");
+        assertThat(controller.cancel(request, response)).isEqualTo("redirect:/login");
     }
 }

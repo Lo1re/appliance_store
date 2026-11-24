@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.TransactionException;
@@ -33,7 +34,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -53,16 +53,12 @@ public class GoogleOnboardingController {
 
     @ModelAttribute
     public void noCache(HttpServletResponse response) {
-        response.setHeader("Cache-Control", "no-store");
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
         response.setHeader("Referrer-Policy", "no-referrer");
     }
 
     @GetMapping("/onboarding/google")
-    public String form(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            Model model,
-            RedirectAttributes redirects) {
+    public String form(HttpServletRequest request, HttpServletResponse response, Model model) {
         try {
             var identity = flows.requirePending(request);
             var form =
@@ -89,8 +85,7 @@ public class GoogleOnboardingController {
             HttpServletRequest request,
             HttpServletResponse response,
             Model model,
-            Locale locale,
-            RedirectAttributes redirects)
+            Locale locale)
             throws IOException {
         try {
             var identity = flows.requirePending(request);
@@ -100,25 +95,9 @@ public class GoogleOnboardingController {
             }
             flows.saveDraft(request, form);
             if (!flows.emailVerified(request, form.getEmail())) {
-                long retry = verification.send(request, form.getEmail(), locale);
-                if (retry > 0) {
-                    response.setStatus(429);
-                    response.setHeader("Retry-After", Long.toString(retry));
-                    model.addAttribute("retryAfterSeconds", retry);
-                } else {
-                    model.addAttribute("verificationSent", true);
-                }
-                return "oauth/google-profile";
+                return requestVerification(form.getEmail(), request, response, model, locale);
             }
-            var verified =
-                    new VerifiedGoogleIdentity(
-                            identity.subject(), form.getEmail(), identity.name(), true);
-            Long id = identities.createProfile(verified, form);
-            var authentication = accounts.forAccount(id);
-            flows.finish(request, response);
-            new JwtLoginSuccessHandler(tokens, cookies, browserCookies)
-                    .onAuthenticationSuccess(request, response, authentication);
-            return null;
+            return createAndLogin(identity, form, request, response);
         } catch (GoogleLoginException rejected) {
             flows.finish(request, response);
             return rejected.reason() == GoogleLoginException.Reason.LINK_REQUIRED
@@ -138,12 +117,45 @@ public class GoogleOnboardingController {
         }
     }
 
+    private String requestVerification(
+            String email,
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Model model,
+            Locale locale) {
+        long retry = verification.send(request, email, locale);
+        if (retry > 0) {
+            response.setStatus(429);
+            response.setHeader(HttpHeaders.RETRY_AFTER, Long.toString(retry));
+            model.addAttribute("retryAfterSeconds", retry);
+        } else {
+            model.addAttribute("verificationSent", true);
+        }
+        return "oauth/google-profile";
+    }
+
+    private String createAndLogin(
+            VerifiedGoogleIdentity identity,
+            GoogleProfileRequest form,
+            HttpServletRequest request,
+            HttpServletResponse response)
+            throws IOException {
+        var verified =
+                new VerifiedGoogleIdentity(
+                        identity.subject(), form.getEmail(), identity.name(), true);
+        Long id = identities.createProfile(verified, form);
+        var authentication = accounts.forAccount(id);
+        flows.finish(request, response);
+        new JwtLoginSuccessHandler(tokens, cookies, browserCookies)
+                .onAuthenticationSuccess(request, response, authentication);
+        return null;
+    }
+
     @GetMapping("/onboarding/google/verify")
     public String verify(
             @RequestParam(defaultValue = "") String token,
             HttpServletRequest request,
-            HttpServletResponse response,
-            RedirectAttributes redirects) {
+            HttpServletResponse response) {
         try {
             verification.confirm(request, token);
             return "redirect:/onboarding/google?verified";
@@ -154,10 +166,7 @@ public class GoogleOnboardingController {
     }
 
     @PostMapping("/onboarding/google/cancel")
-    public String cancel(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            RedirectAttributes redirects) {
+    public String cancel(HttpServletRequest request, HttpServletResponse response) {
         flows.finish(request, response);
         return "redirect:/login";
     }

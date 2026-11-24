@@ -228,11 +228,24 @@ class JwtCookieIntegrationTest {
             throws Exception {
         var access = login("mercury@gmail.com", "MercuryLocal2026!");
         var product = appliances.findAll().get(0);
-        mvc.perform(get("/appliances/" + product.getId()).param("lang", "uk").cookie(access))
-                .andExpect(status().isOk())
-                .andExpect(view().name("appliance/details"))
-                .andExpect(content().string(containsString("product-detail")))
-                .andExpect(content().string(not(containsString(access.getValue()))));
+        for (String language : List.of("uk", "en")) {
+            mvc.perform(
+                            get("/appliances/" + product.getId())
+                                    .param("lang", language)
+                                    .cookie(access))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("appliance/details"))
+                    .andExpect(content().string(containsString("product-detail")))
+                    .andExpect(content().string(containsString("\u20b4")))
+                    .andExpect(content().string(not(containsString("\u0432\u201a\u0491"))))
+                    .andExpect(content().string(not(containsString(access.getValue()))));
+            for (String path : List.of("/", "/appliances")) {
+                mvc.perform(get(path).param("lang", language).cookie(access))
+                        .andExpect(status().isOk())
+                        .andExpect(content().string(containsString("\u20b4")))
+                        .andExpect(content().string(not(containsString("\u0432\u201a\u0491"))));
+            }
+        }
         mvc.perform(get("/appliances/add").cookie(access)).andExpect(status().isForbidden());
         mvc.perform(get("/appliances/" + product.getId() + "/edit").cookie(access))
                 .andExpect(status().isForbidden());

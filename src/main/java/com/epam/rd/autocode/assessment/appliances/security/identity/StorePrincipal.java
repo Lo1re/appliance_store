@@ -6,12 +6,13 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serial;
 import java.util.Collection;
 import java.util.Objects;
 
 // Password-login adapter whose identity remains stable when the email changes.
 public final class StorePrincipal implements UserDetails, CredentialsContainer, AccountPrincipal {
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
     private final Long accountId;
     private final User details;
 

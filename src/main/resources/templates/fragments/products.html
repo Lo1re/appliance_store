@@ -3,7 +3,7 @@
             <section th:fragment="cards(items, manageable)" class="product-grid" th:aria-label="#{appliance.header.list}">
                 <article class="product-card" th:each="appliance : ${items}">
                     <a class="product-visual" th:href="@{/appliances/{id}(id=${appliance.id})}" th:aria-label="${appliance.name}">
-                        <img th:src="@{${@productImages.pathFor(appliance)}}" th:alt="${appliance.name}" width="175" height="155" loading="lazy">
+                        <img th:with="photoPath=${@productImages.pathFor(appliance)}" th:src="@{${photoPath}}" th:alt="${appliance.name}" width="175" height="155" loading="lazy">
                     </a>
                     <div class="product-content">
                         <p class="product-brand" th:text="${appliance.manufacturerName}">

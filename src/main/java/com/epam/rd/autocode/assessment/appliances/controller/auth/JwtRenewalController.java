@@ -11,10 +11,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 // Browser-only HTML presentation of renewal; no token value enters the model.
 @Controller
@@ -27,16 +27,13 @@ public class JwtRenewalController {
 
     @GetMapping("/auth/renew")
     public String form(HttpServletResponse response) {
-        response.setHeader("Cache-Control", "no-store");
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
         return "login/renew";
     }
 
     @PostMapping("/auth/renew")
-    public String renew(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            RedirectAttributes redirects) {
-        response.setHeader("Cache-Control", "no-store");
+    public String renew(HttpServletRequest request, HttpServletResponse response) {
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
         try {
             String raw;
             try {

@@ -21,7 +21,6 @@ import org.springframework.security.authentication.*;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 import java.util.Locale;
 
@@ -42,7 +41,7 @@ class PasswordChangeControllerBranchTest {
     final MockHttpServletRequest request = new MockHttpServletRequest();
     final MockHttpServletResponse response = new MockHttpServletResponse();
     final ExtendedModelMap model = new ExtendedModelMap();
-    final RedirectAttributesModelMap redirects = new RedirectAttributesModelMap();
+
     final PasswordChangeRequest form = new PasswordChangeRequest();
     final BeanPropertyBindingResult errors = new BeanPropertyBindingResult(form, "passwordForm");
 
@@ -74,10 +73,7 @@ class PasswordChangeControllerBranchTest {
 
     @Test
     void setupUnavailableWithoutRecoveryBean() {
-        assertThatThrownBy(
-                        () ->
-                                controller.requestSetup(
-                                        request, response, model, Locale.ENGLISH, redirects))
+        assertThatThrownBy(() -> controller.requestSetup(request, response, model, Locale.ENGLISH))
                 .isInstanceOf(ResponseStatusException.class);
     }
 
@@ -88,7 +84,7 @@ class PasswordChangeControllerBranchTest {
         when(recovery.getIfAvailable()).thenReturn(reset);
         when(reset.request("client@example.test", request.getRemoteAddr(), Locale.ENGLISH))
                 .thenReturn(42L);
-        assertThat(controller.requestSetup(request, response, model, Locale.ENGLISH, redirects))
+        assertThat(controller.requestSetup(request, response, model, Locale.ENGLISH))
                 .isEqualTo("password/change");
         assertThat(response.getStatus()).isEqualTo(429);
         assertThat(response.getHeader("Retry-After")).isEqualTo("42");
@@ -101,10 +97,7 @@ class PasswordChangeControllerBranchTest {
         when(recovery.getIfAvailable()).thenReturn(reset);
         when(reset.request("client@example.test", request.getRemoteAddr(), Locale.ENGLISH))
                 .thenThrow(new DataAccessResourceFailureException("private"));
-        assertThatThrownBy(
-                        () ->
-                                controller.requestSetup(
-                                        request, response, model, Locale.ENGLISH, redirects))
+        assertThatThrownBy(() -> controller.requestSetup(request, response, model, Locale.ENGLISH))
                 .isInstanceOf(AuthenticationServiceException.class);
     }
 
@@ -113,15 +106,14 @@ class PasswordChangeControllerBranchTest {
         doThrow(new PasswordChangeException(PasswordChangeError.NOT_SET))
                 .when(passwords)
                 .change(form);
-        assertThat(controller.change(form, errors, request, response, redirects))
+        assertThat(controller.change(form, errors, request, response))
                 .isEqualTo("redirect:/password/change");
     }
 
     @Test
     void lockedPasswordChangeShows429WithoutLogout() {
         doThrow(new LockedException("private")).when(passwords).change(form);
-        assertThat(controller.change(form, errors, request, response, redirects))
-                .isEqualTo("password/change");
+        assertThat(controller.change(form, errors, request, response)).isEqualTo("password/change");
         assertThat(response.getStatus()).isEqualTo(429);
         assertThat(errors.hasGlobalErrors()).isTrue();
     }
@@ -129,7 +121,7 @@ class PasswordChangeControllerBranchTest {
     @Test
     void changeOutageIsSanitized() {
         doThrow(new DataAccessResourceFailureException("private")).when(passwords).change(form);
-        assertThatThrownBy(() -> controller.change(form, errors, request, response, redirects))
+        assertThatThrownBy(() -> controller.change(form, errors, request, response))
                 .isInstanceOf(AuthenticationServiceException.class);
     }
 
@@ -138,8 +130,7 @@ class PasswordChangeControllerBranchTest {
         doThrow(new PasswordChangeException(PasswordChangeError.NEW_UNCHANGED))
                 .when(passwords)
                 .change(form);
-        assertThat(controller.change(form, errors, request, response, redirects))
-                .isEqualTo("password/change");
+        assertThat(controller.change(form, errors, request, response)).isEqualTo("password/change");
         assertThat(errors.hasFieldErrors("newPassword")).isTrue();
     }
 }

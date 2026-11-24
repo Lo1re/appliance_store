@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.TransactionException;
@@ -26,7 +27,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Locale;
 
@@ -40,7 +40,7 @@ public class ClientRegistrationController {
 
     @ModelAttribute
     public void preventCaching(HttpServletResponse response) {
-        response.setHeader("Cache-Control", "no-store");
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
         response.setHeader("Referrer-Policy", "no-referrer");
     }
 
@@ -57,8 +57,7 @@ public class ClientRegistrationController {
             HttpServletRequest request,
             HttpServletResponse response,
             Model model,
-            Locale locale,
-            RedirectAttributes redirects) {
+            Locale locale) {
         if (errors.hasErrors()) {
             response.setStatus(400);
             return "registration/form";
@@ -67,7 +66,7 @@ public class ClientRegistrationController {
             long retry = submissions.submit(form, request.getRemoteAddr(), locale);
             if (retry > 0) {
                 response.setStatus(429);
-                response.setHeader("Retry-After", Long.toString(retry));
+                response.setHeader(HttpHeaders.RETRY_AFTER, Long.toString(retry));
                 model.addAttribute("retryAfterSeconds", retry);
                 return "registration/form";
             }
@@ -87,10 +86,7 @@ public class ClientRegistrationController {
     }
 
     @GetMapping({"/register/verify", "/register/confirm"})
-    public String verify(
-            @RequestParam(defaultValue = "") String token,
-            Model model,
-            RedirectAttributes redirects) {
+    public String verify(@RequestParam(defaultValue = "") String token, Model model) {
         try {
             confirmations.preview(token);
             model.addAttribute("registrationToken", token);
@@ -106,8 +102,7 @@ public class ClientRegistrationController {
     public String complete(
             @RequestParam(defaultValue = "") String token,
             HttpServletResponse response,
-            Model model,
-            RedirectAttributes redirects) {
+            Model model) {
         try {
             // Only the token is accepted: role, email, ID and password cannot replace the stored
             // application.

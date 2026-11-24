@@ -1,14 +1,18 @@
 package com.epam.rd.autocode.assessment.appliances.security.jwt.access;
 
+import lombok.Getter;
+
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 
+import java.io.Serial;
 import java.time.Instant;
 import java.util.Collection;
 
 // Distinct from password authentication so JWT requests never reset password-lock counters.
+@Getter
 public final class AccessTokenAuthentication extends AbstractAuthenticationToken {
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
     private final AccessTokenPrincipal principal;
     private final Instant expiresAt;
     private final long credentialVersion;
@@ -35,14 +39,6 @@ public final class AccessTokenAuthentication extends AbstractAuthenticationToken
     @Override
     public AccessTokenPrincipal getPrincipal() {
         return principal;
-    }
-
-    public long getCredentialVersion() {
-        return credentialVersion;
-    }
-
-    public Instant getExpiresAt() {
-        return expiresAt;
     }
 
     @Override

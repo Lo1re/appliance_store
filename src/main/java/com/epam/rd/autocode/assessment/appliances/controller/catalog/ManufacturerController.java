@@ -61,7 +61,7 @@ public class ManufacturerController {
     }
 
     @GetMapping({"/add", "/{id}/edit"})
-    public String form(@PathVariable(name = "id", required = false) Long id, Model model) {
+    public String form(@PathVariable(required = false) Long id, Model model) {
         ManufacturerRequest request =
                 id == null
                         ? new ManufacturerRequest()
@@ -74,7 +74,7 @@ public class ManufacturerController {
 
     @PostMapping({"/add", "/{id}/edit"})
     public String save(
-            @PathVariable(name = "id", required = false) Long id,
+            @PathVariable(required = false) Long id,
             @Valid @ModelAttribute("manufacturer") ManufacturerRequest request,
             BindingResult errors,
             HttpServletResponse response,

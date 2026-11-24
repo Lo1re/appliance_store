@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.core.AuthenticationException;
@@ -31,7 +32,7 @@ public final class JwtBrowserFailures implements AuthenticationEntryPoint {
             AuthenticationException failure)
             throws IOException, ServletException {
         if (failure instanceof AuthenticationServiceException) {
-            response.setHeader("Cache-Control", "no-store");
+            response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
             response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
             return;
         }

@@ -67,14 +67,14 @@ public class ApplianceController {
     }
 
     @GetMapping({"/add", "/{id}/edit"})
-    public String form(@PathVariable(name = "id", required = false) Long id, Model model) {
+    public String form(@PathVariable(required = false) Long id, Model model) {
         ApplianceRequest request = forms.request(id);
         return ApplianceFormView.render(forms.prepare(id, request), model);
     }
 
     @PostMapping({"/add", "/{id}/edit"})
     public String save(
-            @PathVariable(name = "id", required = false) Long id,
+            @PathVariable(required = false) Long id,
             @Valid @ModelAttribute("appliance") ApplianceRequest request,
             BindingResult errors,
             HttpServletResponse response,

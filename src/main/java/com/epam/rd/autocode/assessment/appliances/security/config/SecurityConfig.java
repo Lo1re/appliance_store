@@ -22,6 +22,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer.SessionFixationConfigurer;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -38,8 +39,7 @@ import java.time.Clock;
 @EnableConfigurationProperties({
     AuthenticationProperties.class,
     LoginProtectionProperties.class,
-    SessionPolicyProperties.class,
-    WebAuthenticationProperties.class
+    SessionPolicyProperties.class
 })
 @EnableScheduling
 public class SecurityConfig {
@@ -75,8 +75,7 @@ public class SecurityConfig {
             UserDetailsService userDetailsService,
             PasswordEncoder passwordEncoder,
             LoginAttemptService attempts) {
-        var provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
+        var provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
         return new LoginProtectedAuthenticationProvider(provider, attempts);
     }
@@ -97,7 +96,7 @@ public class SecurityConfig {
                 .addFilterAfter(new ActiveAccountFilter(actor), AnonymousAuthenticationFilter.class)
                 .sessionManagement(
                         session -> {
-                            session.sessionFixation(fixation -> fixation.changeSessionId());
+                            session.sessionFixation(SessionFixationConfigurer::changeSessionId);
                             session.maximumSessions(sessionPolicy.maximum())
                                     .maxSessionsPreventsLogin(false)
                                     .sessionRegistry(sessions)

@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +31,7 @@ import java.net.URI;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping(value = "/api/orders", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = "store.api.enabled", havingValue = "true")
 public class ApiOrdersController {
@@ -52,6 +53,7 @@ public class ApiOrdersController {
         return orders.findById(id);
     }
 
+    @SuppressWarnings("JvmTaintAnalysis")
     @PostMapping
     public ResponseEntity<OrderResponse> create(@Valid @RequestBody ApiOrderCreateRequest request) {
         var order = orders.create(request.clientId(), request.order());

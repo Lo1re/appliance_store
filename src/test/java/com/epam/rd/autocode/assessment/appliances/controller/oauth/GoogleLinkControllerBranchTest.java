@@ -13,7 +13,6 @@ import com.epam.rd.autocode.assessment.appliances.security.password.reset.ResetT
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 class GoogleLinkControllerBranchTest {
     @Test
@@ -29,11 +28,7 @@ class GoogleLinkControllerBranchTest {
                         flows,
                         mock(AuthTokenCookies.class),
                         new ResetTokenCodec());
-        assertThatThrownBy(
-                        () ->
-                                controller.begin(
-                                        new MockHttpServletRequest(),
-                                        new RedirectAttributesModelMap()))
+        assertThatThrownBy(() -> controller.begin(new MockHttpServletRequest()))
                 .isInstanceOf(AccessDeniedException.class);
         verifyNoInteractions(flows);
     }

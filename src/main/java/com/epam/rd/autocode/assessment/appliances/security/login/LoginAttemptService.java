@@ -11,6 +11,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Clock;
 import java.time.Duration;
+import java.util.Objects;
 import java.util.Optional;
 
 // Persists counters in independent transactions, including failures of an outer login.
@@ -88,8 +89,9 @@ public class LoginAttemptService {
 
     public int cleanup() {
         var now = clock.instant();
-        return transaction.execute(
-                status -> attempts.deleteExpired(now.minus(properties.retention()), now));
+        return Objects.requireNonNull(
+                transaction.execute(
+                        status -> attempts.deleteExpired(now.minus(properties.retention()), now)));
     }
 
     private Optional<String> key(String username) {

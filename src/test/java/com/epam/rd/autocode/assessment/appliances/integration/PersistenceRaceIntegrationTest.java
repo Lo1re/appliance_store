@@ -23,11 +23,11 @@ import com.epam.rd.autocode.assessment.appliances.service.ManufacturerService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -49,9 +49,9 @@ class PersistenceRaceIntegrationTest {
     @Autowired ManufacturerService manufacturers;
     @Autowired JdbcTemplate jdbc;
     @Autowired PlatformTransactionManager transactions;
-    @SpyBean UserRepository users;
-    @SpyBean ManufacturerRepository manufacturerRepository;
-    @SpyBean ApplianceRepository appliances;
+    @MockitoSpyBean UserRepository users;
+    @MockitoSpyBean ManufacturerRepository manufacturerRepository;
+    @MockitoSpyBean ApplianceRepository appliances;
 
     @Test
     void duplicateEmailIsTranslatedWhenBothRequestsPassThePrecheck() throws Exception {

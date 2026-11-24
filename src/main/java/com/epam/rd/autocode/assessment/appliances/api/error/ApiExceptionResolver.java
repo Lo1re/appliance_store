@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
@@ -29,11 +31,12 @@ public class ApiExceptionResolver implements HandlerExceptionResolver {
     private final ObjectMapper json;
 
     @Override
+    @Nullable
     public ModelAndView resolveException(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            Object handler,
-            Exception failure) {
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @Nullable Object handler,
+            @NonNull Exception failure) {
         String root = request.getContextPath() + "/api";
         if (!request.getRequestURI().equals(root)
                 && !request.getRequestURI().startsWith(root + "/")) {

@@ -86,7 +86,7 @@ public class OrdersController {
 
     @PostMapping({"/add", "/{id}/edit"})
     public String save(
-            @PathVariable(name = "id", required = false) Long id,
+            @PathVariable(required = false) Long id,
             @RequestParam(name = "clientId", required = false) Long clientId,
             @Valid @ModelAttribute("orderForm") OrderRequest request,
             BindingResult errors,
@@ -104,7 +104,7 @@ public class OrdersController {
                             ? orderService.create(clientId, request)
                             : orderService.update(id, request);
             redirect.addAttribute("orderId", saved.summary().id());
-            return REDIRECT + "/{orderId}";
+            return "redirect:/orders/{orderId}";
         } catch (OrderException exception) {
             switch (exception.error()) {
                 case CLIENT_REQUIRED, CLIENT_NOT_FOUND, DUPLICATE_APPLIANCE, APPLIANCE_NOT_FOUND ->
@@ -126,6 +126,6 @@ public class OrdersController {
     public String approve(@PathVariable Long id, RedirectAttributes redirect) {
         orderService.approve(id);
         redirect.addAttribute("orderId", id);
-        return REDIRECT + "/{orderId}";
+        return "redirect:/orders/{orderId}";
     }
 }

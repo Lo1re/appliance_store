@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -36,7 +37,7 @@ public final class HttpsRedirectFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
             return;
         }
-        response.setHeader("Cache-Control", "no-store");
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
         if (!"GET".equals(request.getMethod()) && !"HEAD".equals(request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.setContentType("text/plain;charset=UTF-8");

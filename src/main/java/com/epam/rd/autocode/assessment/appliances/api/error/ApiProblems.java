@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.MessageSource;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.stereotype.Component;
@@ -36,20 +37,18 @@ public class ApiProblems {
                 status.is5xxServerError() ? "error.5xx.message" : "error.4xx.message";
         var problem =
                 ProblemDetail.forStatusAndDetail(
-                        status,
-                        messages.getMessage(
-                                detailKey,
-                                null,
-                                messages.getMessage(fallbackDetail, null, locale),
-                                locale));
-        problem.setTitle(
-                messages.getMessage(
-                        titleKey, null, messages.getMessage(fallbackTitle, null, locale), locale));
+                        status, message(detailKey, fallbackDetail, locale));
+        problem.setTitle(message(titleKey, fallbackTitle, locale));
         problem.setProperty("code", code);
         Object requestId = request.getAttribute(RequestLogContext.ATTRIBUTE);
         if (requestId != null) {
             problem.setProperty("requestId", requestId.toString());
         }
         return problem;
+    }
+
+    private String message(String key, String fallbackKey, Locale locale) {
+        return messages.getMessage(
+                new DefaultMessageSourceResolvable(new String[] {key, fallbackKey}), locale);
     }
 }

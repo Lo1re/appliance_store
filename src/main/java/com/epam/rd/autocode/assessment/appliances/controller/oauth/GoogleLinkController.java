@@ -12,13 +12,13 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
@@ -32,7 +32,7 @@ public class GoogleLinkController {
 
     @ModelAttribute
     public void noCache(HttpServletResponse response) {
-        response.setHeader("Cache-Control", "no-store");
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
     }
 
     @GetMapping("/account/google")
@@ -42,7 +42,7 @@ public class GoogleLinkController {
     }
 
     @PostMapping("/account/google/link")
-    public String begin(HttpServletRequest request, RedirectAttributes redirects) {
+    public String begin(HttpServletRequest request) {
         Long id = actor.requireUser().getId();
         String access = cookies.read(request);
         if (access == null) {

@@ -1,6 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.security.jwt.cookie;
 
-import org.springframework.security.config.annotation.ObjectPostProcessor;
+import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.web.csrf.CsrfFilter;
 
 // Restores unsafe-method CSRF checks after Resource Server's bearer exemption is applied.

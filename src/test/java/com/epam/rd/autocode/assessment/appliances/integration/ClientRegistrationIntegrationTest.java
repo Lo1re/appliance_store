@@ -18,10 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
@@ -64,7 +64,7 @@ class ClientRegistrationIntegrationTest {
     com.epam.rd.autocode.assessment.appliances.security.registration.RegistrationSubmission
             submissions;
 
-    @MockBean SecurityMailSender mail;
+    @MockitoBean SecurityMailSender mail;
 
     @Autowired
     @Qualifier("securityMailExecutor")

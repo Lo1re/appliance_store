@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
@@ -32,7 +33,7 @@ public final class JwtLoginSuccessHandler implements AuthenticationSuccessHandle
             previous = null;
         }
         cookies.issue(request, response, tokens.issue(authentication, previous));
-        response.setHeader("Cache-Control", "no-store");
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
         response.sendRedirect(request.getContextPath() + "/");
     }
 }

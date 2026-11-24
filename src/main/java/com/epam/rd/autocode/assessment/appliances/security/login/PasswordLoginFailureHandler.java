@@ -3,6 +3,7 @@ package com.epam.rd.autocode.assessment.appliances.security.login;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
@@ -21,7 +22,7 @@ public class PasswordLoginFailureHandler implements AuthenticationFailureHandler
             AuthenticationException failure)
             throws IOException {
         if (failure instanceof AuthenticationServiceException) {
-            response.setHeader("Cache-Control", "no-store");
+            response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
             response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
             return;
         }

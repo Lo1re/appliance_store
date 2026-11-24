@@ -16,7 +16,7 @@
             </a>
             <section class="product-detail">
                 <div class="product-detail-art">
-                    <img th:src="@{${@productImages.pathFor(appliance)}}" th:alt="${appliance.name}" id="product-main-image" width="400" height="300">
+                    <img th:with="photoPath=${@productImages.pathFor(appliance)}" th:src="@{${photoPath}}" th:alt="${appliance.name}" id="product-main-image" width="400" height="300">
                     <div class="product-thumbnails" th:if="${@productImages.photosFor(appliance).size() > 1}">
                         <button type="button" class="photo-thumbnail" th:each="photo, position : ${@productImages.photosFor(appliance)}"
                                 th:data-photo="@{${photo}}" aria-controls="product-main-image"

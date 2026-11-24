@@ -33,7 +33,6 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockHttpSession;
@@ -44,6 +43,7 @@ import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.net.URI;
@@ -96,7 +96,7 @@ class GoogleLoginIntegrationTest {
     @Autowired UserRepository users;
     @Autowired OAuthIdentityRepository links;
     @Autowired PasswordEncoder encoder;
-    @MockBean SecurityMailSender mail;
+    @MockitoBean SecurityMailSender mail;
 
     @Autowired
     @org.springframework.beans.factory.annotation.Qualifier("securityMailExecutor")

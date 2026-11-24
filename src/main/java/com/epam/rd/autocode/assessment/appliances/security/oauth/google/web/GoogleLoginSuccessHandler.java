@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -45,7 +46,7 @@ public class GoogleLoginSuccessHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(
             HttpServletRequest request, HttpServletResponse response, Authentication authentication)
             throws IOException {
-        response.setHeader("Cache-Control", "no-store");
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
         try {
             if (!(authentication instanceof OAuth2AuthenticationToken oauth)
                     || !"google".equals(oauth.getAuthorizedClientRegistrationId())

@@ -15,7 +15,6 @@ import org.springframework.mock.web.*;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.validation.BeanPropertyBindingResult;
-import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 import java.util.Locale;
 
@@ -30,11 +29,9 @@ class ClientRegistrationControllerBranchTest {
     final MockHttpServletRequest request = new MockHttpServletRequest();
     final MockHttpServletResponse response = new MockHttpServletResponse();
     final ExtendedModelMap model = new ExtendedModelMap();
-    final RedirectAttributesModelMap redirects = new RedirectAttributesModelMap();
 
     String submit() {
-        return controller.request(
-                form, errors, request, response, model, Locale.ENGLISH, redirects);
+        return controller.request(form, errors, request, response, model, Locale.ENGLISH);
     }
 
     @Test
@@ -67,7 +64,7 @@ class ClientRegistrationControllerBranchTest {
     void previewOutageIsSanitized() {
         when(confirmations.preview("token"))
                 .thenThrow(new DataAccessResourceFailureException("private"));
-        assertThatThrownBy(() -> controller.verify("token", model, redirects))
+        assertThatThrownBy(() -> controller.verify("token", model))
                 .isInstanceOf(AuthenticationServiceException.class);
     }
 
@@ -79,8 +76,7 @@ class ClientRegistrationControllerBranchTest {
                 .thenReturn(
                         new RegistrationDetails(
                                 "Client", "client@example.test", null, "private-hash"));
-        assertThat(controller.complete("token", response, model, redirects))
-                .isEqualTo("registration/form");
+        assertThat(controller.complete("token", response, model)).isEqualTo("registration/form");
         var displayed = (ClientRegistrationRequest) model.get("registrationForm");
         assertThat(displayed.getEmail()).isEqualTo("client@example.test");
         assertThat(displayed.getNewPassword()).isNull();
@@ -98,7 +94,7 @@ class ClientRegistrationControllerBranchTest {
         when(confirmations.complete("token"))
                 .thenThrow(new AccountException(AccountError.CARD_DUPLICATE));
         when(confirmations.preview("token")).thenThrow(new InvalidRegistrationException());
-        assertThat(controller.complete("token", response, model, redirects))
+        assertThat(controller.complete("token", response, model))
                 .isEqualTo("redirect:/register?invalid");
     }
 
@@ -108,7 +104,7 @@ class ClientRegistrationControllerBranchTest {
                 .thenThrow(new AccountException(AccountError.EMAIL_DUPLICATE));
         when(confirmations.preview("token"))
                 .thenThrow(new DataAccessResourceFailureException("private"));
-        assertThatThrownBy(() -> controller.complete("token", response, model, redirects))
+        assertThatThrownBy(() -> controller.complete("token", response, model))
                 .isInstanceOf(AuthenticationServiceException.class);
     }
 
@@ -116,7 +112,7 @@ class ClientRegistrationControllerBranchTest {
     void completionStorageOutageIsSanitized() {
         when(confirmations.complete("token"))
                 .thenThrow(new DataAccessResourceFailureException("private"));
-        assertThatThrownBy(() -> controller.complete("token", response, model, redirects))
+        assertThatThrownBy(() -> controller.complete("token", response, model))
                 .isInstanceOf(AuthenticationServiceException.class);
     }
 
