@@ -1129,3 +1129,15 @@ An independent OSV scan checked 148 resolved Maven coordinates. Two Spring WebMV
 advisories for unused SSE/XSLT features remain open at component level; this is not a
 claim that all Qodana/security findings are cleared. Full details, applicability and
 sources: [Quality review](docs/quality-review-2026-11-25.md).
+
+
+### Coverage completion — 2026-11-25
+
+Full `clean verify -Pcontainer-tests` passed: 658 Surefire and 9 PostgreSQL
+Failsafe cases, zero failures, errors or skips. Removed the `model/**` JaCoCo
+exclusion without weakening coverage gates. The fresh JaCoCo report includes
+models and has zero missed lines (3652 covered), branches (1294), methods (838),
+and classes (263). Added explicit order error cases and model lifecycle, expiry,
+overflow, identity and diagnostic redaction tests. Production behavior is unchanged.
+IntelliJ's coverage engine can count generated code differently; these figures
+refer to `target/site/jacoco/index.html` from this build.

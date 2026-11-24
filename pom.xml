@@ -211,11 +211,7 @@
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.13</version>
 
-				<configuration>
-					<excludes>
-						<exclude>com/epam/rd/autocode/assessment/appliances/model/**</exclude>
-					</excludes>
-				</configuration>
+
 
 				<executions>
 					<execution>
