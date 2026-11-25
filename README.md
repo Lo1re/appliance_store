@@ -25,25 +25,9 @@ The project started from an EPAM Spring Boot exercise and was extended with data
 
 ## Screenshots
 
-Real screenshots from a temporary instance with demo data, shown at a compact responsive viewport.
+<img width="1768" height="840" alt="image" src="https://github.com/user-attachments/assets/20a1be42-8e96-464a-8165-c5795ae62d93" />
+<img width="1815" height="732" alt="image" src="https://github.com/user-attachments/assets/fb02aed9-6504-4192-84f4-02e8323ce57f" />
 
-<table>
-  <tr>
-    <td width="50%" align="center"><strong>Storefront</strong><br><img src="docs/screenshots/home.jpg" alt="Appliance Store homepage with product photography" width="100%"></td>
-    <td width="50%" align="center"><strong>Product catalog</strong><br><img src="docs/screenshots/catalog.jpg" alt="Product cards with prices and employee management actions" width="100%"></td>
-  </tr>
-  <tr>
-    <td width="50%" align="center"><strong>Product details</strong><br><img src="docs/screenshots/product.jpg" alt="Product detail page and image gallery" width="100%"></td>
-    <td width="50%" align="center"><strong>Order workspace</strong><br><img src="docs/screenshots/order.jpg" alt="Order form with client and product search" width="100%"></td>
-  </tr>
-</table>
-
-<details>
-<summary><strong>View the sign-in screen</strong></summary>
-
-<img src="docs/screenshots/login.jpg" alt="Localized sign-in form" width="480">
-
-</details>
 
 ## Features
 
