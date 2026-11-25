@@ -1,45 +1,128 @@
+<div align="center">
+
 # Appliance Store
 
-Spring Boot web application for managing an appliance shop. The application provides a Thymeleaf storefront and an optional JSON API, with Ukrainian and English localization.
+### A full-stack Java pet project for an online appliance shop
+
+Browse products. Manage accounts. Build and approve orders.
+
+![Java](https://img.shields.io/badge/Java-17-ED8B00?style=flat-square)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.16-6DB33F?style=flat-square)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+![Thymeleaf](https://img.shields.io/badge/Thymeleaf-005F0F?style=flat-square&logo=thymeleaf&logoColor=white)
+
+[Overview](#overview) · [Screenshots](#screenshots) · [Features](#features) · [Architecture](#architecture) · [Run locally](#run-locally) · [Testing](#testing)
+
+</div>
+
+---
+
+## Overview
+
+Appliance Store is my main Java pet project: a storefront and staff workspace built around a Spring Boot backend. It brings together product browsing, customer accounts, order processing and account security in one application.
+
+The project started from an EPAM Spring Boot exercise and was extended with database authentication, JWT and refresh-token flows, Google sign-in, email verification, a redesigned storefront and PostgreSQL integration tests. The web interface uses server-rendered Thymeleaf pages with JavaScript for interactive forms; an optional JSON API provides a separate integration surface.
+
+## Screenshots
+
+Real screenshots from a temporary instance with demo data, shown at a compact responsive viewport.
+
+<table>
+  <tr>
+    <td width="50%" align="center"><strong>Storefront</strong><br><img src="docs/screenshots/home.jpg" alt="Appliance Store homepage with product photography" width="100%"></td>
+    <td width="50%" align="center"><strong>Product catalog</strong><br><img src="docs/screenshots/catalog.jpg" alt="Product cards with prices and employee management actions" width="100%"></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><strong>Product details</strong><br><img src="docs/screenshots/product.jpg" alt="Product detail page and image gallery" width="100%"></td>
+    <td width="50%" align="center"><strong>Order workspace</strong><br><img src="docs/screenshots/order.jpg" alt="Order form with client and product search" width="100%"></td>
+  </tr>
+</table>
+
+<details>
+<summary><strong>View the sign-in screen</strong></summary>
+
+<img src="docs/screenshots/login.jpg" alt="Localized sign-in form" width="480">
+
+</details>
 
 ## Features
 
-- Appliance catalog with product details, search, server-side pagination and sorting.
-- Employee management of clients, employees, appliances and manufacturers.
-- Order creation, editing, deletion and employee approval, with ownership checks and server-calculated totals.
-- Database password authentication, JWT access cookies, refresh-token rotation and logout.
-- Client registration, email verification, password change and password recovery through local Mailpit.
-- Optional Google OAuth2 / OpenID Connect sign-in and explicit account linking.
-- Server-side validation, localized errors and safe request and business-event logging.
+| Area | What I implemented |
+| --- | --- |
+| **Storefront** | Product cards, detail pages, image galleries and responsive navigation. |
+| **Catalog discovery** | Server-side search, pagination and sorting, with bounded lookup requests for forms. |
+| **Account management** | Client and employee management, normalized inputs, validation and duplicate handling. |
+| **Orders** | Multiple product rows, quantities, server-calculated totals, editing, deletion and employee approval. |
+| **Authorization** | Client/employee roles, order ownership checks and server-side access enforcement. |
+| **Password authentication** | Database accounts, BCrypt passwords, failed-login limits and localized sign-in errors. |
+| **Token lifecycle** | JWT browser cookies, rotating refresh tokens, replay rejection and credential revocation. |
+| **Google sign-in** | Optional OAuth2 / OpenID Connect login, client onboarding and explicit account linking. |
+| **Email workflows** | Client registration, email verification, password recovery and security notifications through local Mailpit. |
+| **Localization** | Ukrainian and English pages, forms, validation messages and error responses. |
+| **JSON API** | Optional API controllers, DTO contracts and localized Problem Detail errors. |
+| **Observability** | Request correlation IDs, rotating logs and transaction-aware business events without credential logging. |
 
-## Technology
+### User roles
 
-Java 17, Spring Boot 3.5.16, Spring MVC, Spring Security, Spring Data JPA, Hibernate, Thymeleaf, Bean Validation, MapStruct and Lombok.
+| Capability | Client | Employee |
+| --- | :---: | :---: |
+| Browse products and manufacturers | ✓ | ✓ |
+| Create and manage permitted orders | Own orders | Managed orders |
+| Approve orders | — | ✓ |
+| Manage products and manufacturers | — | ✓ |
+| Manage client and employee accounts | — | ✓ |
+| Change own password and manage Google linking | ✓ | ✓ |
 
-PostgreSQL is used locally; H2 is used for ordinary automated tests. Flyway manages the database schema. JUnit, Mockito, MockMvc, Testcontainers and JaCoCo support testing.
+## Technology stack
+
+| Layer | Technologies |
+| --- | --- |
+| **Backend** | Java 17, Spring Boot, Spring MVC, Spring Security, Bean Validation, Spring AOP |
+| **Web UI** | Thymeleaf, HTML, CSS, JavaScript |
+| **Persistence** | PostgreSQL, Spring Data JPA, Hibernate, Flyway |
+| **Mapping** | MapStruct, Lombok |
+| **Authentication** | BCrypt, JWT, refresh tokens, Google OAuth2 / OpenID Connect |
+| **Local infrastructure** | HTTPS, Docker Compose, Mailpit |
+| **Testing** | JUnit, Mockito, MockMvc, H2, PostgreSQL Testcontainers, JaCoCo |
+| **Build** | Maven and Maven Wrapper |
 
 ## Architecture
 
-```text
-api/          JSON controllers and API error responses
-controller/   HTML controllers and shared MVC advice
-service/      Business operations and policies
-repository/   Database access and account locking
-model/        Persistent domain entities
-dto/         Request and response contracts
-mapper/       MapStruct entity/DTO mappings
-security/     Authentication, authorization, JWT, Google and password flows
-validation/   Input validation and normalization
-web/          Form preparation, pagination and web presentation helpers
-mail/         Security emails and local delivery
-logging/      Request and operation logging
-persistence/  Database constraint error translation
-config/       Application configuration
+```mermaid
+flowchart LR
+    Browser[Browser / Thymeleaf] --> MVC[MVC controllers]
+    APIClient[JSON client] --> API[API controllers]
+    MVC --> Services[Application services]
+    API --> Services
+    Services --> Repositories[Spring Data JPA repositories]
+    Repositories --> Database[(PostgreSQL)]
+    Services --> Mail[Security email delivery]
+    Mail --> Mailpit[Local Mailpit]
 ```
 
-Controllers delegate business operations to services. Repositories handle persistence; DTOs define input and output contracts. MapStruct implementations are generated during compilation. JavaScript supports form interaction and lookup requests; validation, permissions, sorting and order totals remain authoritative on the server.
+| Responsibility | Packages |
+| --- | --- |
+| HTML routes and shared MVC advice | `controller`, `web` |
+| JSON endpoints and API errors | `api` |
+| Business operations and policies | `service` |
+| Entities and database access | `model`, `repository`, `persistence` |
+| Input/output contracts and conversion | `dto`, `mapper`, `validation` |
+| Authentication and authorization | `security` |
+| Email, logging and configuration | `mail`, `logging`, `config` |
 
-## Local setup
+### Engineering decisions
+
+| Decision | Purpose |
+| --- | --- |
+| **Service-owned business rules** | Keep controllers focused on HTTP handling and presentation. |
+| **Server-authoritative validation and totals** | Enforce order rules even when requests bypass the UI. |
+| **DTOs and generated MapStruct mappings** | Separate web contracts from persistence entities. |
+| **Transactional operations and account locking** | Coordinate sensitive writes and competing account/order operations. |
+| **Flyway migrations with Hibernate validation** | Keep schema changes explicit and reproducible. |
+| **Cookie security and CSRF protection** | Protect browser authentication and state-changing requests. |
+| **Isolated test infrastructure** | Exercise PostgreSQL behavior without modifying the local application database. |
+
+## Run locally
 
 Requirements: JDK 17, PostgreSQL and Docker Desktop running Linux containers. Run commands from the project root.
 
@@ -139,6 +222,13 @@ Run the complete verification, including PostgreSQL Testcontainers and coverage 
 
 PostgreSQL tests use disposable containers rather than the local application database. The coverage report is generated at `target/site/jacoco/index.html`; models are included, and the global checks require zero missed lines and branches. Coverage measures executed code and does not guarantee every possible scenario.
 
+
 ## Logging
 
-Local logs are written to the console and `logs/store.log`, with rotation. Requests have an `X-Request-ID` for correlation. Passwords, tokens, cookies and request bodies are excluded from logs. Log files and generated build output are excluded from Git.
+Local logs are written to the console and `logs/store.log`, with rotation. Each request has an `X-Request-ID` for correlation. Credentials, tokens, cookie values and request bodies are excluded from logs.
+
+## Project scope
+
+This is a portfolio and learning project designed to demonstrate backend architecture and complete application workflows. Local email delivery uses Mailpit. Google login requires personal OAuth client configuration. Automated OIDC tests use synthetic identities; a real Google login is a separate manual check.
+
+Product images are bundled for the demonstration catalog; source information is recorded in [`docs/catalog-image-sources.json`](docs/catalog-image-sources.json).
